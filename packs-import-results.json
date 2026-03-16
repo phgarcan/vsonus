@@ -1,0 +1,252 @@
+[
+  {
+    "slug": "pack-sono-s",
+    "categorie": "sonorisation",
+    "nom": "Pack Sono S",
+    "prix": 800,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/products-image-v-sonus-01.png",
+    "status": 200,
+    "directus_id": 3,
+    "file_id": "c3408446-7d35-453b-951a-3d2a575327d7"
+  },
+  {
+    "slug": "pack-sono-m",
+    "categorie": "sonorisation",
+    "nom": "Pack Sono M",
+    "prix": 1000,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/products-image-v-sonus-02.png",
+    "status": 200,
+    "directus_id": 4,
+    "file_id": "8c4cf6ae-f3f2-43ef-8ba8-c77180b6fd00"
+  },
+  {
+    "slug": "pack-sono-l",
+    "categorie": "sonorisation",
+    "nom": "Pack Sono L",
+    "prix": 1500,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/products-image-v-sonus-03.png",
+    "status": 200,
+    "directus_id": 5,
+    "file_id": "dd199415-27d5-45fb-a0bb-56d7cc104b3c"
+  },
+  {
+    "slug": "pack-sono-xl",
+    "categorie": "sonorisation",
+    "nom": "Pack Sono XL",
+    "prix": 2000,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/products-image-v-sonus-04.png",
+    "status": 200,
+    "directus_id": 6,
+    "file_id": "71d28d7b-83c3-49ea-b949-1a34d6794f8d"
+  },
+  {
+    "slug": "pack-sono-xxl",
+    "categorie": "sonorisation",
+    "nom": "Pack Sono XXL",
+    "prix": 2470,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/products-image-v-sonus-05.png",
+    "status": 200,
+    "directus_id": 7,
+    "file_id": "1bc5f7ea-b0d7-4427-af5a-6141a3bef423"
+  },
+  {
+    "slug": "pack-sono-max",
+    "categorie": "sonorisation",
+    "nom": "Pack Sono MAX",
+    "prix": 2940,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/products-image-v-sonus.png",
+    "status": 200,
+    "directus_id": 8,
+    "file_id": "56cddd0c-b2d9-4b04-b1db-802c996167b8"
+  },
+  {
+    "slug": "dj-pack-m",
+    "categorie": "dj",
+    "nom": "DJ Pack M",
+    "prix": 1450,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/01/photo_2024-12-04-13.01.40.jpeg",
+    "status": 200,
+    "directus_id": 9,
+    "file_id": "7f60d7f1-c6a3-4941-a6fd-38c9e5cba9c5"
+  },
+  {
+    "slug": "dj-pack-l",
+    "categorie": "dj",
+    "nom": "DJ Pack L",
+    "prix": 2020,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/01/image-4.jpeg",
+    "status": 200,
+    "directus_id": 10,
+    "file_id": "7a22d871-552e-439b-8b0f-c1e987f99910"
+  },
+  {
+    "slug": "dj-pack-xl",
+    "categorie": "dj",
+    "nom": "DJ Pack XL",
+    "prix": 2700,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/01/image-3.jpeg",
+    "status": 200,
+    "directus_id": 11,
+    "file_id": "b3ffe668-2be5-4440-b9aa-cc99868f1347"
+  },
+  {
+    "slug": "dj-pack-xxl",
+    "categorie": "dj",
+    "nom": "DJ Pack XXL",
+    "prix": 3170,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/WhatsApp-Image-2025-04-08-at-20.06.16.jpeg",
+    "status": 200,
+    "directus_id": 12,
+    "file_id": "787e5f40-86c6-4d4b-94c1-c4b2a4ce31e4"
+  },
+  {
+    "slug": "dj-pack-max",
+    "categorie": "dj",
+    "nom": "DJ Pack MAX",
+    "prix": 3560,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/01/image-1.jpeg",
+    "status": 200,
+    "directus_id": 13,
+    "file_id": "a03073a4-415b-4946-a801-95b2a9460ec6"
+  },
+  {
+    "slug": "pack-dj-tout",
+    "categorie": "dj",
+    "nom": "Pack Tout-en-un",
+    "prix": 7260,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/Pack-tout-en-un-1024x683.png",
+    "status": 200,
+    "directus_id": 14,
+    "file_id": "8cef1e18-40ba-4588-a111-0e2ef24ea391"
+  },
+  {
+    "slug": "pack-concert-m",
+    "categorie": "concerts",
+    "nom": "Pack Concert M",
+    "prix": 1390,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/image-6.jpeg",
+    "status": 200,
+    "directus_id": 15,
+    "file_id": "1cbae6dd-d058-4ceb-9ca6-cb9b21dc8e58"
+  },
+  {
+    "slug": "pack-concert-l",
+    "categorie": "concerts",
+    "nom": "Pack Concert L",
+    "prix": 2160,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/01/photo_2024-12-04-13.01.55-1.jpeg",
+    "status": 200,
+    "directus_id": 16,
+    "file_id": "1a109a27-1fc8-4afc-a2a4-0d7705d06fce"
+  },
+  {
+    "slug": "pack-concert-xl",
+    "categorie": "concerts",
+    "nom": "Pack Concert XL",
+    "prix": 3240,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/compressed_DSC09781-1024x576.jpg",
+    "status": 200,
+    "directus_id": 17,
+    "file_id": "2dce3001-60b3-472c-ac9f-c7663b7ad6ae"
+  },
+  {
+    "slug": "pack-concert-xxl",
+    "categorie": "concerts",
+    "nom": "Pack Concert XXL",
+    "prix": 3810,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/01/DSC01638-1024x576.jpg",
+    "status": 200,
+    "directus_id": 18,
+    "file_id": "5b859a59-07d2-4406-9f9c-184cbc7531ee"
+  },
+  {
+    "slug": "pack-concert-max",
+    "categorie": "concerts",
+    "nom": "Pack Concert MAX",
+    "prix": 4050,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/01/image-5.jpeg",
+    "status": 200,
+    "directus_id": 19,
+    "file_id": "021cd463-636c-448f-b1da-3bb1c8ab20b4"
+  },
+  {
+    "slug": "pack-scene-6x6",
+    "categorie": "scenes",
+    "nom": "Pack Scène 6×6",
+    "prix": 2010,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/01/compressed_DSC09688-1024x576.jpg",
+    "status": 200,
+    "directus_id": 20,
+    "file_id": "65ef28e0-d174-4bc0-badb-58dc3edea277"
+  },
+  {
+    "slug": "pack-structure-line-array",
+    "categorie": "scenes",
+    "nom": "Pack Structure Line Array",
+    "prix": 700,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/01/DSC01634-1024x576.jpg",
+    "status": 200,
+    "directus_id": 21,
+    "file_id": "21ee76d5-17d6-43bf-b2ce-c544f48c080d"
+  },
+  {
+    "slug": "pack-light-s",
+    "categorie": "eclairage",
+    "nom": "Pack Light S",
+    "prix": 120,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/pack-light-s.png",
+    "status": 200,
+    "directus_id": 22,
+    "file_id": "f3449c50-0c97-4a6c-af3d-809b6d46c67f"
+  },
+  {
+    "slug": "pack-light-m",
+    "categorie": "eclairage",
+    "nom": "Pack Light M",
+    "prix": 350,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/Pack-M.png",
+    "status": 200,
+    "directus_id": 23,
+    "file_id": "4a33123e-59df-4dda-b0de-1f4423b8cb63"
+  },
+  {
+    "slug": "pack-light-l",
+    "categorie": "eclairage",
+    "nom": "Pack Light L",
+    "prix": 460,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/Pack-L.png",
+    "status": 200,
+    "directus_id": 24,
+    "file_id": "e30d86b2-366a-45e2-ab63-9b5ef5a22cc0"
+  },
+  {
+    "slug": "pack-light-xl",
+    "categorie": "eclairage",
+    "nom": "Pack Light XL",
+    "prix": 620,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/Pack-XL.png",
+    "status": 200,
+    "directus_id": 25,
+    "file_id": "e04a5551-053c-4eb1-a102-98280ea3639c"
+  },
+  {
+    "slug": "pack-light-xxl",
+    "categorie": "eclairage",
+    "nom": "Pack Light XXL",
+    "prix": 780,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/Pack-XXL.png",
+    "status": 200,
+    "directus_id": 26,
+    "file_id": "21cc8f89-2648-4fb1-a8b3-946b9236c3c6"
+  },
+  {
+    "slug": "pack-mapping",
+    "categorie": "mapping",
+    "nom": "Pack Mapping",
+    "prix": 300,
+    "image": "https://vsonus.ch/wp-content/uploads/2025/04/pack-mapping.png",
+    "status": 200,
+    "directus_id": 27,
+    "file_id": "bcf8b50d-4dd9-4e58-9adf-2c92c750fb9b"
+  }
+]
