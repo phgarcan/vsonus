@@ -1,21 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/Button'
+import { envoyerMessage } from '@/app/actions/contact'
+import Link from 'next/link'
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
 const SUBJECTS = [
-  'Demande de devis – Sonorisation',
-  'Demande de devis – Éclairage',
-  'Demande de devis – Scène / Structure',
-  'Demande de devis – Pack complet',
-  'Question technique',
+  'Demande de devis',
+  'Question',
   'Autre',
 ]
 
+const inputClass =
+  'w-full bg-vsonus-black border border-gray-700 text-white text-sm px-4 py-3 focus:outline-none focus:border-vsonus-red transition-colors placeholder-gray-600'
+const labelClass = 'block text-xs font-bold uppercase tracking-widest text-gray-400 mb-1.5'
+
 export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle')
+  const [errorMsg, setErrorMsg] = useState('')
   const [form, setForm] = useState({
     nom: '',
     email: '',
@@ -31,48 +34,40 @@ export function ContactForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setStatus('sending')
+    setErrorMsg('')
 
-    // Envoi via formsubmit.co (aucun backend requis) ou adapter selon le serveur
-    try {
-      const res = await fetch('https://formsubmit.co/ajax/info@vsonus.ch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          _subject: `[V-Sonus] ${form.sujet || 'Nouveau message'}`,
-          _replyto: form.email,
-          _template: 'table',
-          ...form,
-        }),
-      })
-      if (res.ok) {
-        setStatus('success')
-        setForm({ nom: '', email: '', telephone: '', sujet: '', message: '' })
-      } else {
-        setStatus('error')
-      }
-    } catch {
+    const result = await envoyerMessage(form)
+
+    if (result.success) {
+      setStatus('success')
+      setForm({ nom: '', email: '', telephone: '', sujet: '', message: '' })
+    } else {
       setStatus('error')
+      setErrorMsg(result.error)
     }
   }
 
   if (status === 'success') {
     return (
-      <div className="border border-green-800 bg-green-900/20 p-8 text-center">
-        <div className="text-4xl mb-4">✓</div>
-        <h3 className="text-lg font-black uppercase tracking-widest text-white mb-2">Message envoyé !</h3>
+      <div className="border border-gray-700 bg-vsonus-dark p-10 text-center">
+        <div className="w-12 h-12 border-2 border-vsonus-red flex items-center justify-center mx-auto mb-6">
+          <svg className="w-6 h-6 text-vsonus-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="square" strokeLinejoin="miter" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-black uppercase tracking-widest text-white mb-2">
+          Message envoyé !
+        </h3>
         <p className="text-gray-400 text-sm">Nous vous répondrons dans les meilleurs délais.</p>
         <button
           onClick={() => setStatus('idle')}
-          className="mt-6 text-sm text-vsonus-red hover:underline"
+          className="mt-6 text-xs font-bold uppercase tracking-widest text-vsonus-red hover:underline"
         >
           Envoyer un autre message
         </button>
       </div>
     )
   }
-
-  const inputClass = 'w-full bg-vsonus-black border border-gray-700 text-white text-sm px-4 py-3 focus:outline-none focus:border-vsonus-red transition-colors placeholder-gray-600'
-  const labelClass = 'block text-xs font-bold uppercase tracking-widest text-gray-400 mb-1.5'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -96,7 +91,7 @@ export function ContactForm() {
             type="tel"
             value={form.telephone}
             onChange={(e) => set('telephone', e.target.value)}
-            placeholder="+41 00 000 00 00"
+            placeholder="+41 79 000 00 00"
             className={inputClass}
           />
         </div>
@@ -144,23 +139,32 @@ export function ContactForm() {
       </div>
 
       {status === 'error' && (
-        <p className="text-red-500 text-sm border border-red-800 bg-red-900/20 px-4 py-3">
-          Une erreur s'est produite. Veuillez réessayer ou nous contacter directement par email.
+        <p className="text-red-400 text-xs border border-red-900 bg-red-900/10 px-4 py-3">
+          {errorMsg || 'Une erreur est survenue.'}{' '}
+          <a
+            href="mailto:info@vsonus.ch"
+            className="underline hover:text-red-300"
+          >
+            Contactez-nous directement
+          </a>
+          .
         </p>
       )}
 
-      <Button
+      <button
         type="submit"
-        variant="primary"
-        size="lg"
-        fullWidth
         disabled={status === 'sending'}
+        className="w-full bg-vsonus-red text-white font-bold uppercase tracking-widest py-4 hover:shadow-glow-red-hover transition-shadow duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {status === 'sending' ? 'Envoi en cours…' : 'Envoyer le message →'}
-      </Button>
+        {status === 'sending' ? 'Envoi en cours…' : 'Envoyer →'}
+      </button>
 
-      <p className="text-xs text-gray-700 text-center">
-        Nous répondons généralement sous 24h ouvrées.
+      <p className="text-xs text-gray-700 leading-relaxed">
+        En envoyant ce message, je confirme avoir lu et accepté la{' '}
+        <Link href="/politique-de-confidentialite" className="text-gray-500 hover:text-vsonus-red transition-colors">
+          politique de confidentialité
+        </Link>
+        .
       </p>
     </form>
   )

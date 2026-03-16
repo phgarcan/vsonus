@@ -90,6 +90,17 @@ export interface ReservationLigne {
 // Schéma global pour le SDK Directus
 // ---------------------------------------------------------------------------
 
+export interface MessageContact {
+  id?: string
+  nom: string
+  email: string
+  telephone?: string
+  sujet?: string
+  message: string
+  date_envoi?: string
+  lu?: boolean
+}
+
 interface Schema {
   equipements: Equipement[]
   packs: Pack[]
@@ -98,6 +109,7 @@ interface Schema {
   reservations: Reservation[]
   reservation_lignes: ReservationLigne[]
   pages: Page[]
+  messages_contact: MessageContact[]
 }
 
 // ---------------------------------------------------------------------------
