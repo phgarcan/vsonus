@@ -34,8 +34,11 @@ interface StoreState {
   endDate: string | null
   // Tarifs annexes chargés depuis Directus (transport, montage…)
   tarifsAnnexes: TarifAnnexe[]
+  // Tiroir panier (contrôle global)
+  cartDrawerOpen: boolean
 
   // --- Actions ---
+  setCartDrawerOpen: (open: boolean) => void
   addToCart: (item: CartItem) => void
   removeFromCart: (id: string, type: 'equipement' | 'pack') => void
   updateQuantite: (id: string, type: 'equipement' | 'pack', quantite: number) => void
@@ -61,10 +64,13 @@ export const useStore = create<StoreState>()(
       startDate: null,
       endDate: null,
       tarifsAnnexes: [],
+      cartDrawerOpen: false,
 
       // -----------------------------------------------------------------------
       // Actions
       // -----------------------------------------------------------------------
+
+      setCartDrawerOpen: (open) => set({ cartDrawerOpen: open }),
 
       addToCart: (newItem) => {
         set((state) => {

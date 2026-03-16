@@ -177,37 +177,38 @@ function PackCard({ pack }: { pack: Pack }) {
   const imageUrl = getImageUrl(pack.image_principale, { width: '400', height: '300', fit: 'cover' })
 
   return (
-    <article className="bg-vsonus-dark border-2 border-vsonus-red flex flex-col hover:shadow-glow-red transition-shadow duration-200">
-      <div className="relative w-full h-48 bg-black overflow-hidden">
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={pack.nom}
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-700 text-4xl">★</div>
-        )}
-        <span className="absolute top-2 left-2 bg-vsonus-red text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
-          Pack
-        </span>
-      </div>
+    <article className="bg-vsonus-dark border-2 border-vsonus-red flex flex-col hover:shadow-glow-red transition-shadow duration-200 group">
+      <Link href={`/catalogue/pack/${pack.id}`} className="block">
+        <div className="relative w-full h-48 bg-black overflow-hidden">
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={pack.nom}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-700 text-4xl">★</div>
+          )}
+          <span className="absolute top-2 left-2 bg-vsonus-red text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
+            Pack
+          </span>
+        </div>
 
-      <div className="p-4 flex flex-col flex-1 gap-3">
-        <div className="flex-1">
-          <h3 className="font-bold text-white text-sm leading-tight">{pack.nom}</h3>
+        <div className="p-4 pb-2 flex-1">
+          <h3 className="font-bold text-white text-sm leading-tight group-hover:text-vsonus-red transition-colors">{pack.nom}</h3>
           {pack.description && (
             <p className="text-xs text-gray-400 mt-2 line-clamp-2">{pack.description}</p>
           )}
+          <div className="mt-3">
+            <span className="text-vsonus-red font-black text-lg">{pack.prix_base.toFixed(2)}</span>
+            <span className="text-gray-500 text-xs ml-1">CHF / événement</span>
+          </div>
         </div>
+      </Link>
 
-        <div>
-          <span className="text-vsonus-red font-black text-lg">{pack.prix_base.toFixed(2)}</span>
-          <span className="text-gray-500 text-xs ml-1">CHF / événement</span>
-        </div>
-
+      <div className="p-4 pt-2">
         <AddToCartButton type="pack" item={pack} />
       </div>
     </article>

@@ -9,8 +9,9 @@ import { useStore } from '@/lib/store'
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [drawerOpen, setDrawerOpen] = useState(false)
   const cart = useStore((s) => s.cart)
+  const drawerOpen = useStore((s) => s.cartDrawerOpen)
+  const setDrawerOpen = useStore((s) => s.setCartDrawerOpen)
   const cartCount = cart.reduce((acc, i) => acc + i.quantite, 0)
 
   return (

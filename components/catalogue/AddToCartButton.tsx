@@ -10,6 +10,7 @@ type Props =
 
 export function AddToCartButton({ type, item }: Props) {
   const addToCart = useStore((s) => s.addToCart)
+  const setCartDrawerOpen = useStore((s) => s.setCartDrawerOpen)
 
   function handleAdd() {
     if (type === 'equipement') {
@@ -17,6 +18,7 @@ export function AddToCartButton({ type, item }: Props) {
     } else {
       addToCart({ type: 'pack', item, quantite: 1 })
     }
+    setCartDrawerOpen(true)
   }
 
   return (
