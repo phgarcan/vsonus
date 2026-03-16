@@ -39,3 +39,6 @@ Thumbs.db
 
 # Claude Code internal
 memory/
+
+# Large media assets (serve from CDN or WordPress)
+public/videos/
