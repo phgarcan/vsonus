@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu, X, ListChecks } from 'lucide-react'
+import { Menu, X, ClipboardList } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { useStore } from '@/lib/store'
@@ -87,7 +87,7 @@ export function Header() {
               className="relative flex items-center gap-2 bg-vsonus-dark border border-gray-700 px-3 sm:px-4 py-2 text-sm font-bold uppercase tracking-widest hover:border-vsonus-red hover:shadow-glow-red transition-all duration-200"
               aria-label="Ouvrir ma sélection"
             >
-              <ListChecks className="w-5 h-5" strokeWidth={2} />
+              <ClipboardList className="w-5 h-5" strokeWidth={2} />
               <span className="hidden sm:inline">Ma liste</span>
               {mounted && cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-vsonus-red text-white text-xs font-bold w-5 h-5 flex items-center justify-center">
@@ -142,8 +142,13 @@ export function Header() {
             ))}
           </nav>
 
-          {/* CTA bas */}
-          <div className="px-8 py-8 flex-shrink-0">
+          {/* Coordonnées + CTA bas */}
+          <div className="px-8 py-8 flex-shrink-0 space-y-4">
+            <div className="space-y-1 text-sm text-gray-400">
+              <a href="tel:+41796512114" className="block hover:text-white transition-colors">+41 79 651 21 14</a>
+              <a href="mailto:info@vsonus.ch" className="block hover:text-white transition-colors">info@vsonus.ch</a>
+              <p>Rue des Bosquets 17, 1800 Vevey</p>
+            </div>
             <Link
               href="/contact"
               onClick={() => setMobileOpen(false)}
