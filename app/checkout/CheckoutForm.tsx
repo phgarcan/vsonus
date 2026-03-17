@@ -56,6 +56,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
 
   const [cgvAccepted, setCgvAccepted] = useState(false)
   const [cgvOpen, setCgvOpen] = useState(false)
+  const [billingSame, setBillingSame] = useState(true)
 
   const [form, setForm] = useState({
     nom: '',
@@ -64,12 +65,23 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
     rue: '',
     npa: '',
     ville: '',
-    pays: 'Suisse', // fixe — autocomplete restreint à la Suisse
+    pays: 'Suisse',
     notes: '',
+  })
+
+  const [billing, setBilling] = useState({
+    billing_rue: '',
+    billing_npa: '',
+    billing_ville: '',
+    billing_pays: 'Suisse',
   })
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  function handleBillingChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    setBilling((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -78,7 +90,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
 
     startTransition(async () => {
       const result = await soumettreReservation({
-        clientData: form,
+        clientData: billingSame ? form : { ...form, ...billing },
         cartItems: cart,
         startDate: startDate!,
         endDate: endDate!,
@@ -190,13 +202,84 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
           {/* Pays — fixe Suisse */}
           <div>
             <label className={labelCls}>Pays</label>
-            <input
-              type="text"
-              value="Suisse"
-              readOnly
-              className={inputCls + ' cursor-default text-gray-500'}
-            />
+            <input type="text" value="Suisse" readOnly className={inputCls + ' cursor-default text-gray-500'} />
           </div>
+        </div>
+
+        {/* ── Adresse de facturation ──────────────────────────────────── */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between border-b border-gray-800 pb-2 mb-4">
+            <h3 className="text-sm font-black uppercase tracking-widest text-white">
+              Adresse de facturation
+            </h3>
+          </div>
+
+          {/* Toggle même adresse */}
+          <label className="flex items-center gap-3 cursor-pointer mb-4 select-none">
+            <div className="relative flex-shrink-0">
+              <input
+                type="checkbox"
+                checked={billingSame}
+                onChange={(e) => setBillingSame(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-10 h-5 bg-gray-700 peer-checked:bg-vsonus-red transition-colors" />
+              <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white transition-transform peer-checked:translate-x-5" />
+            </div>
+            <span className="text-sm text-gray-400">
+              Identique à l&apos;adresse de l&apos;événement
+            </span>
+          </label>
+
+          {/* Champs facturation — visibles seulement si différente */}
+          {!billingSame && (
+            <div className="space-y-4 border-l-2 border-vsonus-red pl-4">
+              <div>
+                <label className={labelCls}>Rue et numéro <span className="text-vsonus-red">*</span></label>
+                <AddressAutocomplete
+                  value={billing.billing_rue}
+                  onChange={(v) => setBilling((prev) => ({ ...prev, billing_rue: v }))}
+                  onPlaceSelect={({ rue, npa, ville, pays }) =>
+                    setBilling({ billing_rue: rue, billing_npa: npa, billing_ville: ville, billing_pays: pays })
+                  }
+                  countries={['ch', 'fr']}
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className={labelCls}>NPA <span className="text-vsonus-red">*</span></label>
+                  <input
+                    type="text" name="billing_npa" value={billing.billing_npa} onChange={handleBillingChange}
+                    required={!billingSame}
+                    pattern={billing.billing_pays === 'France' ? '[0-9]{5}' : '[0-9]{4}'}
+                    title={billing.billing_pays === 'France' ? 'Code postal français (5 chiffres)' : 'Code postal suisse (4 chiffres)'}
+                    placeholder={billing.billing_pays === 'France' ? '75001' : '1800'}
+                    inputMode="numeric" className={inputCls} autoComplete="billing postal-code"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className={labelCls}>Ville <span className="text-vsonus-red">*</span></label>
+                  <input
+                    type="text" name="billing_ville" value={billing.billing_ville} onChange={handleBillingChange}
+                    required={!billingSame} placeholder="Lausanne"
+                    className={inputCls} autoComplete="billing address-level2"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelCls}>Pays <span className="text-vsonus-red">*</span></label>
+                <select
+                  name="billing_pays" value={billing.billing_pays} onChange={handleBillingChange}
+                  className={inputCls + ' cursor-pointer'}
+                >
+                  <option value="Suisse">Suisse</option>
+                  <option value="France">France</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Notes */}
