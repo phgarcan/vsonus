@@ -29,7 +29,7 @@ export function AddressAutocomplete({ value, onChange, onPlaceSelect }: AddressA
 
     autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
       types: ['address'],
-      componentRestrictions: { country: ['ch', 'fr'] },
+      componentRestrictions: { country: ['ch'] },
       fields: ['address_components'],
     })
 
