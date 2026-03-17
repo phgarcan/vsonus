@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { envoyerMessage } from '@/app/actions/contact'
-import Link from 'next/link'
+import { PrivacyModal } from '@/components/ui/PrivacyModal'
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
@@ -19,6 +19,7 @@ const labelClass = 'block text-xs font-bold uppercase tracking-widest text-gray-
 export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [privacyOpen, setPrivacyOpen] = useState(false)
   const [form, setForm] = useState({
     nom: '',
     email: '',
@@ -161,11 +162,17 @@ export function ContactForm() {
 
       <p className="text-xs text-gray-700 leading-relaxed">
         En envoyant ce message, je confirme avoir lu et accepté la{' '}
-        <Link href="/politique-de-confidentialite" className="text-gray-500 hover:text-vsonus-red transition-colors">
+        <button
+          type="button"
+          onClick={() => setPrivacyOpen(true)}
+          className="text-gray-500 hover:text-vsonus-red transition-colors underline"
+        >
           politique de confidentialité
-        </Link>
+        </button>
         .
       </p>
+
+      <PrivacyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
     </form>
   )
 }
