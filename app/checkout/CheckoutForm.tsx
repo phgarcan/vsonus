@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
 import { CgvModal } from '@/components/ui/CgvModal'
+import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 import { soumettreReservation } from '@/app/actions/reservation'
 import { getCoefficientLabel } from '@/lib/pricing'
 import type { TarifAnnexe } from '@/lib/directus'
@@ -13,6 +14,9 @@ import type { TarifAnnexe } from '@/lib/directus'
 interface CheckoutFormProps {
   tarifsAnnexes: TarifAnnexe[]
 }
+
+const inputCls = 'w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:outline-none focus:border-vsonus-red transition-colors placeholder-gray-600'
+const labelCls = 'block text-xs font-bold uppercase tracking-widest text-gray-400 mb-1'
 
 export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
   const router = useRouter()
@@ -34,7 +38,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
 
   const nbJours       = getNbJours()
   const sousTotalBrut = getSousTotalBrut()
-  const sousTotal     = getSousTotal()      // brut × coefficient
+  const sousTotal     = getSousTotal()
   const coefficient   = getCoefficient()
   const besoinTech    = requiresTechnicien()
   const besoinTransport = requiresTransport()
@@ -57,11 +61,14 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
     nom: '',
     email: '',
     tel: '',
-    adresse_evenement: '',
+    rue: '',
+    npa: '',
+    ville: '',
+    pays: 'Suisse',
     notes: '',
   })
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
@@ -101,49 +108,111 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
     )
   }
 
+  // NPA pattern selon le pays
+  const npaPattern = form.pays === 'France' ? '[0-9]{5}' : '[0-9]{4}'
+  const npaTitle   = form.pays === 'France' ? 'Code postal français (5 chiffres)' : 'Code postal suisse (4 chiffres)'
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
       {/* Formulaire client */}
       <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-5">
+
+        {/* ── Coordonnées ──────────────────────────────────────────────── */}
         <h2 className="text-xl font-black uppercase tracking-widest text-white border-b-2 border-vsonus-red pb-3">
           Vos coordonnées
         </h2>
 
-        {[
-          { name: 'nom', label: 'Nom complet', type: 'text', required: true },
-          { name: 'email', label: 'Adresse e-mail', type: 'email', required: true },
-          { name: 'tel', label: 'Téléphone', type: 'tel', required: true },
-          { name: 'adresse_evenement', label: "Adresse de l'événement", type: 'text', required: true },
-        ].map((field) => (
-          <div key={field.name}>
-            <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">
-              {field.label} {field.required && <span className="text-vsonus-red">*</span>}
-            </label>
-            <input
-              type={field.type}
-              name={field.name}
-              value={form[field.name as keyof typeof form]}
-              onChange={handleChange}
-              required={field.required}
-              className="w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:outline-none focus:border-vsonus-red transition-colors"
-            />
-          </div>
-        ))}
+        <div>
+          <label className={labelCls}>Nom complet <span className="text-vsonus-red">*</span></label>
+          <input
+            type="text" name="nom" value={form.nom} onChange={handleChange}
+            required className={inputCls} autoComplete="name"
+          />
+        </div>
 
         <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">
-            Notes / Informations complémentaires
-          </label>
+          <label className={labelCls}>Adresse e-mail <span className="text-vsonus-red">*</span></label>
+          <input
+            type="email" name="email" value={form.email} onChange={handleChange}
+            required className={inputCls} autoComplete="email"
+          />
+        </div>
+
+        <div>
+          <label className={labelCls}>Téléphone <span className="text-vsonus-red">*</span></label>
+          <input
+            type="tel" name="tel" value={form.tel} onChange={handleChange}
+            required placeholder="+41 79 XXX XX XX"
+            className={inputCls} autoComplete="tel"
+          />
+        </div>
+
+        {/* ── Adresse de l'événement ──────────────────────────────────── */}
+        <div className="pt-2">
+          <h3 className="text-sm font-black uppercase tracking-widest text-white border-b border-gray-800 pb-2 mb-4">
+            Adresse de l&apos;événement
+          </h3>
+
+          {/* Rue — avec autocomplétion Google Places */}
+          <div className="mb-4">
+            <label className={labelCls}>Rue et numéro <span className="text-vsonus-red">*</span></label>
+            <AddressAutocomplete
+              value={form.rue}
+              onChange={(v) => setForm((prev) => ({ ...prev, rue: v }))}
+              onPlaceSelect={({ rue, npa, ville, pays }) =>
+                setForm((prev) => ({ ...prev, rue, npa, ville, pays }))
+              }
+            />
+          </div>
+
+          {/* NPA + Ville sur la même ligne */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div>
+              <label className={labelCls}>NPA <span className="text-vsonus-red">*</span></label>
+              <input
+                type="text" name="npa" value={form.npa} onChange={handleChange}
+                required pattern={npaPattern} title={npaTitle}
+                placeholder={form.pays === 'France' ? '75001' : '1800'}
+                inputMode="numeric"
+                className={inputCls}
+                autoComplete="postal-code"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className={labelCls}>Ville <span className="text-vsonus-red">*</span></label>
+              <input
+                type="text" name="ville" value={form.ville} onChange={handleChange}
+                required placeholder="Vevey"
+                className={inputCls} autoComplete="address-level2"
+              />
+            </div>
+          </div>
+
+          {/* Pays */}
+          <div>
+            <label className={labelCls}>Pays <span className="text-vsonus-red">*</span></label>
+            <select
+              name="pays"
+              value={form.pays}
+              onChange={handleChange}
+              className={inputCls + ' cursor-pointer'}
+            >
+              <option value="Suisse">Suisse</option>
+              <option value="France">France</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label className={labelCls}>Notes / Informations complémentaires</label>
           <textarea
-            name="notes"
-            value={form.notes}
-            onChange={handleChange}
-            rows={4}
+            name="notes" value={form.notes} onChange={handleChange} rows={4}
             className="w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:outline-none focus:border-vsonus-red resize-none transition-colors"
           />
         </div>
 
-        {/* Mentions légales */}
+        {/* Mentions légales + CGV */}
         <div className="space-y-3 border border-gray-800 p-4 bg-vsonus-dark/50">
           <p className="text-xs text-gray-400 leading-relaxed">
             <span className="text-yellow-500 font-semibold">Annulation gratuite</span> jusqu&apos;à 5 jours avant la date de l&apos;événement.
@@ -153,30 +222,19 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
           </p>
           <label className="flex items-start gap-3 cursor-pointer">
             <input
-              type="checkbox"
-              required
-              checked={cgvAccepted}
+              type="checkbox" required checked={cgvAccepted}
               onChange={(e) => setCgvAccepted(e.target.checked)}
               className="mt-0.5 accent-vsonus-red flex-shrink-0"
             />
             <span className="text-xs text-gray-400 leading-relaxed">
               Je confirme avoir lu et accepté les{' '}
-              <button
-                type="button"
-                onClick={() => setCgvOpen(true)}
-                className="text-vsonus-red underline hover:no-underline"
-              >
+              <button type="button" onClick={() => setCgvOpen(true)} className="text-vsonus-red underline hover:no-underline">
                 conditions générales
               </button>{' '}
               de location. <span className="text-vsonus-red">*</span>
             </span>
           </label>
-
-          <CgvModal
-            open={cgvOpen}
-            onClose={() => setCgvOpen(false)}
-            onAccept={() => setCgvAccepted(true)}
-          />
+          <CgvModal open={cgvOpen} onClose={() => setCgvOpen(false)} onAccept={() => setCgvAccepted(true)} />
         </div>
 
         {error && (
@@ -194,17 +252,14 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
         )}
 
         <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
+          type="submit" variant="primary" size="lg" fullWidth
           disabled={isPending || !startDate || !endDate || !cgvAccepted || isSurDemande}
         >
           {isPending ? 'Envoi en cours…' : 'Confirmer la demande de devis'}
         </Button>
       </form>
 
-      {/* Récapitulatif */}
+      {/* ── Récapitulatif ─────────────────────────────────────────────── */}
       <aside className="lg:col-span-2 bg-vsonus-dark border border-gray-800 p-6 space-y-4 h-fit">
         <h2 className="text-xl font-black uppercase tracking-widest text-white border-b-2 border-vsonus-red pb-3">
           Récapitulatif
@@ -234,13 +289,16 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
                   {item.item.nom}
                   <span className="text-gray-600 ml-1">×{item.quantite}</span>
                 </span>
-                <span className="text-white font-semibold">{(prixUnitaire * item.quantite).toFixed(2)} <span className="text-gray-600 text-xs">CHF/j</span></span>
+                <span className="text-white font-semibold">
+                  {(prixUnitaire * item.quantite).toFixed(2)}{' '}
+                  <span className="text-gray-600 text-xs">CHF/j</span>
+                </span>
               </li>
             )
           })}
         </ul>
 
-        {/* Détail du calcul avec coefficient */}
+        {/* Détail calcul avec coefficient */}
         <div className="border-t border-gray-800 pt-3 space-y-1.5 text-sm">
           <div className="flex justify-between text-gray-400">
             <span>Sous-total (1 j)</span>
