@@ -14,7 +14,10 @@ export interface ClientData {
   nom: string
   email: string
   tel: string
-  adresse_evenement: string
+  rue: string
+  npa: string
+  ville: string
+  pays: string
   notes?: string
 }
 
@@ -42,7 +45,7 @@ export async function soumettreReservation(
 ): Promise<ReservationResult> {
   const { clientData, cartItems, startDate, endDate, nbJours, totalHT, besoinMontage, besoinLivraison } = input
 
-  if (!clientData.nom || !clientData.email || !clientData.tel || !clientData.adresse_evenement) {
+  if (!clientData.nom || !clientData.email || !clientData.tel || !clientData.rue || !clientData.npa || !clientData.ville) {
     return { success: false, error: 'Tous les champs obligatoires doivent être remplis.' }
   }
   if (!startDate || !endDate) {
@@ -62,7 +65,7 @@ export async function soumettreReservation(
         nom_client: clientData.nom,
         email_client: clientData.email,
         tel_client: clientData.tel,
-        adresse_evenement: clientData.adresse_evenement,
+        adresse_evenement: `${clientData.rue}, ${clientData.npa} ${clientData.ville}, ${clientData.pays}`,
         notes: clientData.notes ?? '',
         date_debut: startDate,
         date_fin: endDate,
@@ -161,8 +164,8 @@ async function sendEmails(data: {
         </td>
       </tr>
       <tr>
-        <td style="padding:6px 0;font-size:13px;color:#888;">Adresse event</td>
-        <td style="padding:6px 0;font-size:13px;color:#fff;">${clientData.adresse_evenement}</td>
+        <td style="padding:6px 0;font-size:13px;color:#888;vertical-align:top;">Adresse event</td>
+        <td style="padding:6px 0;font-size:13px;color:#fff;">${clientData.rue}<br>${clientData.npa} ${clientData.ville}, ${clientData.pays}</td>
       </tr>
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;">Dates</td>
@@ -212,8 +215,8 @@ async function sendEmails(data: {
         <td style="padding:5px 0;font-size:13px;color:#fff;">${startDate} → ${endDate} (${nbJours} jour${nbJours > 1 ? 's' : ''}${coefficient !== 1 ? ` <span style="color:#EC1C24;font-weight:700;">${getCoefficientLabel(nbJours)}</span>` : ''})</td>
       </tr>
       <tr>
-        <td style="padding:5px 0;font-size:13px;color:#888;">Lieu</td>
-        <td style="padding:5px 0;font-size:13px;color:#fff;">${clientData.adresse_evenement}</td>
+        <td style="padding:5px 0;font-size:13px;color:#888;vertical-align:top;">Lieu</td>
+        <td style="padding:5px 0;font-size:13px;color:#fff;">${clientData.rue}<br>${clientData.npa} ${clientData.ville}, ${clientData.pays}</td>
       </tr>
     </table>
 
