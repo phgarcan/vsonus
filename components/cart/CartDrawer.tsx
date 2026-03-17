@@ -13,10 +13,9 @@ interface CartDrawerProps {
   onClose: () => void
 }
 
-// Frais annexes codés en dur pour l'affichage temps réel dans le tiroir.
-// Les valeurs réelles viennent de Directus au moment du checkout.
-const FRAIS_TRANSPORT = { label: 'Transport – Fourgon', prix: 200 }
-const FRAIS_MONTAGE   = { label: 'Montage / Démontage', prix: 400 }
+// Fallback si tarifs_annexes pas encore chargés depuis Directus
+const FALLBACK_TRANSPORT = { label: 'Transport – Fourgon',      prix: 200 }
+const FALLBACK_MONTAGE   = { label: 'Montage / Démontage',      prix: 400 }
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const router = useRouter()
@@ -34,6 +33,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     getSousTotal,
     requiresTechnicien,
     requiresTransport,
+    tarifsAnnexes,
   } = useStore()
 
   const nbJours    = getNbJours()
@@ -41,9 +41,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const needsTech  = requiresTechnicien()
   const needsTrans = requiresTransport()
 
+  // Résoudre les tarifs depuis le store (Directus) ou fallback
+  const tarifTransport = tarifsAnnexes.find((t) => t.type === 'transport') ?? FALLBACK_TRANSPORT
+  const tarifMontage   = tarifsAnnexes.find((t) => t.type === 'montage')   ?? FALLBACK_MONTAGE
+
   const fraisAnnexes =
-    (needsTrans ? FRAIS_TRANSPORT.prix : 0) +
-    (needsTech  ? FRAIS_MONTAGE.prix   : 0)
+    (needsTrans ? tarifTransport.prix : 0) +
+    (needsTech  ? tarifMontage.prix   : 0)
 
   const totalHT = sousTotal + fraisAnnexes
 
@@ -186,33 +190,40 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 <h3 className="text-xs font-bold uppercase tracking-widest text-vsonus-red">
                   Dates de location
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider">Début</label>
-                    <input
-                      type="date"
-                      value={startDate ?? ''}
-                      min={today}
-                      onChange={(e) => setDates(e.target.value, endDate ?? e.target.value)}
-                      className="w-full bg-vsonus-black border border-gray-700 text-white text-sm px-3 py-2 focus:outline-none focus:border-vsonus-red transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider">Fin</label>
-                    <input
-                      type="date"
-                      value={endDate ?? ''}
-                      min={startDate ?? today}
-                      onChange={(e) => setDates(startDate ?? e.target.value, e.target.value)}
-                      className="w-full bg-vsonus-black border border-gray-700 text-white text-sm px-3 py-2 focus:outline-none focus:border-vsonus-red transition-colors"
-                    />
-                  </div>
+
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider">Début</label>
+                  <input
+                    type="date"
+                    value={startDate ?? ''}
+                    min={today}
+                    onChange={(e) => {
+                      const newStart = e.target.value
+                      // Si fin < début après le changement, aligner fin sur début
+                      const newEnd = endDate && endDate >= newStart ? endDate : newStart
+                      setDates(newStart, newEnd)
+                    }}
+                    className="w-full bg-vsonus-black border border-gray-700 text-white text-sm px-3 py-2 focus:outline-none focus:border-vsonus-red transition-colors"
+                  />
                 </div>
+
+                {/* Compteur de jours entre les deux champs */}
                 {startDate && endDate && (
-                  <p className="text-xs text-gray-500">
-                    Durée : <span className="text-white font-bold">{nbJours} jour{nbJours > 1 ? 's' : ''}</span>
+                  <p className="text-xs text-center text-gray-500 py-0.5">
+                    ↕ <span className="text-white font-bold">{nbJours} jour{nbJours > 1 ? 's' : ''}</span> de location
                   </p>
                 )}
+
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider">Fin</label>
+                  <input
+                    type="date"
+                    value={endDate ?? ''}
+                    min={startDate ?? today}
+                    onChange={(e) => setDates(startDate ?? e.target.value, e.target.value)}
+                    className="w-full bg-vsonus-black border border-gray-700 text-white text-sm px-3 py-2 focus:outline-none focus:border-vsonus-red transition-colors"
+                  />
+                </div>
               </div>
 
               {/* Frais annexes obligatoires */}
@@ -221,14 +232,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   <p className="text-xs font-bold uppercase tracking-widest text-vsonus-red">Frais obligatoires</p>
                   {needsTrans && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">{FRAIS_TRANSPORT.label}</span>
-                      <span className="text-white font-semibold">{FRAIS_TRANSPORT.prix} CHF</span>
+                      <span className="text-gray-400">{tarifTransport.label}</span>
+                      <span className="text-white font-semibold">{tarifTransport.prix} CHF</span>
                     </div>
                   )}
                   {needsTech && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">{FRAIS_MONTAGE.label}</span>
-                      <span className="text-white font-semibold">{FRAIS_MONTAGE.prix} CHF</span>
+                      <span className="text-gray-400">{tarifMontage.label}</span>
+                      <span className="text-white font-semibold">{tarifMontage.prix} CHF</span>
                     </div>
                   )}
                   <p className="text-xs text-gray-600 pt-1">Les montants exacts seront confirmés dans votre devis.</p>
