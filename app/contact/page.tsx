@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { Mail, Phone, MapPin, Clock } from 'lucide-react'
 import { ContactForm } from './ContactForm'
@@ -69,7 +70,9 @@ export default function ContactPage() {
               Parlons de votre<br />
               <span className="text-vsonus-red">événement</span>
             </h2>
-            <ContactForm />
+            <Suspense>
+              <ContactForm />
+            </Suspense>
           </div>
 
           {/* Colonne droite — Infos + carte */}

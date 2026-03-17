@@ -316,7 +316,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           <div className="flex-shrink-0 px-6 py-4 border-t border-gray-800 space-y-3">
             {isSurDemande ? (
               <Link
-                href="/contact"
+                href="/contact?sujet=devis"
                 onClick={onClose}
                 className="flex items-center justify-center w-full bg-yellow-600 text-white font-bold uppercase tracking-widest text-sm py-3 hover:bg-yellow-700 transition-colors"
               >

@@ -1,13 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { envoyerMessage } from '@/app/actions/contact'
 import { PrivacyModal } from '@/components/ui/PrivacyModal'
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
+const SUBJECT_DEVIS = 'Demande de devis – Tarif personnalisé'
+
 const SUBJECTS = [
-  'Demande de devis',
+  SUBJECT_DEVIS,
   'Question',
   'Autre',
 ]
@@ -17,6 +20,7 @@ const inputClass =
 const labelClass = 'block text-xs font-bold uppercase tracking-widest text-gray-400 mb-1.5'
 
 export function ContactForm() {
+  const searchParams = useSearchParams()
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [privacyOpen, setPrivacyOpen] = useState(false)
@@ -24,7 +28,7 @@ export function ContactForm() {
     nom: '',
     email: '',
     telephone: '',
-    sujet: '',
+    sujet: searchParams.get('sujet') === 'devis' ? SUBJECT_DEVIS : '',
     message: '',
   })
 
