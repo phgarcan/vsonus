@@ -25,14 +25,14 @@ const COLUMNS = [
     items: [
       { label: 'Praticables & Podiums',    href: '/catalogue?categorie=scenes' },
       { label: 'Structure Alu (Truss)',     href: '/catalogue?categorie=scenes' },
-      { label: 'Levage (Palans & Pieds)',   href: '/catalogue?categorie=levage' },
+      { label: 'Levage (Palans & Pieds)',   href: '/catalogue?categorie=scenes' },
     ],
   },
   {
     heading: 'Vidéo & Mapping',
     items: [
       { label: 'Vidéoprojecteurs',         href: '/catalogue?categorie=mapping' },
-      { label: 'Câblage & Accessoires',    href: '/catalogue?categorie=cablage' },
+      { label: 'Câblage & Accessoires',    href: '/catalogue?categorie=mapping' },
     ],
   },
 ]

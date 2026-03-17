@@ -1,18 +1,21 @@
 import { readItems } from '@directus/sdk'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Equipement, Pack } from '@/lib/directus'
 import { AddToCartButton } from '@/components/catalogue/AddToCartButton'
+import { CatalogueFilters } from '@/components/catalogue/CatalogueFilters'
 
 export const metadata: Metadata = {
   title: 'Catalogue – V-Sonus',
   description: 'Parcourez notre catalogue de matériel événementiel : sonorisation, éclairage, scènes et mapping en Suisse Romande.',
 }
 
-// Revalidation ISR toutes les 5 minutes
-export const revalidate = 300
+// Pas d'ISR : la page doit être rendue dynamiquement pour que les
+// searchParams soient toujours pris en compte (filtre catégorie).
+export const dynamic = 'force-dynamic'
 
 interface SearchParams {
   categorie?: string
@@ -48,14 +51,6 @@ export default async function CataloguePage({
     ).catch(() => [] as Pack[]),
   ])
 
-  const categories = [
-    { label: 'Tous', slug: undefined },
-    { label: 'Sonorisation', slug: 'sonorisation' },
-    { label: 'Éclairage', slug: 'eclairage' },
-    { label: 'Scènes', slug: 'scenes' },
-    { label: 'Mapping', slug: 'mapping' },
-  ]
-
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       <h1 className="text-4xl font-black uppercase tracking-widest text-white mb-2">
@@ -65,26 +60,10 @@ export default async function CataloguePage({
         Location de matériel événementiel professionnel · Suisse Romande
       </p>
 
-      {/* Filtres par catégorie */}
-      <div className="flex flex-wrap gap-2 mb-10">
-        {categories.map((cat) => {
-          const isActive = cat.slug === categorie || (!cat.slug && !categorie)
-          return (
-            <a
-              key={cat.label}
-              href={cat.slug ? `/catalogue?categorie=${cat.slug}` : '/catalogue'}
-              className={[
-                'px-4 py-2 text-xs font-bold uppercase tracking-widest border transition-all duration-150',
-                isActive
-                  ? 'bg-vsonus-red border-vsonus-red text-white'
-                  : 'bg-transparent border-gray-700 text-gray-400 hover:border-vsonus-red hover:text-white',
-              ].join(' ')}
-            >
-              {cat.label}
-            </a>
-          )
-        })}
-      </div>
+      {/* Filtres par catégorie — Client Component avec useSearchParams() */}
+      <Suspense fallback={<div className="h-10 mb-10" />}>
+        <CatalogueFilters />
+      </Suspense>
 
       {/* Section Packs */}
       {packs.length > 0 && (
