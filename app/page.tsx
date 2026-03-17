@@ -228,8 +228,8 @@ export default function HomePage() {
             <AnimateOnScroll>
               <div className="relative aspect-[4/5] w-full overflow-hidden border-2 border-vsonus-red">
                 <Image
-                  src="/images/im2.png"
-                  alt="V-Sonus en action"
+                  src="/images/expertise.jpeg"
+                  alt="V-Sonus en action – scène et éclairage"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
