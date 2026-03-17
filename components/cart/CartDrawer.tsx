@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useStore } from '@/lib/store'
@@ -19,7 +19,6 @@ const FALLBACK_MONTAGE   = { label: 'Montage / Démontage',      prix: 400 }
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const router = useRouter()
-  const drawerRef = useRef<HTMLDivElement>(null)
 
   const {
     cart,
@@ -56,17 +55,6 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   const totalHT = sousTotal + fraisAnnexes
 
-  // Fermeture sur clic en dehors du tiroir
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) {
-        onClose()
-      }
-    }
-    if (open) document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [open, onClose])
-
   // Bloquer le scroll du body quand le tiroir est ouvert
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
@@ -86,15 +74,15 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   return (
     <>
-      {/* Overlay */}
+      {/* Overlay — clic dessus ferme le tiroir */}
       <div
+        onClick={onClose}
         className={`fixed inset-0 bg-black/70 z-40 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         aria-hidden="true"
       />
 
       {/* Panneau tiroir */}
       <div
-        ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-label="Ma sélection"
