@@ -2,9 +2,12 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
+import { CgvModal } from '@/components/ui/CgvModal'
 import { soumettreReservation } from '@/app/actions/reservation'
+import { getCoefficientLabel } from '@/lib/pricing'
 import type { TarifAnnexe } from '@/lib/directus'
 
 interface CheckoutFormProps {
@@ -21,19 +24,25 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
     startDate,
     endDate,
     getNbJours,
+    getSousTotalBrut,
     getSousTotal,
+    getCoefficient,
     requiresTechnicien,
     requiresTransport,
     clearCart,
   } = useStore()
 
-  const nbJours = getNbJours()
-  const sousTotal = getSousTotal()
-  const besoinTech = requiresTechnicien()
+  const nbJours       = getNbJours()
+  const sousTotalBrut = getSousTotalBrut()
+  const sousTotal     = getSousTotal()      // brut × coefficient
+  const coefficient   = getCoefficient()
+  const besoinTech    = requiresTechnicien()
   const besoinTransport = requiresTransport()
 
+  const isSurDemande = coefficient === null && !!startDate && !!endDate
+
   const fraisTransport = tarifsAnnexes.find((t) => t.type === 'transport')
-  const fraisMontage = tarifsAnnexes.find((t) => t.type === 'montage')
+  const fraisMontage   = tarifsAnnexes.find((t) => t.type === 'montage')
 
   const totalFraisAnnexes =
     (besoinTransport && fraisTransport ? fraisTransport.prix : 0) +
@@ -42,6 +51,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
   const totalHT = sousTotal + totalFraisAnnexes
 
   const [cgvAccepted, setCgvAccepted] = useState(false)
+  const [cgvOpen, setCgvOpen] = useState(false)
 
   const [form, setForm] = useState({
     nom: '',
@@ -151,12 +161,22 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
             />
             <span className="text-xs text-gray-400 leading-relaxed">
               Je confirme avoir lu et accepté les{' '}
-              <a href="/conditions-generales" target="_blank" className="text-vsonus-red underline hover:no-underline">
+              <button
+                type="button"
+                onClick={() => setCgvOpen(true)}
+                className="text-vsonus-red underline hover:no-underline"
+              >
                 conditions générales
-              </a>{' '}
+              </button>{' '}
               de location. <span className="text-vsonus-red">*</span>
             </span>
           </label>
+
+          <CgvModal
+            open={cgvOpen}
+            onClose={() => setCgvOpen(false)}
+            onAccept={() => setCgvAccepted(true)}
+          />
         </div>
 
         {error && (
@@ -165,12 +185,20 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
           </div>
         )}
 
+        {isSurDemande && (
+          <div className="border border-yellow-600/50 bg-yellow-600/10 text-yellow-400 text-sm px-4 py-3 leading-relaxed">
+            Pour une location de plus de 5 jours, veuillez{' '}
+            <Link href="/contact" className="underline hover:text-yellow-300">nous contacter</Link>{' '}
+            pour obtenir un tarif personnalisé.
+          </div>
+        )}
+
         <Button
           type="submit"
           variant="primary"
           size="lg"
           fullWidth
-          disabled={isPending || !startDate || !endDate || !cgvAccepted}
+          disabled={isPending || !startDate || !endDate || !cgvAccepted || isSurDemande}
         >
           {isPending ? 'Envoi en cours…' : 'Confirmer la demande de devis'}
         </Button>
@@ -187,44 +215,59 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
             <span className="font-semibold text-white">{startDate}</span>
             {' → '}
             <span className="font-semibold text-white">{endDate}</span>
-            <span className="ml-2 text-xs">({nbJours} jour{nbJours > 1 ? 's' : ''})</span>
+            <span className="ml-2 text-xs">
+              ({nbJours} jour{nbJours > 1 ? 's' : ''}
+              {coefficient !== null && coefficient !== 1 && (
+                <span className="text-vsonus-red font-bold"> {getCoefficientLabel(nbJours)}</span>
+              )}
+              )
+            </span>
           </div>
         )}
 
         <ul className="space-y-2 divide-y divide-gray-800">
           {cart.map((item) => {
-            const prix =
-              item.type === 'equipement'
-                ? item.item.prix_journalier * nbJours
-                : item.item.prix_base
+            const prixUnitaire = item.type === 'equipement' ? item.item.prix_journalier : item.item.prix_base
             return (
               <li key={`${item.type}-${item.item.id}`} className="flex justify-between pt-2 text-sm">
                 <span className="text-gray-300">
                   {item.item.nom}
                   <span className="text-gray-600 ml-1">×{item.quantite}</span>
                 </span>
-                <span className="text-white font-semibold">{(prix * item.quantite).toFixed(2)} CHF</span>
+                <span className="text-white font-semibold">{(prixUnitaire * item.quantite).toFixed(2)} <span className="text-gray-600 text-xs">CHF/j</span></span>
               </li>
             )
           })}
         </ul>
 
-        {totalFraisAnnexes > 0 && (
-          <div className="border-t border-gray-800 pt-3 space-y-1">
-            {besoinTransport && fraisTransport && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">{fraisTransport.label}</span>
-                <span className="text-white">{fraisTransport.prix.toFixed(2)} CHF</span>
-              </div>
-            )}
-            {besoinTech && fraisMontage && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">{fraisMontage.label}</span>
-                <span className="text-white">{fraisMontage.prix.toFixed(2)} CHF</span>
-              </div>
-            )}
+        {/* Détail du calcul avec coefficient */}
+        <div className="border-t border-gray-800 pt-3 space-y-1.5 text-sm">
+          <div className="flex justify-between text-gray-400">
+            <span>Sous-total (1 j)</span>
+            <span>{sousTotalBrut.toFixed(2)} CHF</span>
           </div>
-        )}
+          {coefficient !== null && coefficient !== 1 && (
+            <div className="flex justify-between text-gray-400">
+              <span>
+                Coefficient {nbJours}j{' '}
+                <span className="text-vsonus-red font-bold">{getCoefficientLabel(nbJours)}</span>
+              </span>
+              <span className="text-white font-semibold">{sousTotal.toFixed(2)} CHF</span>
+            </div>
+          )}
+          {besoinTransport && fraisTransport && (
+            <div className="flex justify-between text-gray-400">
+              <span>{fraisTransport.label}</span>
+              <span className="text-white">{fraisTransport.prix.toFixed(2)} CHF</span>
+            </div>
+          )}
+          {besoinTech && fraisMontage && (
+            <div className="flex justify-between text-gray-400">
+              <span>{fraisMontage.label}</span>
+              <span className="text-white">{fraisMontage.prix.toFixed(2)} CHF</span>
+            </div>
+          )}
+        </div>
 
         <div className="border-t-2 border-vsonus-red pt-3 flex justify-between font-black text-white text-lg">
           <span>TOTAL HT</span>
