@@ -41,6 +41,8 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
 
   const totalHT = sousTotal + totalFraisAnnexes
 
+  const [cgvAccepted, setCgvAccepted] = useState(false)
+
   const [form, setForm] = useState({
     nom: '',
     email: '',
@@ -131,6 +133,32 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
           />
         </div>
 
+        {/* Mentions légales */}
+        <div className="space-y-3 border border-gray-800 p-4 bg-vsonus-dark/50">
+          <p className="text-xs text-gray-400 leading-relaxed">
+            <span className="text-yellow-500 font-semibold">Annulation gratuite</span> jusqu&apos;à 5 jours avant la date de l&apos;événement.
+          </p>
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Le locataire doit être <span className="text-white font-semibold">majeur (18 ans révolus)</span>.
+          </p>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              required
+              checked={cgvAccepted}
+              onChange={(e) => setCgvAccepted(e.target.checked)}
+              className="mt-0.5 accent-vsonus-red flex-shrink-0"
+            />
+            <span className="text-xs text-gray-400 leading-relaxed">
+              Je confirme avoir lu et accepté les{' '}
+              <a href="/conditions-generales" target="_blank" className="text-vsonus-red underline hover:no-underline">
+                conditions générales
+              </a>{' '}
+              de location. <span className="text-vsonus-red">*</span>
+            </span>
+          </label>
+        </div>
+
         {error && (
           <div className="border border-vsonus-red bg-vsonus-red/10 text-vsonus-red text-sm px-4 py-3">
             {error}
@@ -142,7 +170,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
           variant="primary"
           size="lg"
           fullWidth
-          disabled={isPending || !startDate || !endDate}
+          disabled={isPending || !startDate || !endDate || !cgvAccepted}
         >
           {isPending ? 'Envoi en cours…' : 'Confirmer la demande de devis'}
         </Button>

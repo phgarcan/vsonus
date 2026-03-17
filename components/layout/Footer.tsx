@@ -3,7 +3,7 @@ import Image from 'next/image'
 export function Footer() {
   return (
     <footer className="bg-vsonus-dark border-t-2 border-vsonus-red mt-16">
-      <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <Image
             src="/logo-vsonus.png"
@@ -34,6 +34,15 @@ export function Footer() {
           <ul className="space-y-2 text-sm text-gray-400">
             <li>Suisse Romande</li>
             <li><a href="mailto:info@v-sonus.ch" className="hover:text-white transition-colors">info@v-sonus.ch</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-widest text-vsonus-red mb-4">Légal</h3>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li><a href="/conditions-generales" className="hover:text-white transition-colors">Conditions générales</a></li>
+            <li><a href="/politique-de-confidentialite" className="hover:text-white transition-colors">Politique de confidentialité</a></li>
+            <li><a href="/mentions-legales" className="hover:text-white transition-colors">Mentions légales</a></li>
           </ul>
         </div>
       </div>

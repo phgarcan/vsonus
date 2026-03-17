@@ -41,6 +41,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const needsTech  = requiresTechnicien()
   const needsTrans = requiresTransport()
 
+  // Détecte si un équipement L-Acoustics ou de levage est dans le panier
+  const hasLevageOrLAcoustics = cart.some(
+    (i) => i.type === 'equipement' && (i.item as Equipement).technicien_obligatoire
+  )
+
   // Résoudre les tarifs depuis le store (Directus) ou fallback
   const tarifTransport = tarifsAnnexes.find((t) => t.type === 'transport') ?? FALLBACK_TRANSPORT
   const tarifMontage   = tarifsAnnexes.find((t) => t.type === 'montage')   ?? FALLBACK_MONTAGE
@@ -225,6 +230,18 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   />
                 </div>
               </div>
+
+              {/* Avertissement L-Acoustics / levage */}
+              {hasLevageOrLAcoustics && (
+                <div className="flex gap-2 border border-yellow-600/50 bg-yellow-600/10 p-3">
+                  <svg className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="square" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  </svg>
+                  <p className="text-xs text-yellow-400 leading-relaxed">
+                    Les enceintes L-Acoustics et le matériel de levage nécessitent obligatoirement la livraison et l&apos;installation par un technicien.
+                  </p>
+                </div>
+              )}
 
               {/* Frais annexes obligatoires */}
               {(needsTech || needsTrans) && (
