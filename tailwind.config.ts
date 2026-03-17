@@ -19,6 +19,21 @@ const config: Config = {
       boxShadow: {
         'glow-red': '0 0 12px 2px rgba(236, 28, 36, 0.5)',
         'glow-red-hover': '0 0 24px 6px rgba(236, 28, 36, 0.75)',
+        'card-hover': '0 8px 32px rgba(236, 28, 36, 0.18)',
+      },
+      keyframes: {
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(24px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'line-expand': {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
+        },
+      },
+      animation: {
+        'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
+        'line-expand': 'line-expand 0.5s ease-out forwards',
       },
       borderRadius: {
         DEFAULT: '0px',

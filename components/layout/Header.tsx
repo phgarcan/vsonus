@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Menu, X, ClipboardList, Phone, Mail, MapPin } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
@@ -10,9 +9,9 @@ import { useStore } from '@/lib/store'
 
 const NAV_LINKS = [
   { href: '/',            label: 'Accueil' },
-  { href: '/prestations', label: 'Prestations' },
+  { href: '/prestations', label: 'Packs' },
   { href: '/catalogue',   label: 'Catalogue' },
-  { href: '/galerie',     label: 'Galerie' },
+  { href: '/galerie',     label: 'Réalisations' },
   { href: '/a-propos',    label: 'À propos' },
   { href: '/contact',     label: 'Contact' },
 ]
@@ -42,20 +41,18 @@ export function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
-            <Image
-              src="/logo-vsonus.png"
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-vsonus.svg"
               alt="V-Sonus"
-              width={140}
-              height={48}
-              className="h-10 w-auto object-contain"
-              priority
+              className="h-11 w-auto"
             />
           </Link>
 
           {/* Navigation desktop */}
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/prestations" className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
-              Prestations
+              Packs
             </Link>
 
             {/* Catalogue — MegaMenu desktop */}
@@ -74,7 +71,7 @@ export function Header() {
               </button>
             </div>
 
-            <Link href="/galerie"   className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Galerie</Link>
+            <Link href="/galerie"   className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Réalisations</Link>
             <Link href="/a-propos"  className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">À propos</Link>
             <Link href="/contact"   className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Contact</Link>
           </nav>
@@ -120,7 +117,8 @@ export function Header() {
           {/* En-tête */}
           <div className="flex items-center justify-between px-6 h-16 border-b border-gray-900 flex-shrink-0">
             <Link href="/" onClick={() => setMobileOpen(false)}>
-              <Image src="/logo-vsonus.png" alt="V-Sonus" width={120} height={40} className="h-9 w-auto object-contain" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-vsonus.svg" alt="V-Sonus" className="h-9 w-auto" />
             </Link>
             <button
               onClick={() => setMobileOpen(false)}
