@@ -25,8 +25,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const prestation = PRESTATIONS.find((p) => p.slug === slug)
   if (!prestation) return {}
   return {
-    title: `${prestation.titre} – V-Sonus`,
-    description: `${prestation.intro} — ${prestation.descriptionComplete.slice(0, 140)}…`,
+    title: `${prestation.titre} – Location événementielle`,
+    description: `${prestation.intro} — ${prestation.descriptionComplete.slice(0, 120)}`,
+    openGraph: {
+      title: `${prestation.titre} | V-Sonus`,
+      description: prestation.intro,
+      url: `https://vsonus.ch/prestations/${slug}`,
+      images: [{ url: `https://vsonus.ch${prestation.image}`, alt: prestation.titre }],
+    },
+    alternates: { canonical: `https://vsonus.ch/prestations/${slug}` },
   }
 }
 

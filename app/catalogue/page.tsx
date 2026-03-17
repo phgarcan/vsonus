@@ -10,8 +10,14 @@ import { CatalogueFilters } from '@/components/catalogue/CatalogueFilters'
 import { ScrollToHash } from '@/components/catalogue/ScrollToHash'
 
 export const metadata: Metadata = {
-  title: 'Catalogue – V-Sonus',
-  description: 'Parcourez notre catalogue de matériel événementiel : sonorisation, éclairage, scènes et mapping en Suisse Romande.',
+  title: 'Catalogue Location Matériel Événementiel',
+  description: 'Louez du matériel événementiel pro en Suisse Romande : enceintes L-Acoustics, lyres, LED, consoles DJ Pioneer, scènes modulaires.',
+  openGraph: {
+    title: 'Catalogue Location Matériel Événementiel | V-Sonus',
+    description: 'Louez du matériel événementiel pro en Suisse Romande : sono, éclairage, scènes, DJ et mapping.',
+    url: 'https://vsonus.ch/catalogue',
+  },
+  alternates: { canonical: 'https://vsonus.ch/catalogue' },
 }
 
 // Pas d'ISR : la page doit être rendue dynamiquement pour que les

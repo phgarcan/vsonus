@@ -9,8 +9,14 @@ import { RealisationCard } from '@/components/galerie/RealisationCard'
 export const revalidate = 300
 
 export const metadata: Metadata = {
-  title: 'Réalisations – V-Sonus',
+  title: 'Nos Réalisations Événementielles',
   description: 'Découvrez les événements réalisés par V-Sonus : concerts, festivals, sonorisations et éclairages en Suisse Romande.',
+  openGraph: {
+    title: 'Nos Réalisations Événementielles | V-Sonus',
+    description: 'Galerie photo de nos événements : concerts, festivals, sonorisations et éclairages en Suisse Romande.',
+    url: 'https://vsonus.ch/galerie',
+  },
+  alternates: { canonical: 'https://vsonus.ch/galerie' },
 }
 
 const CATEGORIES = [

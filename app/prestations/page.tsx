@@ -5,9 +5,14 @@ import { PRESTATIONS } from './data'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 
 export const metadata: Metadata = {
-  title: 'Nos packs – V-Sonus',
-  description:
-    'Sonorisation L-Acoustics, éclairage, DJ, concerts, scènes et mapping. Découvrez toutes les prestations événementielles V-Sonus en Suisse Romande.',
+  title: 'Packs Location Sono, Lumière, Scène',
+  description: 'Packs tout-en-un pour vos événements : sonorisation L-Acoustics, éclairage, DJ, concerts, scènes et mapping dès 120 CHF en Suisse Romande.',
+  openGraph: {
+    title: 'Packs Location Sono, Lumière, Scène | V-Sonus',
+    description: 'Packs tout-en-un pour vos événements en Suisse Romande dès 120 CHF.',
+    url: 'https://vsonus.ch/prestations',
+  },
+  alternates: { canonical: 'https://vsonus.ch/prestations' },
 }
 
 export default function PrestationsPage() {
