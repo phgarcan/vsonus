@@ -230,6 +230,19 @@ async function main() {
   await addField('pages', { field: 'content',          type: 'json',   meta: { width: 'full', interface: 'list', note: 'Blocs de contenu (hero, texte, galerie, cta)', special: ['cast-json'] }, schema: {} })
 
   // -------------------------------------------------------------------------
+  // 8. messages_contact
+  // -------------------------------------------------------------------------
+  console.log('\n📦  Collection : messages_contact')
+  await createCol('messages_contact', [], { icon: 'mail', display_template: '{{nom}} – {{sujet}}' })
+  await addField('messages_contact', { field: 'nom',       type: 'string',   meta: { required: true, width: 'half' }, schema: { is_nullable: false } })
+  await addField('messages_contact', { field: 'email',     type: 'string',   meta: { required: true, width: 'half' }, schema: { is_nullable: false } })
+  await addField('messages_contact', { field: 'telephone', type: 'string',   meta: { width: 'half' }, schema: {} })
+  await addField('messages_contact', { field: 'sujet',     type: 'string',   meta: { width: 'half' }, schema: {} })
+  await addField('messages_contact', { field: 'message',   type: 'text',     meta: { required: true, width: 'full', interface: 'input-multiline' }, schema: { is_nullable: false } })
+  await addField('messages_contact', { field: 'date_envoi',type: 'datetime', meta: { width: 'half' }, schema: {} })
+  await addField('messages_contact', { field: 'lu',        type: 'boolean',  meta: { width: 'half' }, schema: { default_value: false } })
+
+  // -------------------------------------------------------------------------
   // Seed : données de démonstration
   // -------------------------------------------------------------------------
   console.log('\n🌱  Seed – données de démonstration\n')
