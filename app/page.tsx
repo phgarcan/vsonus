@@ -202,8 +202,8 @@ export default function HomePage() {
 
               <div className="grid grid-cols-2 gap-px bg-gray-800">
                 {VALEURS.map(({ label, desc, Icon }, i) => (
-                  <AnimateOnScroll key={label} delay={i * 100}>
-                    <div className="bg-vsonus-black p-6 flex flex-col gap-3">
+                  <AnimateOnScroll key={label} delay={i * 100} className="h-full">
+                    <div className="bg-vsonus-black p-6 flex flex-col gap-3 h-full">
                       <Icon className="w-7 h-7 text-vsonus-red" strokeWidth={1.5} />
                       <span className="text-sm font-bold uppercase tracking-widest text-white">
                         {label}
