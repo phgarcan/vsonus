@@ -101,6 +101,25 @@ export interface MessageContact {
   lu?: boolean
 }
 
+export interface RealisationFile {
+  id?: number
+  realisations_id?: number
+  directus_files_id: string
+  sort: number | null
+}
+
+export interface Realisation {
+  id: number
+  titre: string
+  description?: string
+  categorie?: string
+  date_evenement?: string
+  lieu?: string
+  image_principale?: string | null
+  images?: RealisationFile[] | null
+  publie: boolean
+}
+
 interface Schema {
   equipements: Equipement[]
   packs: Pack[]
@@ -110,6 +129,8 @@ interface Schema {
   reservation_lignes: ReservationLigne[]
   pages: Page[]
   messages_contact: MessageContact[]
+  realisations: Realisation[]
+  realisations_files: RealisationFile[]
 }
 
 // ---------------------------------------------------------------------------
