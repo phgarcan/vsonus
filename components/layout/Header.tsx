@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown, Headphones, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, Package, Plug, type LucideIcon } from 'lucide-react'
+import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown, Headphones, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { useStore } from '@/lib/store'
@@ -225,21 +225,18 @@ export function Header() {
                 onClick={() => setMobilePacksOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-6 py-4 text-white hover:text-vsonus-red transition-colors min-h-[56px]"
               >
-                <span className="flex items-center gap-3 text-xl font-black uppercase tracking-widest">
-                  <Package className="w-5 h-5 text-vsonus-red flex-shrink-0" strokeWidth={1.5} /> Nos Packs
-                </span>
+                <span className="text-xl font-black uppercase tracking-widest">Nos Packs</span>
                 <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${mobilePacksOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
               </button>
               {mobilePacksOpen && (
                 <div className="bg-black/40 border-t border-gray-900">
-                  {PACKS_ITEMS.map(({ icon: Icon, label, href }) => (
+                  {PACKS_ITEMS.map(({ label, href }) => (
                     <Link
                       key={href}
                       href={href}
                       onClick={closeAll}
-                      className="flex items-center gap-3 px-10 py-3.5 text-gray-300 hover:text-white transition-colors min-h-[44px]"
+                      className="flex items-center px-10 py-3.5 text-gray-300 hover:text-white transition-colors min-h-[44px]"
                     >
-                      <Icon className="w-4 h-4 text-vsonus-red flex-shrink-0" strokeWidth={1.5} />
                       <span className="text-sm font-bold uppercase tracking-widest">{label}</span>
                     </Link>
                   ))}
@@ -260,9 +257,7 @@ export function Header() {
                 onClick={() => setMobileMaterielOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-6 py-4 text-white hover:text-vsonus-red transition-colors min-h-[56px]"
               >
-                <span className="flex items-center gap-3 text-xl font-black uppercase tracking-widest">
-                  <Plug className="w-5 h-5 text-vsonus-red flex-shrink-0" strokeWidth={1.5} /> Location Matériel
-                </span>
+                <span className="text-xl font-black uppercase tracking-widest">Location Matériel</span>
                 <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${mobileMaterielOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
               </button>
               {mobileMaterielOpen && (
@@ -289,14 +284,14 @@ export function Header() {
             </div>
 
             {/* Liens directs */}
-            {DIRECT_LINKS.map(({ icon: Icon, label, href }) => (
+            {DIRECT_LINKS.map(({ label, href }) => (
               <Link
                 key={href}
                 href={href}
                 onClick={closeAll}
-                className="flex items-center gap-3 px-6 py-4 text-xl font-black uppercase tracking-widest text-white hover:text-vsonus-red transition-colors border-b border-gray-900 min-h-[56px]"
+                className="flex items-center px-6 py-4 text-xl font-black uppercase tracking-widest text-white hover:text-vsonus-red transition-colors border-b border-gray-900 min-h-[56px]"
               >
-                <Icon className="w-5 h-5 text-vsonus-red flex-shrink-0" strokeWidth={1.5} /> {label}
+                {label}
               </Link>
             ))}
 
