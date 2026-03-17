@@ -2,20 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown } from 'lucide-react'
+import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown, Headphones, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, Package, Plug, type LucideIcon } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { useStore } from '@/lib/store'
 
 // ─── Données de navigation ────────────────────────────────────────────────────
 
-const PACKS_ITEMS = [
-  { emoji: '🎧', label: 'Packs DJ & Soirées',    href: '/prestations/dj' },
-  { emoji: '🎤', label: 'Packs Concerts',         href: '/prestations/concerts' },
-  { emoji: '🔊', label: 'Packs Sonorisation',     href: '/prestations/sonorisation-l-acoustics' },
-  { emoji: '💡', label: 'Packs Éclairage',        href: '/prestations/eclairage' },
-  { emoji: '🏗️', label: 'Packs Scènes',           href: '/prestations/scenes' },
-  { emoji: '🎥', label: 'Pack Mapping',            href: '/prestations/mapping' },
+const PACKS_ITEMS: { icon: LucideIcon; label: string; href: string }[] = [
+  { icon: Headphones, label: 'Packs DJ & Soirées',    href: '/prestations/dj' },
+  { icon: Mic2,       label: 'Packs Concerts',         href: '/prestations/concerts' },
+  { icon: Volume2,    label: 'Packs Sonorisation',     href: '/prestations/sonorisation-l-acoustics' },
+  { icon: Lightbulb,  label: 'Packs Éclairage',        href: '/prestations/eclairage' },
+  { icon: Landmark,   label: 'Packs Scènes',           href: '/prestations/scenes' },
+  { icon: MonitorPlay,label: 'Pack Mapping',            href: '/prestations/mapping' },
 ]
 
 const MOBILE_MATERIEL = [
@@ -25,11 +25,11 @@ const MOBILE_MATERIEL = [
   { label: 'Vidéo & Mapping',    href: '/catalogue?categorie=mapping' },
 ]
 
-const DIRECT_LINKS = [
-  { emoji: '🛠️', label: 'Événementiel', href: '/gestion-evenementielle' },
-  { emoji: '📸', label: 'Réalisations',  href: '/galerie' },
-  { emoji: 'ℹ️',  label: 'À propos',     href: '/a-propos' },
-  { emoji: '✉️',  label: 'Contact',      href: '/contact' },
+const DIRECT_LINKS: { icon: LucideIcon; label: string; href: string }[] = [
+  { icon: Wrench,  label: 'Événementiel', href: '/gestion-evenementielle' },
+  { icon: Camera,  label: 'Réalisations',  href: '/galerie' },
+  { icon: Info,    label: 'À propos',     href: '/a-propos' },
+  { icon: Send,    label: 'Contact',      href: '/contact' },
 ]
 
 // ─── Composant ────────────────────────────────────────────────────────────────
@@ -93,14 +93,14 @@ export function Header() {
               {packsOpen && (
                 <div className="absolute top-full left-0 pt-3 z-50 min-w-[250px]">
                   <div className="bg-vsonus-dark border border-gray-800 border-t-2 border-t-vsonus-red shadow-glow-red py-1">
-                    {PACKS_ITEMS.map(({ emoji, label, href }) => (
+                    {PACKS_ITEMS.map(({ icon: Icon, label, href }) => (
                       <Link
                         key={href}
                         href={href}
                         className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-black/40 transition-colors min-h-[44px]"
                         onClick={() => setPacksOpen(false)}
                       >
-                        <span className="text-base leading-none w-5 text-center">{emoji}</span>
+                        <Icon className="w-4 h-4 text-vsonus-red flex-shrink-0" strokeWidth={1.5} />
                         <span className="font-bold uppercase tracking-wider text-xs">{label}</span>
                       </Link>
                     ))}
@@ -219,27 +219,27 @@ export function Header() {
           {/* Navigation accordéon */}
           <nav className="flex-1 overflow-y-auto">
 
-            {/* 📦 Nos Packs (accordéon) */}
+            {/* Nos Packs (accordéon) */}
             <div className="border-b border-gray-900">
               <button
                 onClick={() => setMobilePacksOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-6 py-4 text-white hover:text-vsonus-red transition-colors min-h-[56px]"
               >
                 <span className="flex items-center gap-3 text-xl font-black uppercase tracking-widest">
-                  <span>📦</span> Nos Packs
+                  <Package className="w-5 h-5 text-vsonus-red flex-shrink-0" strokeWidth={1.5} /> Nos Packs
                 </span>
                 <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${mobilePacksOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
               </button>
               {mobilePacksOpen && (
                 <div className="bg-black/40 border-t border-gray-900">
-                  {PACKS_ITEMS.map(({ emoji, label, href }) => (
+                  {PACKS_ITEMS.map(({ icon: Icon, label, href }) => (
                     <Link
                       key={href}
                       href={href}
                       onClick={closeAll}
                       className="flex items-center gap-3 px-10 py-3.5 text-gray-300 hover:text-white transition-colors min-h-[44px]"
                     >
-                      <span className="text-base w-5 text-center">{emoji}</span>
+                      <Icon className="w-4 h-4 text-vsonus-red flex-shrink-0" strokeWidth={1.5} />
                       <span className="text-sm font-bold uppercase tracking-widest">{label}</span>
                     </Link>
                   ))}
@@ -254,14 +254,14 @@ export function Header() {
               )}
             </div>
 
-            {/* 🔌 Location Matériel (accordéon) */}
+            {/* Location Matériel (accordéon) */}
             <div className="border-b border-gray-900">
               <button
                 onClick={() => setMobileMaterielOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-6 py-4 text-white hover:text-vsonus-red transition-colors min-h-[56px]"
               >
                 <span className="flex items-center gap-3 text-xl font-black uppercase tracking-widest">
-                  <span>🔌</span> Location Matériel
+                  <Plug className="w-5 h-5 text-vsonus-red flex-shrink-0" strokeWidth={1.5} /> Location Matériel
                 </span>
                 <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${mobileMaterielOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
               </button>
@@ -289,18 +289,18 @@ export function Header() {
             </div>
 
             {/* Liens directs */}
-            {DIRECT_LINKS.map(({ emoji, label, href }) => (
+            {DIRECT_LINKS.map(({ icon: Icon, label, href }) => (
               <Link
                 key={href}
                 href={href}
                 onClick={closeAll}
                 className="flex items-center gap-3 px-6 py-4 text-xl font-black uppercase tracking-widest text-white hover:text-vsonus-red transition-colors border-b border-gray-900 min-h-[56px]"
               >
-                <span>{emoji}</span> {label}
+                <Icon className="w-5 h-5 text-vsonus-red flex-shrink-0" strokeWidth={1.5} /> {label}
               </Link>
             ))}
 
-            {/* 📞 Appel rapide */}
+            {/* Appel rapide */}
             <div className="px-6 py-4 border-b border-gray-900">
               <a
                 href="tel:+41796512114"
