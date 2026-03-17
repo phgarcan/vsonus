@@ -14,10 +14,16 @@ export interface ClientData {
   nom: string
   email: string
   tel: string
+  // Adresse de l'événement (lieu de livraison)
   rue: string
   npa: string
   ville: string
   pays: string
+  // Adresse de facturation (si différente)
+  billing_rue?: string
+  billing_npa?: string
+  billing_ville?: string
+  billing_pays?: string
   notes?: string
 }
 
@@ -66,7 +72,9 @@ export async function soumettreReservation(
         email_client: clientData.email,
         tel_client: clientData.tel,
         adresse_evenement: `${clientData.rue}, ${clientData.npa} ${clientData.ville}, ${clientData.pays}`,
-        notes: clientData.notes ?? '',
+        notes: clientData.billing_rue
+          ? `Adresse de facturation : ${clientData.billing_rue}, ${clientData.billing_npa} ${clientData.billing_ville}, ${clientData.billing_pays}${clientData.notes ? '\n\n' + clientData.notes : ''}`
+          : (clientData.notes ?? ''),
         date_debut: startDate,
         date_fin: endDate,
         total_ht: totalHT,
@@ -164,9 +172,13 @@ async function sendEmails(data: {
         </td>
       </tr>
       <tr>
-        <td style="padding:6px 0;font-size:13px;color:#888;vertical-align:top;">Adresse event</td>
+        <td style="padding:6px 0;font-size:13px;color:#888;vertical-align:top;">Adresse événement</td>
         <td style="padding:6px 0;font-size:13px;color:#fff;">${clientData.rue}<br>${clientData.npa} ${clientData.ville}, ${clientData.pays}</td>
       </tr>
+      ${clientData.billing_rue ? `<tr>
+        <td style="padding:6px 0;font-size:13px;color:#888;vertical-align:top;">Adresse facturation</td>
+        <td style="padding:6px 0;font-size:13px;color:#fff;">${clientData.billing_rue}<br>${clientData.billing_npa} ${clientData.billing_ville}, ${clientData.billing_pays}</td>
+      </tr>` : ''}
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;">Dates</td>
         <td style="padding:6px 0;font-size:13px;color:#fff;">${startDate} → ${endDate} <span style="color:#888;">(${nbJours} jour${nbJours > 1 ? 's' : ''}</span>${coefficient !== 1 ? ` <span style="color:#EC1C24;font-weight:700;">${getCoefficientLabel(nbJours)}</span>` : ''}<span style="color:#888;">)</span></td>
@@ -215,9 +227,13 @@ async function sendEmails(data: {
         <td style="padding:5px 0;font-size:13px;color:#fff;">${startDate} → ${endDate} (${nbJours} jour${nbJours > 1 ? 's' : ''}${coefficient !== 1 ? ` <span style="color:#EC1C24;font-weight:700;">${getCoefficientLabel(nbJours)}</span>` : ''})</td>
       </tr>
       <tr>
-        <td style="padding:5px 0;font-size:13px;color:#888;vertical-align:top;">Lieu</td>
+        <td style="padding:5px 0;font-size:13px;color:#888;vertical-align:top;">Lieu événement</td>
         <td style="padding:5px 0;font-size:13px;color:#fff;">${clientData.rue}<br>${clientData.npa} ${clientData.ville}, ${clientData.pays}</td>
       </tr>
+      ${clientData.billing_rue ? `<tr>
+        <td style="padding:5px 0;font-size:13px;color:#888;vertical-align:top;">Facturation</td>
+        <td style="padding:5px 0;font-size:13px;color:#fff;">${clientData.billing_rue}<br>${clientData.billing_npa} ${clientData.billing_ville}, ${clientData.billing_pays}</td>
+      </tr>` : ''}
     </table>
 
     ${lignesTable(lignes)}

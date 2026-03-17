@@ -14,9 +14,11 @@ interface AddressAutocompleteProps {
   value: string
   onChange: (value: string) => void
   onPlaceSelect: (components: PlaceComponents) => void
+  /** Pays autorisés pour l'autocomplétion (défaut: Suisse uniquement) */
+  countries?: string[]
 }
 
-export function AddressAutocomplete({ value, onChange, onPlaceSelect }: AddressAutocompleteProps) {
+export function AddressAutocomplete({ value, onChange, onPlaceSelect, countries = ['ch'] }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
   // Stable ref to callback to avoid stale closures
@@ -29,7 +31,7 @@ export function AddressAutocomplete({ value, onChange, onPlaceSelect }: AddressA
 
     autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
       types: ['address'],
-      componentRestrictions: { country: ['ch'] },
+      componentRestrictions: { country: countries },
       fields: ['address_components'],
     })
 
