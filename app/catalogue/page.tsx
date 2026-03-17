@@ -7,6 +7,7 @@ import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Equipement, Pack } from '@/lib/directus'
 import { AddToCartButton } from '@/components/catalogue/AddToCartButton'
 import { CatalogueFilters } from '@/components/catalogue/CatalogueFilters'
+import { ScrollToHash } from '@/components/catalogue/ScrollToHash'
 
 export const metadata: Metadata = {
   title: 'Catalogue – V-Sonus',
@@ -60,6 +61,9 @@ export default async function CataloguePage({
         Location de matériel événementiel professionnel · Suisse Romande
       </p>
 
+      {/* Scroll auto vers la section si hash présent */}
+      <ScrollToHash />
+
       {/* Filtres par catégorie — Client Component avec useSearchParams() */}
       <Suspense fallback={<div className="h-10 mb-10" />}>
         <CatalogueFilters />
@@ -80,7 +84,7 @@ export default async function CataloguePage({
       )}
 
       {/* Section Équipements */}
-      <section>
+      <section id="materiel-unitaire">
         <h2 className="text-xl font-black uppercase tracking-widest text-vsonus-red mb-6 border-b-2 border-vsonus-red pb-2">
           Matériel unitaire
         </h2>
