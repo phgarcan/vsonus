@@ -2,38 +2,63 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, ClipboardList, Phone, Mail, MapPin } from 'lucide-react'
+import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { useStore } from '@/lib/store'
 
-const NAV_LINKS = [
-  { href: '/',                        label: 'Accueil' },
-  { href: '/prestations',             label: 'Packs' },
-  { href: '/gestion-evenementielle',  label: 'Événementiel' },
-  { href: '/catalogue',               label: 'Catalogue' },
-  { href: '/galerie',                 label: 'Réalisations' },
-  { href: '/a-propos',                label: 'À propos' },
-  { href: '/contact',                 label: 'Contact' },
+// ─── Données de navigation ────────────────────────────────────────────────────
+
+const PACKS_ITEMS = [
+  { emoji: '🎧', label: 'Packs DJ & Soirées',    href: '/prestations/dj' },
+  { emoji: '🎤', label: 'Packs Concerts',         href: '/prestations/concerts' },
+  { emoji: '🔊', label: 'Packs Sonorisation',     href: '/prestations/sonorisation-l-acoustics' },
+  { emoji: '💡', label: 'Packs Éclairage',        href: '/prestations/eclairage' },
+  { emoji: '🏗️', label: 'Packs Scènes',           href: '/prestations/scenes' },
+  { emoji: '🎥', label: 'Pack Mapping',            href: '/prestations/mapping' },
 ]
 
-export function Header() {
-  const [megaOpen, setMegaOpen]   = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [mounted, setMounted]     = useState(false)
+const MOBILE_MATERIEL = [
+  { label: 'Sonorisation',       href: '/catalogue?categorie=sonorisation' },
+  { label: 'Éclairage',          href: '/catalogue?categorie=eclairage' },
+  { label: 'Scènes & Structures', href: '/catalogue?categorie=scenes' },
+  { label: 'Vidéo & Mapping',    href: '/catalogue?categorie=mapping' },
+]
 
-  const cart        = useStore((s) => s.cart)
-  const drawerOpen  = useStore((s) => s.cartDrawerOpen)
-  const setDrawerOpen = useStore((s) => s.setCartDrawerOpen)
-  const cartCount   = cart.reduce((acc, i) => acc + i.quantite, 0)
+const DIRECT_LINKS = [
+  { emoji: '🛠️', label: 'Événementiel', href: '/gestion-evenementielle' },
+  { emoji: '📸', label: 'Réalisations',  href: '/galerie' },
+  { emoji: 'ℹ️',  label: 'À propos',     href: '/a-propos' },
+  { emoji: '✉️',  label: 'Contact',      href: '/contact' },
+]
+
+// ─── Composant ────────────────────────────────────────────────────────────────
+
+export function Header() {
+  const [packsOpen, setPacksOpen]           = useState(false)
+  const [megaOpen, setMegaOpen]             = useState(false)
+  const [mobileOpen, setMobileOpen]         = useState(false)
+  const [mobilePacksOpen, setMobilePacksOpen]       = useState(false)
+  const [mobileMaterielOpen, setMobileMaterielOpen] = useState(false)
+  const [mounted, setMounted]               = useState(false)
+
+  const cart           = useStore((s) => s.cart)
+  const drawerOpen     = useStore((s) => s.cartDrawerOpen)
+  const setDrawerOpen  = useStore((s) => s.setCartDrawerOpen)
+  const cartCount      = cart.reduce((acc, i) => acc + i.quantite, 0)
 
   useEffect(() => { setMounted(true) }, [])
 
-  // Bloque le scroll quand le menu mobile est ouvert
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [mobileOpen])
+
+  const closeAll = () => {
+    setMobileOpen(false)
+    setMobilePacksOpen(false)
+    setMobileMaterielOpen(false)
+  }
 
   return (
     <>
@@ -43,47 +68,89 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo-vsonus.svg"
-              alt="V-Sonus"
-              className="h-11 w-auto"
-            />
+            <img src="/logo-vsonus.svg" alt="V-Sonus" className="h-11 w-auto" />
           </Link>
 
-          {/* Navigation desktop */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/prestations" className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
-              Packs
-            </Link>
+          {/* ── Navigation desktop (lg+) ─────────────────────────────────── */}
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-6">
 
-            <Link href="/gestion-evenementielle" className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
-              Événementiel
-            </Link>
+            {/* PACKS — petit dropdown hover */}
+            <div
+              className="relative"
+              onMouseEnter={() => setPacksOpen(true)}
+              onMouseLeave={() => setPacksOpen(false)}
+            >
+              <button
+                className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+                aria-expanded={packsOpen}
+                aria-haspopup="true"
+              >
+                Packs
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${packsOpen ? 'rotate-180' : ''}`} strokeWidth={3} />
+              </button>
 
-            {/* Catalogue — MegaMenu desktop */}
+              {/* Dropdown */}
+              {packsOpen && (
+                <div className="absolute top-full left-0 pt-3 z-50 min-w-[250px]">
+                  <div className="bg-vsonus-dark border border-gray-800 border-t-2 border-t-vsonus-red shadow-glow-red py-1">
+                    {PACKS_ITEMS.map(({ emoji, label, href }) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        className="flex items-center gap-3 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-black/40 transition-colors min-h-[44px]"
+                        onClick={() => setPacksOpen(false)}
+                      >
+                        <span className="text-base leading-none w-5 text-center">{emoji}</span>
+                        <span className="font-bold uppercase tracking-wider text-xs">{label}</span>
+                      </Link>
+                    ))}
+                    <div className="h-px bg-vsonus-red/40 mx-4 my-1" />
+                    <Link
+                      href="/prestations"
+                      className="flex items-center justify-between px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-vsonus-red hover:text-white transition-colors min-h-[44px]"
+                      onClick={() => setPacksOpen(false)}
+                    >
+                      Voir tous les packs
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="square" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* LOCATION MATÉRIEL — mega menu */}
             <div className="relative">
               <button
                 onClick={() => setMegaOpen((v) => !v)}
                 onMouseEnter={() => setMegaOpen(true)}
-                className="flex items-center gap-1 text-sm font-bold uppercase tracking-widest text-white hover:text-vsonus-red transition-colors"
+                className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
                 aria-expanded={megaOpen}
                 aria-haspopup="true"
               >
-                Catalogue
-                <svg className={`w-3 h-3 transition-transform ${megaOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="square" strokeLinejoin="miter" d="M19 9l-7 7-7-7" />
-                </svg>
+                Location matériel
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${megaOpen ? 'rotate-180' : ''}`} strokeWidth={3} />
               </button>
             </div>
 
-            <Link href="/galerie"   className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Réalisations</Link>
-            <Link href="/a-propos"  className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">À propos</Link>
-            <Link href="/contact"   className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Contact</Link>
+            <Link href="/gestion-evenementielle" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+              Événementiel
+            </Link>
+            <Link href="/galerie" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+              Réalisations
+            </Link>
+            <Link href="/a-propos" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+              À propos
+            </Link>
+            <Link href="/contact" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+              Contact
+            </Link>
           </nav>
 
-          {/* Actions droite */}
+          {/* ── Actions droite ────────────────────────────────────────────── */}
           <div className="flex items-center gap-3">
-            {/* Bouton Ma liste */}
+            {/* Bouton MA LISTE */}
             <button
               onClick={() => setDrawerOpen(true)}
               className="relative flex items-center gap-2 bg-vsonus-dark border border-gray-700 px-3 sm:px-4 py-2 text-sm font-bold uppercase tracking-widest hover:border-vsonus-red hover:shadow-glow-red transition-all duration-200"
@@ -98,10 +165,10 @@ export function Header() {
               )}
             </button>
 
-            {/* Burger mobile */}
+            {/* Burger mobile (< lg) */}
             <button
               onClick={() => setMobileOpen(true)}
-              className="md:hidden flex items-center justify-center w-10 h-10 text-white hover:text-vsonus-red transition-colors"
+              className="lg:hidden flex items-center justify-center w-10 h-10 text-white hover:text-vsonus-red transition-colors"
               aria-label="Ouvrir le menu"
             >
               <Menu className="w-6 h-6" />
@@ -113,48 +180,141 @@ export function Header() {
         {megaOpen && <MegaMenu onClose={() => setMegaOpen(false)} />}
       </header>
 
-      {/* ── Menu mobile plein écran ───────────────────────────────────────── */}
+      {/* ── Menu mobile plein écran ───────────────────────────────────────────── */}
       {mobileOpen && (
         <div className="fixed inset-0 z-[60] bg-vsonus-black flex flex-col">
-          {/* Liseré rouge en haut */}
+          {/* Liseré rouge */}
           <div className="h-1 bg-vsonus-red flex-shrink-0" />
 
-          {/* En-tête */}
+          {/* En-tête : logo + MA LISTE + fermer */}
           <div className="flex items-center justify-between px-6 h-16 border-b border-gray-900 flex-shrink-0">
-            <Link href="/" onClick={() => setMobileOpen(false)}>
+            <Link href="/" onClick={closeAll}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-vsonus.svg" alt="V-Sonus" className="h-9 w-auto" />
             </Link>
-            <button
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center w-9 h-9 border border-gray-800 text-gray-400 hover:text-white hover:border-vsonus-red transition-colors"
-              aria-label="Fermer le menu"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {/* MA LISTE visible dans le menu mobile */}
+              <button
+                onClick={() => { setDrawerOpen(true); setMobileOpen(false) }}
+                className="relative flex items-center gap-2 bg-transparent border border-gray-800 px-3 py-2 text-sm font-bold uppercase tracking-widest hover:border-vsonus-red transition-all duration-200"
+                aria-label="Ouvrir ma sélection"
+              >
+                <ClipboardList className="w-5 h-5" strokeWidth={2} />
+                {mounted && cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-vsonus-red text-white text-xs font-bold w-5 h-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center w-10 h-10 border border-gray-800 text-gray-400 hover:text-white hover:border-vsonus-red transition-colors"
+                aria-label="Fermer le menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
-          {/* Liens de navigation */}
-          <nav className="flex flex-col flex-1 justify-center px-6 gap-0 overflow-y-auto">
-            {NAV_LINKS.map(({ href, label }) => (
+          {/* Navigation accordéon */}
+          <nav className="flex-1 overflow-y-auto">
+
+            {/* 📦 Nos Packs (accordéon) */}
+            <div className="border-b border-gray-900">
+              <button
+                onClick={() => setMobilePacksOpen((v) => !v)}
+                className="w-full flex items-center justify-between px-6 py-4 text-white hover:text-vsonus-red transition-colors min-h-[56px]"
+              >
+                <span className="flex items-center gap-3 text-xl font-black uppercase tracking-widest">
+                  <span>📦</span> Nos Packs
+                </span>
+                <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${mobilePacksOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+              </button>
+              {mobilePacksOpen && (
+                <div className="bg-black/40 border-t border-gray-900">
+                  {PACKS_ITEMS.map(({ emoji, label, href }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={closeAll}
+                      className="flex items-center gap-3 px-10 py-3.5 text-gray-300 hover:text-white transition-colors min-h-[44px]"
+                    >
+                      <span className="text-base w-5 text-center">{emoji}</span>
+                      <span className="text-sm font-bold uppercase tracking-widest">{label}</span>
+                    </Link>
+                  ))}
+                  <Link
+                    href="/prestations"
+                    onClick={closeAll}
+                    className="flex items-center gap-2 px-10 py-3.5 text-vsonus-red text-sm font-bold uppercase tracking-widest hover:text-white transition-colors min-h-[44px]"
+                  >
+                    Voir tous les packs →
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* 🔌 Location Matériel (accordéon) */}
+            <div className="border-b border-gray-900">
+              <button
+                onClick={() => setMobileMaterielOpen((v) => !v)}
+                className="w-full flex items-center justify-between px-6 py-4 text-white hover:text-vsonus-red transition-colors min-h-[56px]"
+              >
+                <span className="flex items-center gap-3 text-xl font-black uppercase tracking-widest">
+                  <span>🔌</span> Location Matériel
+                </span>
+                <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${mobileMaterielOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
+              </button>
+              {mobileMaterielOpen && (
+                <div className="bg-black/40 border-t border-gray-900">
+                  {MOBILE_MATERIEL.map(({ label, href }) => (
+                    <Link
+                      key={label}
+                      href={href}
+                      onClick={closeAll}
+                      className="flex items-center px-10 py-3.5 text-gray-300 hover:text-white transition-colors min-h-[44px]"
+                    >
+                      <span className="text-sm font-bold uppercase tracking-widest">{label}</span>
+                    </Link>
+                  ))}
+                  <Link
+                    href="/catalogue"
+                    onClick={closeAll}
+                    className="flex items-center gap-2 px-10 py-3.5 text-vsonus-red text-sm font-bold uppercase tracking-widest hover:text-white transition-colors min-h-[44px]"
+                  >
+                    Voir tout le catalogue →
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Liens directs */}
+            {DIRECT_LINKS.map(({ emoji, label, href }) => (
               <Link
                 key={href}
                 href={href}
-                onClick={() => setMobileOpen(false)}
-                className="text-2xl font-black uppercase tracking-widest text-white hover:text-vsonus-red transition-colors py-4 border-b border-gray-900"
+                onClick={closeAll}
+                className="flex items-center gap-3 px-6 py-4 text-xl font-black uppercase tracking-widest text-white hover:text-vsonus-red transition-colors border-b border-gray-900 min-h-[56px]"
               >
-                {label}
+                <span>{emoji}</span> {label}
               </Link>
             ))}
+
+            {/* 📞 Appel rapide */}
+            <div className="px-6 py-4 border-b border-gray-900">
+              <a
+                href="tel:+41796512114"
+                className="flex items-center justify-center gap-3 w-full bg-vsonus-dark border border-gray-700 py-4 text-white font-bold uppercase tracking-widest hover:border-vsonus-red transition-colors min-h-[56px]"
+              >
+                <Phone className="w-5 h-5 text-vsonus-red flex-shrink-0" strokeWidth={1.5} />
+                +41 79 651 21 14
+              </a>
+            </div>
           </nav>
 
           {/* Coordonnées + CTA bas */}
-          <div className="px-6 py-6 flex-shrink-0 space-y-5 border-t border-gray-900">
+          <div className="px-6 py-5 flex-shrink-0 space-y-4 border-t border-gray-900">
             <div className="space-y-2">
-              <a href="tel:+41796512114" className="flex items-center gap-3 text-sm text-gray-400 hover:text-white transition-colors">
-                <Phone className="w-4 h-4 text-vsonus-red flex-shrink-0" strokeWidth={1.5} />
-                +41 79 651 21 14
-              </a>
               <a href="mailto:info@vsonus.ch" className="flex items-center gap-3 text-sm text-gray-400 hover:text-white transition-colors">
                 <Mail className="w-4 h-4 text-vsonus-red flex-shrink-0" strokeWidth={1.5} />
                 info@vsonus.ch
@@ -166,7 +326,7 @@ export function Header() {
             </div>
             <Link
               href="/contact"
-              onClick={() => setMobileOpen(false)}
+              onClick={closeAll}
               className="flex items-center justify-center gap-2 w-full bg-vsonus-red text-white font-bold uppercase tracking-widest px-6 py-4 hover:bg-red-700 transition-colors"
             >
               Demander un devis
