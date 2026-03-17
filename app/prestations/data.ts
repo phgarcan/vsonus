@@ -9,6 +9,8 @@ export interface Prestation {
   categorieSlug: string
   Icon: LucideIcon
   packsLabel: string
+  image: string
+  animation: 'wave' | 'glow-pulse' | 'spin-slow' | 'gradient-x' | null
 }
 
 // Contenu extrait de wp-content-export.json > custom_post_types.prestations
@@ -23,6 +25,8 @@ export const PRESTATIONS: Prestation[] = [
     categorieSlug: 'sonorisation',
     Icon: Sliders,
     packsLabel: 'Packs Sonorisation',
+    image: '/images/packs/photo_2024-12-04-13.01.55.jpeg',
+    animation: 'wave',
   },
   {
     slug: 'eclairage',
@@ -34,6 +38,8 @@ export const PRESTATIONS: Prestation[] = [
     categorieSlug: 'eclairage',
     Icon: Lightbulb,
     packsLabel: 'Packs Éclairage',
+    image: '/images/packs/DSC01638.jpg',
+    animation: 'glow-pulse',
   },
   {
     slug: 'dj',
@@ -45,6 +51,8 @@ export const PRESTATIONS: Prestation[] = [
     categorieSlug: 'dj',
     Icon: Music2,
     packsLabel: 'Packs DJ',
+    image: '/images/packs/image-7.jpeg',
+    animation: 'spin-slow',
   },
   {
     slug: 'concerts',
@@ -56,6 +64,8 @@ export const PRESTATIONS: Prestation[] = [
     categorieSlug: 'concerts',
     Icon: Mic2,
     packsLabel: 'Packs Concert',
+    image: '/images/packs/compressed_DSC09742.jpg',
+    animation: null,
   },
   {
     slug: 'scenes',
@@ -67,6 +77,8 @@ export const PRESTATIONS: Prestation[] = [
     categorieSlug: 'scenes',
     Icon: MonitorPlay,
     packsLabel: 'Pack Scène',
+    image: '/images/packs/compressed_DSC09688.jpg',
+    animation: null,
   },
   {
     slug: 'mapping',
@@ -78,6 +90,8 @@ export const PRESTATIONS: Prestation[] = [
     categorieSlug: 'mapping',
     Icon: Projector,
     packsLabel: 'Pack Mapping',
+    image: '/images/packs/mapping.jpg',
+    animation: 'gradient-x',
   },
 ]
 
