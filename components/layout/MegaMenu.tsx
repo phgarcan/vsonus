@@ -6,33 +6,33 @@ const COLUMNS = [
   {
     heading: 'Sonorisation',
     items: [
-      { label: 'Enceintes L-Acoustics',   href: '/catalogue?categorie=sonorisation' },
-      { label: 'Subwoofers & Retours',     href: '/catalogue?categorie=sonorisation' },
-      { label: 'Consoles de mixage',       href: '/catalogue?categorie=sonorisation' },
-      { label: 'Équipement DJ (Pioneer)',  href: '/catalogue?categorie=dj' },
+      { label: 'Enceintes L-Acoustics',   href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
+      { label: 'Subwoofers & Retours',     href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
+      { label: 'Consoles de mixage',       href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
+      { label: 'Équipement DJ (Pioneer)',  href: '/catalogue?categorie=dj#materiel-unitaire' },
     ],
   },
   {
     heading: 'Éclairage',
     items: [
-      { label: 'Lyres (Moving Heads)',      href: '/catalogue?categorie=eclairage' },
-      { label: 'Projecteurs & Barres LED',  href: '/catalogue?categorie=eclairage' },
-      { label: 'Effets (Strob, UV)',        href: '/catalogue?categorie=eclairage' },
+      { label: 'Lyres (Moving Heads)',      href: '/catalogue?categorie=eclairage#materiel-unitaire' },
+      { label: 'Projecteurs & Barres LED',  href: '/catalogue?categorie=eclairage#materiel-unitaire' },
+      { label: 'Effets (Strob, UV)',        href: '/catalogue?categorie=eclairage#materiel-unitaire' },
     ],
   },
   {
     heading: 'Scènes & Structures',
     items: [
-      { label: 'Praticables & Podiums',    href: '/catalogue?categorie=scenes' },
-      { label: 'Structure Alu (Truss)',     href: '/catalogue?categorie=scenes' },
-      { label: 'Levage (Palans & Pieds)',   href: '/catalogue?categorie=scenes' },
+      { label: 'Praticables & Podiums',    href: '/catalogue?categorie=scenes#materiel-unitaire' },
+      { label: 'Structure Alu (Truss)',     href: '/catalogue?categorie=scenes#materiel-unitaire' },
+      { label: 'Levage (Palans & Pieds)',   href: '/catalogue?categorie=scenes#materiel-unitaire' },
     ],
   },
   {
     heading: 'Vidéo & Mapping',
     items: [
-      { label: 'Vidéoprojecteurs',         href: '/catalogue?categorie=mapping' },
-      { label: 'Câblage & Accessoires',    href: '/catalogue?categorie=mapping' },
+      { label: 'Vidéoprojecteurs',         href: '/catalogue?categorie=mapping#materiel-unitaire' },
+      { label: 'Câblage & Accessoires',    href: '/catalogue?categorie=mapping#materiel-unitaire' },
     ],
   },
 ]
@@ -51,7 +51,7 @@ export function MegaMenu({ onClose }: MegaMenuProps) {
         {COLUMNS.map((col) => (
           <div key={col.heading}>
             <Link
-              href={`/catalogue?categorie=${col.heading.toLowerCase().replace(/\s.*/, '')}`}
+              href={`/catalogue?categorie=${col.heading.toLowerCase().replace(/\s.*/, '')}#materiel-unitaire`}
               onClick={onClose}
               className="block text-vsonus-red font-bold uppercase tracking-widest text-xs mb-4 border-b border-vsonus-red pb-2 hover:text-white transition-colors"
             >
