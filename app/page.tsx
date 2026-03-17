@@ -43,7 +43,7 @@ export default function HomePage() {
   return (
     <main>
       {/* ── 1. HERO ──────────────────────────────────────────────────────────── */}
-      <section className="relative flex flex-col items-center justify-center min-h-[600px] text-center px-6 py-28 overflow-hidden bg-vsonus-black border-b-2 border-vsonus-red">
+      <section className="relative flex flex-col items-center justify-center min-h-[600px] text-center px-4 sm:px-6 py-28 overflow-hidden bg-vsonus-black border-b-2 border-vsonus-red">
         {/* Vidéo de fond */}
         <video
           autoPlay
@@ -63,7 +63,7 @@ export default function HomePage() {
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-vsonus-red mb-4">
             Des solutions clé en main pour tous
           </p>
-          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-widest text-white leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black uppercase tracking-widest text-white leading-tight">
             Vos événements
             <br />
             <span className="text-vsonus-red">réussis</span> et sans stress
@@ -72,7 +72,7 @@ export default function HomePage() {
             Sonorisation, éclairage, scène, mapping. Chaque pack sur-mesure permet une gestion en
             toute simplicité. Réservez en ligne ou demandez un devis personnalisé.
           </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
+          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
             <Link
               href="/catalogue"
               className="bg-vsonus-red text-white font-bold uppercase tracking-widest px-10 py-4 hover:shadow-glow-red-hover transition-shadow duration-200"

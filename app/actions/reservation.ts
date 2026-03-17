@@ -48,7 +48,7 @@ export async function soumettreReservation(
     return { success: false, error: 'Les dates de location sont obligatoires.' }
   }
   if (cartItems.length === 0) {
-    return { success: false, error: 'Le panier est vide.' }
+    return { success: false, error: 'La sélection est vide.' }
   }
 
   try {
