@@ -3,114 +3,160 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Menu, X, ListChecks } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { useStore } from '@/lib/store'
 
-export function Header() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const cart = useStore((s) => s.cart)
-  const drawerOpen = useStore((s) => s.cartDrawerOpen)
-  const setDrawerOpen = useStore((s) => s.setCartDrawerOpen)
-  const cartCount = cart.reduce((acc, i) => acc + i.quantite, 0)
+const NAV_LINKS = [
+  { href: '/',            label: 'Accueil' },
+  { href: '/prestations', label: 'Prestations' },
+  { href: '/catalogue',   label: 'Catalogue' },
+  { href: '/galerie',     label: 'Galerie' },
+  { href: '/a-propos',    label: 'À propos' },
+  { href: '/contact',     label: 'Contact' },
+]
 
-  // Évite le mismatch SSR/client dû au persist Zustand (localStorage)
+export function Header() {
+  const [megaOpen, setMegaOpen]   = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [mounted, setMounted]     = useState(false)
+
+  const cart        = useStore((s) => s.cart)
+  const drawerOpen  = useStore((s) => s.cartDrawerOpen)
+  const setDrawerOpen = useStore((s) => s.setCartDrawerOpen)
+  const cartCount   = cart.reduce((acc, i) => acc + i.quantite, 0)
+
   useEffect(() => { setMounted(true) }, [])
+
+  // Bloque le scroll quand le menu mobile est ouvert
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
 
   return (
     <>
-    <header className="sticky top-0 z-50 bg-vsonus-black border-b border-vsonus-dark">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link href="/" className="flex-shrink-0">
-          <Image
-            src="/logo-vsonus.png"
-            alt="V-Sonus"
-            width={140}
-            height={48}
-            className="h-10 w-auto object-contain"
-            priority
-          />
-        </Link>
+      <header className="sticky top-0 z-50 bg-vsonus-black border-b border-vsonus-dark">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
 
-        {/* Navigation principale */}
-        <nav className="flex items-center gap-6">
-          <Link
-            href="/prestations"
-            className="hidden md:block text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
-          >
-            Prestations
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0">
+            <Image
+              src="/logo-vsonus.png"
+              alt="V-Sonus"
+              width={140}
+              height={48}
+              className="h-10 w-auto object-contain"
+              priority
+            />
           </Link>
 
-          {/* Catalogue – ouvre le MegaMenu */}
-          <div className="relative">
-            <button
-              onClick={() => setMenuOpen((v) => !v)}
-              onMouseEnter={() => setMenuOpen(true)}
-              className="flex items-center gap-1 text-sm font-bold uppercase tracking-widest text-white hover:text-vsonus-red transition-colors"
-              aria-expanded={menuOpen}
-              aria-haspopup="true"
-            >
-              Catalogue
-              <svg
-                className={`w-3 h-3 transition-transform ${menuOpen ? 'rotate-180' : ''}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={3}
+          {/* Navigation desktop */}
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="/prestations" className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+              Prestations
+            </Link>
+
+            {/* Catalogue — MegaMenu desktop */}
+            <div className="relative">
+              <button
+                onClick={() => setMegaOpen((v) => !v)}
+                onMouseEnter={() => setMegaOpen(true)}
+                className="flex items-center gap-1 text-sm font-bold uppercase tracking-widest text-white hover:text-vsonus-red transition-colors"
+                aria-expanded={megaOpen}
+                aria-haspopup="true"
               >
-                <path strokeLinecap="square" strokeLinejoin="miter" d="M19 9l-7 7-7-7" />
-              </svg>
+                Catalogue
+                <svg className={`w-3 h-3 transition-transform ${megaOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="square" strokeLinejoin="miter" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+
+            <Link href="/galerie"   className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Galerie</Link>
+            <Link href="/a-propos"  className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">À propos</Link>
+            <Link href="/contact"   className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Contact</Link>
+          </nav>
+
+          {/* Actions droite */}
+          <div className="flex items-center gap-3">
+            {/* Bouton Ma liste */}
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="relative flex items-center gap-2 bg-vsonus-dark border border-gray-700 px-3 sm:px-4 py-2 text-sm font-bold uppercase tracking-widest hover:border-vsonus-red hover:shadow-glow-red transition-all duration-200"
+              aria-label="Ouvrir ma sélection"
+            >
+              <ListChecks className="w-5 h-5" strokeWidth={2} />
+              <span className="hidden sm:inline">Ma liste</span>
+              {mounted && cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-vsonus-red text-white text-xs font-bold w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Burger mobile */}
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="md:hidden flex items-center justify-center w-10 h-10 text-white hover:text-vsonus-red transition-colors"
+              aria-label="Ouvrir le menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* MegaMenu desktop */}
+        {megaOpen && <MegaMenu onClose={() => setMegaOpen(false)} />}
+      </header>
+
+      {/* ── Menu mobile plein écran ───────────────────────────────────────── */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[60] bg-vsonus-black flex flex-col">
+          {/* En-tête */}
+          <div className="flex items-center justify-between px-4 h-16 border-b border-vsonus-dark flex-shrink-0">
+            <Link href="/" onClick={() => setMobileOpen(false)}>
+              <Image src="/logo-vsonus.png" alt="V-Sonus" width={120} height={40} className="h-9 w-auto object-contain" />
+            </Link>
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center w-10 h-10 text-white hover:text-vsonus-red transition-colors"
+              aria-label="Fermer le menu"
+            >
+              <X className="w-6 h-6" />
             </button>
           </div>
 
-          <Link
-            href="/galerie"
-            className="hidden md:block text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
-          >
-            Galerie
-          </Link>
+          {/* Liens */}
+          <nav className="flex flex-col flex-1 justify-center px-8 gap-1">
+            {NAV_LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMobileOpen(false)}
+                className="text-2xl font-black uppercase tracking-widest text-white hover:text-vsonus-red transition-colors py-3 border-b border-gray-900"
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
 
-          <Link
-            href="/a-propos"
-            className="hidden md:block text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
-          >
-            À propos
-          </Link>
+          {/* CTA bas */}
+          <div className="px-8 py-8 flex-shrink-0">
+            <Link
+              href="/contact"
+              onClick={() => setMobileOpen(false)}
+              className="block w-full text-center bg-vsonus-red text-white font-bold uppercase tracking-widest px-6 py-4 hover:bg-red-700 transition-colors"
+            >
+              Demander un devis
+            </Link>
+          </div>
+        </div>
+      )}
 
-          <Link
-            href="/contact"
-            className="hidden md:block text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
-          >
-            Contact
-          </Link>
-        </nav>
-
-        {/* Bouton panier → ouvre le tiroir */}
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className="relative flex items-center gap-2 bg-vsonus-dark border border-gray-700 px-4 py-2 text-sm font-bold uppercase tracking-widest hover:border-vsonus-red hover:shadow-glow-red transition-all duration-200"
-          aria-label="Ouvrir ma sélection"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="square" strokeLinejoin="miter" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          <span className="hidden sm:inline">Sélection</span>
-          {mounted && cartCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-vsonus-red text-white text-xs font-bold w-5 h-5 flex items-center justify-center">
-              {cartCount}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Mega Menu */}
-      {menuOpen && <MegaMenu onClose={() => setMenuOpen(false)} />}
-    </header>
-
-    {/* Tiroir panier — monté en dehors du header pour couvrir toute la page */}
-    <CartDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      {/* Tiroir sélection */}
+      <CartDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </>
   )
 }
