@@ -32,8 +32,9 @@ export function Footer() {
         <div>
           <h3 className="text-xs font-bold uppercase tracking-widest text-vsonus-red mb-4">Contact</h3>
           <ul className="space-y-2 text-sm text-gray-400">
-            <li>Suisse Romande</li>
-            <li><a href="mailto:info@v-sonus.ch" className="hover:text-white transition-colors">info@v-sonus.ch</a></li>
+            <li>Rue des Bosquets 17<br />1800 Vevey, Suisse</li>
+            <li><a href="tel:+41796512114" className="hover:text-white transition-colors">+41 79 651 21 14</a></li>
+            <li><a href="mailto:info@vsonus.ch" className="hover:text-white transition-colors">info@vsonus.ch</a></li>
           </ul>
         </div>
 
