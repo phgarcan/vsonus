@@ -32,7 +32,14 @@ export function Header() {
 
         {/* Navigation principale */}
         <nav className="flex items-center gap-6">
-          {/* Bouton Catalogue – ouvre le MegaMenu */}
+          <Link
+            href="/prestations"
+            className="hidden md:block text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+          >
+            Prestations
+          </Link>
+
+          {/* Catalogue – ouvre le MegaMenu */}
           <div className="relative">
             <button
               onClick={() => setMenuOpen((v) => !v)}
@@ -55,17 +62,17 @@ export function Header() {
           </div>
 
           <Link
-            href="/catalogue"
-            className="hidden md:block text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
-          >
-            Tout voir
-          </Link>
-
-          <Link
             href="/galerie"
             className="hidden md:block text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
           >
             Galerie
+          </Link>
+
+          <Link
+            href="/a-propos"
+            className="hidden md:block text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+          >
+            À propos
           </Link>
 
           <Link
