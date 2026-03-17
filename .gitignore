@@ -41,4 +41,4 @@ Thumbs.db
 memory/
 
 # Large media assets (serve from CDN or WordPress)
-public/videos/
+# public/videos/ — vidéo hero commitée (3.8 MB)
