@@ -133,24 +133,14 @@ export function Header() {
 
           {/* Liens de navigation */}
           <nav className="flex flex-col flex-1 justify-center px-6 gap-0 overflow-y-auto">
-            {NAV_LINKS.map(({ href, label }, i) => (
+            {NAV_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setMobileOpen(false)}
-                className="group flex items-center justify-between py-4 border-b border-gray-900 hover:border-vsonus-red transition-colors"
+                className="text-2xl font-black uppercase tracking-widest text-white hover:text-vsonus-red transition-colors py-4 border-b border-gray-900"
               >
-                <div className="flex items-center gap-4">
-                  <span className="text-xs font-bold text-vsonus-red tabular-nums w-5">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <span className="text-xl font-black uppercase tracking-widest text-white group-hover:text-vsonus-red transition-colors">
-                    {label}
-                  </span>
-                </div>
-                <svg className="w-4 h-4 text-gray-700 group-hover:text-vsonus-red transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="square" d="M9 5l7 7-7 7" />
-                </svg>
+                {label}
               </Link>
             ))}
           </nav>
