@@ -1,20 +1,8 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-// ---------------------------------------------------------------------------
-// Transporter SMTP Infomaniak
-// ---------------------------------------------------------------------------
+const resend = new Resend(process.env.RESEND_API_KEY)
 
-function getTransporter() {
-  return nodemailer.createTransport({
-    host:   process.env.SMTP_HOST   ?? 'mail.infomaniak.com',
-    port:   Number(process.env.SMTP_PORT ?? 587),
-    secure: false, // STARTTLS sur 587
-    auth: {
-      user: process.env.SMTP_USER     ?? '',
-      pass: process.env.SMTP_PASSWORD ?? '',
-    },
-  })
-}
+const FROM = 'V-Sonus <devis@vsonus.ch>'
 
 // ---------------------------------------------------------------------------
 // Fonction générique
@@ -25,17 +13,17 @@ export async function sendEmail(opts: {
   subject: string
   html: string
 }): Promise<void> {
-  const transporter = getTransporter()
-  await transporter.sendMail({
-    from: `"V-Sonus" <${process.env.SMTP_USER ?? 'info@vsonus.ch'}>`,
+  const { error } = await resend.emails.send({
+    from:    FROM,
     to:      opts.to,
     subject: opts.subject,
     html:    opts.html,
   })
+  if (error) throw new Error(error.message)
 }
 
 // ---------------------------------------------------------------------------
-// Wrapper HTML de base — dark theme V-Sonus
+// Wrapper HTML — dark theme V-Sonus
 // ---------------------------------------------------------------------------
 
 export function emailLayout(title: string, body: string): string {
@@ -46,20 +34,17 @@ export function emailLayout(title: string, body: string): string {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#000;padding:32px 16px;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#231F20;border-top:3px solid #EC1C24;">
-        <!-- Logo -->
         <tr>
           <td style="padding:28px 32px 20px;border-bottom:1px solid #333;">
             <span style="font-size:22px;font-weight:900;letter-spacing:0.15em;color:#fff;text-transform:uppercase;">V-SONUS</span>
             <span style="font-size:11px;color:#EC1C24;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;margin-left:12px;">Événementiel</span>
           </td>
         </tr>
-        <!-- Corps -->
         <tr>
           <td style="padding:32px;">
             ${body}
           </td>
         </tr>
-        <!-- Pied -->
         <tr>
           <td style="padding:20px 32px;border-top:1px solid #333;font-size:11px;color:#666;line-height:1.6;">
             V-Sonus – Paul Villommet &nbsp;·&nbsp; Rue des Bosquets 17, 1800 Vevey<br>
@@ -76,7 +61,7 @@ export function emailLayout(title: string, body: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Helper : tableau de lignes de matériel
+// Helper : tableau matériel
 // ---------------------------------------------------------------------------
 
 export function lignesTable(lignes: Array<{ label: string; quantite: number; prix_total: number }>): string {
