@@ -2,26 +2,38 @@
 
 import Link from 'next/link'
 
-const categories = [
+const COLUMNS = [
   {
-    label: 'Sonorisation',
-    slug: 'sonorisation',
-    items: ['Enceintes L-Acoustics', 'Subwoofers', 'Microphones', 'Mixettes', 'Câblage'],
+    heading: 'Sonorisation',
+    items: [
+      { label: 'Enceintes L-Acoustics',   href: '/catalogue?categorie=sonorisation' },
+      { label: 'Subwoofers & Retours',     href: '/catalogue?categorie=sonorisation' },
+      { label: 'Consoles de mixage',       href: '/catalogue?categorie=sonorisation' },
+      { label: 'Équipement DJ (Pioneer)',  href: '/catalogue?categorie=dj' },
+    ],
   },
   {
-    label: 'Éclairage',
-    slug: 'eclairage',
-    items: ['Moving Heads', 'Barres LED', 'Stroboscopes', 'Hazer / Machine à brouillard', 'Contrôleurs DMX'],
+    heading: 'Éclairage',
+    items: [
+      { label: 'Lyres (Moving Heads)',      href: '/catalogue?categorie=eclairage' },
+      { label: 'Projecteurs & Barres LED',  href: '/catalogue?categorie=eclairage' },
+      { label: 'Effets (Strob, UV)',        href: '/catalogue?categorie=eclairage' },
+    ],
   },
   {
-    label: 'Scènes & Structures',
-    slug: 'scenes',
-    items: ['Scènes modulaires', 'Praticables', 'Palans & Élingues', 'Truss aluminium', 'Barrières de sécurité'],
+    heading: 'Scènes & Structures',
+    items: [
+      { label: 'Praticables & Podiums',    href: '/catalogue?categorie=scenes' },
+      { label: 'Structure Alu (Truss)',     href: '/catalogue?categorie=scenes' },
+      { label: 'Levage (Palans & Pieds)',   href: '/catalogue?categorie=levage' },
+    ],
   },
   {
-    label: 'Mapping & Vidéo',
-    slug: 'mapping',
-    items: ['Vidéoprojecteurs', 'Écrans LED', 'Médias serveurs', 'Câblage HDMI/SDI', 'Logiciels mapping'],
+    heading: 'Vidéo & Mapping',
+    items: [
+      { label: 'Vidéoprojecteurs',         href: '/catalogue?categorie=mapping' },
+      { label: 'Câblage & Accessoires',    href: '/catalogue?categorie=cablage' },
+    ],
   },
 ]
 
@@ -36,30 +48,46 @@ export function MegaMenu({ onClose }: MegaMenuProps) {
       onMouseLeave={onClose}
     >
       <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8">
-        {categories.map((cat) => (
-          <div key={cat.slug}>
+        {COLUMNS.map((col) => (
+          <div key={col.heading}>
             <Link
-              href={`/catalogue?categorie=${cat.slug}`}
+              href={`/catalogue?categorie=${col.heading.toLowerCase().replace(/\s.*/, '')}`}
               onClick={onClose}
-              className="block text-vsonus-red font-bold uppercase tracking-widest text-sm mb-3 border-b border-vsonus-red pb-2 hover:text-white transition-colors"
+              className="block text-vsonus-red font-bold uppercase tracking-widest text-xs mb-4 border-b border-vsonus-red pb-2 hover:text-white transition-colors"
             >
-              {cat.label}
+              {col.heading}
             </Link>
-            <ul className="space-y-1">
-              {cat.items.map((item) => (
-                <li key={item}>
+            <ul className="space-y-2">
+              {col.items.map((item) => (
+                <li key={item.label}>
                   <Link
-                    href={`/catalogue?categorie=${cat.slug}&q=${encodeURIComponent(item)}`}
+                    href={item.href}
                     onClick={onClose}
-                    className="block text-gray-400 text-sm hover:text-white transition-colors py-0.5"
+                    className="block text-gray-300 text-sm hover:text-white hover:underline transition-colors py-0.5"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
         ))}
+      </div>
+
+      {/* Barre du bas */}
+      <div className="border-t border-vsonus-red/40">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <Link
+            href="/catalogue"
+            onClick={onClose}
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-vsonus-red hover:text-white transition-colors"
+          >
+            Voir tout le catalogue
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="square" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
       </div>
     </div>
   )
