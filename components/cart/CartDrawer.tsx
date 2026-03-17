@@ -91,13 +91,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Ma sélection"
+        aria-label="Ma liste"
         className={`fixed top-0 right-0 h-full w-full max-w-md bg-vsonus-dark border-l-2 border-vsonus-red z-50 flex flex-col transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* En-tête du tiroir */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 flex-shrink-0">
           <h2 className="text-lg font-black uppercase tracking-widest text-white">
-            Ma sélection
+            Ma liste
             {cart.length > 0 && (
               <span className="ml-2 text-sm text-vsonus-red">({cart.reduce((a, i) => a + i.quantite, 0)} article{cart.reduce((a, i) => a + i.quantite, 0) > 1 ? 's' : ''})</span>
             )}
@@ -120,7 +120,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="text-5xl text-gray-700 mb-4">♪</div>
-              <p className="text-gray-500 text-sm">Votre sélection est vide.</p>
+              <p className="text-gray-500 text-sm">Votre liste est vide.</p>
               <button onClick={onClose} className="mt-4 text-vsonus-red text-sm hover:underline">
                 Parcourir le catalogue →
               </button>
@@ -284,7 +284,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               onClick={() => clearCart()}
               className="w-full text-xs text-gray-600 hover:text-vsonus-red transition-colors py-1"
             >
-              Vider la sélection
+              Vider la liste
             </button>
           </div>
         )}
