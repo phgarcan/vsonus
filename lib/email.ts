@@ -2,7 +2,7 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-const FROM = 'V-Sonus <devis@vsonus.ch>'
+const FROM = 'V-Sonus <info@vsonus.ch>'
 
 // ---------------------------------------------------------------------------
 // Fonction générique
