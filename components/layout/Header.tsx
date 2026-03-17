@@ -8,12 +8,13 @@ import { CartDrawer } from '@/components/cart/CartDrawer'
 import { useStore } from '@/lib/store'
 
 const NAV_LINKS = [
-  { href: '/',            label: 'Accueil' },
-  { href: '/prestations', label: 'Packs' },
-  { href: '/catalogue',   label: 'Catalogue' },
-  { href: '/galerie',     label: 'Réalisations' },
-  { href: '/a-propos',    label: 'À propos' },
-  { href: '/contact',     label: 'Contact' },
+  { href: '/',                        label: 'Accueil' },
+  { href: '/prestations',             label: 'Packs' },
+  { href: '/gestion-evenementielle',  label: 'Événementiel' },
+  { href: '/catalogue',               label: 'Catalogue' },
+  { href: '/galerie',                 label: 'Réalisations' },
+  { href: '/a-propos',                label: 'À propos' },
+  { href: '/contact',                 label: 'Contact' },
 ]
 
 export function Header() {
@@ -53,6 +54,10 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/prestations" className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
               Packs
+            </Link>
+
+            <Link href="/gestion-evenementielle" className="text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+              Événementiel
             </Link>
 
             {/* Catalogue — MegaMenu desktop */}

@@ -30,10 +30,30 @@ const config: Config = {
           '0%': { width: '0%' },
           '100%': { width: '100%' },
         },
+        'glow-pulse': {
+          '0%, 100%': { boxShadow: '0 0 4px 2px rgba(236, 28, 36, 0.2)' },
+          '50%': { boxShadow: '0 0 28px 8px rgba(236, 28, 36, 0.65)' },
+        },
+        'wave': {
+          '0%, 100%': { transform: 'scaleY(1)' },
+          '50%': { transform: 'scaleY(1.12)' },
+        },
+        'spin-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        'gradient-x': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
         'line-expand': 'line-expand 0.5s ease-out forwards',
+        'glow-pulse': 'glow-pulse 2.5s ease-in-out infinite',
+        'wave': 'wave 2s ease-in-out infinite',
+        'spin-slow': 'spin-slow 10s linear infinite',
+        'gradient-x': 'gradient-x 3s ease infinite',
       },
       borderRadius: {
         DEFAULT: '0px',
