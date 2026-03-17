@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
+import { DatePicker } from '@/components/ui/DatePicker'
 import { getImageUrl } from '@/lib/directus'
 import type { Equipement } from '@/lib/directus'
 
@@ -71,6 +72,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   }, [onClose])
 
   const today = new Date().toISOString().split('T')[0]
+
+  function handleStartDate(newStart: string) {
+    const newEnd = endDate && endDate >= newStart ? endDate : newStart
+    setDates(newStart, newEnd)
+  }
 
   return (
     <>
@@ -179,26 +185,17 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               </ul>
 
               {/* Dates de location */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-vsonus-red">
                   Dates de location
                 </h3>
 
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider">Début</label>
-                  <input
-                    type="date"
-                    value={startDate ?? ''}
-                    min={today}
-                    onChange={(e) => {
-                      const newStart = e.target.value
-                      // Si fin < début après le changement, aligner fin sur début
-                      const newEnd = endDate && endDate >= newStart ? endDate : newStart
-                      setDates(newStart, newEnd)
-                    }}
-                    className="w-full bg-vsonus-black border border-gray-700 text-white text-sm px-3 py-2 focus:outline-none focus:border-vsonus-red transition-colors"
-                  />
-                </div>
+                <DatePicker
+                  label="Début"
+                  value={startDate}
+                  min={today}
+                  onChange={handleStartDate}
+                />
 
                 {/* Compteur de jours entre les deux champs */}
                 {startDate && endDate && (
@@ -207,16 +204,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   </p>
                 )}
 
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider">Fin</label>
-                  <input
-                    type="date"
-                    value={endDate ?? ''}
-                    min={startDate ?? today}
-                    onChange={(e) => setDates(startDate ?? e.target.value, e.target.value)}
-                    className="w-full bg-vsonus-black border border-gray-700 text-white text-sm px-3 py-2 focus:outline-none focus:border-vsonus-red transition-colors"
-                  />
-                </div>
+                <DatePicker
+                  label="Fin"
+                  value={endDate}
+                  min={startDate ?? today}
+                  onChange={(d) => setDates(startDate ?? d, d)}
+                />
               </div>
 
               {/* Avertissement L-Acoustics / levage */}
