@@ -64,7 +64,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
     rue: '',
     npa: '',
     ville: '',
-    pays: 'Suisse',
+    pays: 'Suisse', // fixe — autocomplete restreint à la Suisse
     notes: '',
   })
 
@@ -108,9 +108,8 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
     )
   }
 
-  // NPA pattern selon le pays
-  const npaPattern = form.pays === 'France' ? '[0-9]{5}' : '[0-9]{4}'
-  const npaTitle   = form.pays === 'France' ? 'Code postal français (5 chiffres)' : 'Code postal suisse (4 chiffres)'
+  const npaPattern = '[0-9]{4}'
+  const npaTitle   = 'Code postal suisse (4 chiffres)'
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
@@ -188,18 +187,15 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
             </div>
           </div>
 
-          {/* Pays */}
+          {/* Pays — fixe Suisse */}
           <div>
-            <label className={labelCls}>Pays <span className="text-vsonus-red">*</span></label>
-            <select
-              name="pays"
-              value={form.pays}
-              onChange={handleChange}
-              className={inputCls + ' cursor-pointer'}
-            >
-              <option value="Suisse">Suisse</option>
-              <option value="France">France</option>
-            </select>
+            <label className={labelCls}>Pays</label>
+            <input
+              type="text"
+              value="Suisse"
+              readOnly
+              className={inputCls + ' cursor-default text-gray-500'}
+            />
           </div>
         </div>
 
