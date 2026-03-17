@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Equipement, Pack, TarifAnnexe } from './directus'
+import { getLocationCoefficient } from './pricing'
 
 // ---------------------------------------------------------------------------
 // Types du panier
@@ -48,7 +49,12 @@ interface StoreState {
 
   // --- Getters (dérivés) ---
   getNbJours: () => number
+  /** Somme brute : prix unitaire × quantite (sans coefficient de durée) */
+  getSousTotalBrut: () => number
+  /** Sous-total avec coefficient de durée appliqué (0 si 6+ jours → "sur demande") */
   getSousTotal: () => number
+  /** Coefficient de durée actuel (null = 6+ jours = sur demande) */
+  getCoefficient: () => number | null
   requiresTechnicien: () => boolean
   requiresTransport: () => boolean
 }
@@ -133,19 +139,30 @@ export const useStore = create<StoreState>()(
       },
 
       /**
-       * Sous-total matériel (hors frais annexes)
-       * = Σ (prix_journalier ou prix_base × quantite × nbJours)
+       * Sous-total brut : Σ (prix_unitaire × quantite) — sans coefficient de durée.
+       * Prix unitaire = prix_journalier (équipement) ou prix_base (pack) pour 1 jour.
        */
-      getSousTotal: () => {
-        const { cart } = get()
-        const nbJours = get().getNbJours()
-        return cart.reduce((acc, item) => {
-          const prix =
-            item.type === 'equipement'
-              ? item.item.prix_journalier * nbJours
-              : item.item.prix_base
+      getSousTotalBrut: () => {
+        return get().cart.reduce((acc, item) => {
+          const prix = item.type === 'equipement' ? item.item.prix_journalier : item.item.prix_base
           return acc + prix * item.quantite
         }, 0)
+      },
+
+      /**
+       * Sous-total avec coefficient de durée appliqué.
+       * Retourne 0 si 6+ jours (tarif sur demande — la UI bloque la validation).
+       */
+      getSousTotal: () => {
+        const brut = get().getSousTotalBrut()
+        const nbJours = get().getNbJours()
+        const coeff = getLocationCoefficient(nbJours)
+        return coeff !== null ? brut * coeff : 0
+      },
+
+      /** Coefficient de durée pour les dates actuelles (null = 6+ jours = sur demande) */
+      getCoefficient: () => {
+        return getLocationCoefficient(get().getNbJours())
       },
 
       /**

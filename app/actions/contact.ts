@@ -79,11 +79,40 @@ export async function envoyerMessage(input: ContactInput): Promise<ContactResult
     </p>
   `
 
-  sendEmail({
-    to: 'info@vsonus.ch',
-    subject: `📩 Nouveau message — ${input.sujet || input.nom}`,
-    html: emailLayout('Nouveau message de contact', body),
-  }).catch(err => console.error('[email] Erreur envoi email contact:', err))
+  const confirmationBody = `
+    <h2 style="margin:0 0 8px;font-size:20px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:0.1em;">
+      Message bien reçu !
+    </h2>
+    <p style="margin:0 0 24px;font-size:14px;color:#aaa;line-height:1.6;">
+      Bonjour <strong style="color:#fff;">${input.nom}</strong>,<br>
+      Nous avons bien reçu votre message et vous répondrons <strong style="color:#fff;">dans les 24 heures</strong>.
+    </p>
+
+    <p style="margin:0 0 8px;font-size:12px;color:#EC1C24;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;">Votre message</p>
+    <div style="background:#1a1718;border-left:3px solid #EC1C24;padding:16px;font-size:14px;color:#ccc;line-height:1.7;white-space:pre-wrap;">${input.message}</div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;background:#1a1718;padding:16px;border-left:3px solid #EC1C24;">
+      <tr><td>
+        <p style="margin:0 0 6px;font-size:12px;color:#EC1C24;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;">Besoin d'une réponse rapide ?</p>
+        <p style="margin:0;font-size:13px;color:#aaa;line-height:1.7;">
+          Appelez-nous directement au <a href="tel:+41796512114" style="color:#EC1C24;">+41 79 651 21 14</a>
+        </p>
+      </td></tr>
+    </table>
+  `
+
+  Promise.all([
+    sendEmail({
+      to: 'info@vsonus.ch',
+      subject: `Nouveau message — ${input.nom}`,
+      html: emailLayout('Nouveau message de contact', body),
+    }),
+    sendEmail({
+      to: input.email,
+      subject: 'V-Sonus — Votre message a bien été reçu',
+      html: emailLayout('Message reçu', confirmationBody),
+    }),
+  ]).catch(err => console.error('[email] Erreur envoi email contact:', err))
 
   return { success: true }
 }

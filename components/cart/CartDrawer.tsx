@@ -2,21 +2,23 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import Image from 'next/image'
+import { Trash2 } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
 import { DatePicker } from '@/components/ui/DatePicker'
 import { getImageUrl } from '@/lib/directus'
-import type { Equipement } from '@/lib/directus'
+import { getCoefficientLabel } from '@/lib/pricing'
+import type { Equipement, Pack } from '@/lib/directus'
 
 interface CartDrawerProps {
   open: boolean
   onClose: () => void
 }
 
-// Fallback si tarifs_annexes pas encore chargés depuis Directus
-const FALLBACK_TRANSPORT = { label: 'Transport – Fourgon',      prix: 200 }
-const FALLBACK_MONTAGE   = { label: 'Montage / Démontage',      prix: 400 }
+const FALLBACK_TRANSPORT = { label: 'Transport – Fourgon',  prix: 200 }
+const FALLBACK_MONTAGE   = { label: 'Montage / Démontage',  prix: 400 }
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const router = useRouter()
@@ -30,23 +32,23 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     updateQuantite,
     clearCart,
     getNbJours,
+    getSousTotalBrut,
     getSousTotal,
+    getCoefficient,
     requiresTechnicien,
     requiresTransport,
     tarifsAnnexes,
   } = useStore()
 
-  const nbJours    = getNbJours()
-  const sousTotal  = getSousTotal()
-  const needsTech  = requiresTechnicien()
-  const needsTrans = requiresTransport()
+  const nbJours      = getNbJours()
+  const sousTotalBrut = getSousTotalBrut()
+  const sousTotal    = getSousTotal()       // brut × coefficient
+  const coefficient  = getCoefficient()    // null = 6+ jours = sur demande
+  const needsTech    = requiresTechnicien()
+  const needsTrans   = requiresTransport()
 
-  // Détecte si un équipement L-Acoustics ou de levage est dans le panier
-  const hasLevageOrLAcoustics = cart.some(
-    (i) => i.type === 'equipement' && (i.item as Equipement).technicien_obligatoire
-  )
+  const hasPacks = cart.some((i) => i.type === 'pack')
 
-  // Résoudre les tarifs depuis le store (Directus) ou fallback
   const tarifTransport = tarifsAnnexes.find((t) => t.type === 'transport') ?? FALLBACK_TRANSPORT
   const tarifMontage   = tarifsAnnexes.find((t) => t.type === 'montage')   ?? FALLBACK_MONTAGE
 
@@ -56,17 +58,17 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   const totalHT = sousTotal + fraisAnnexes
 
-  // Bloquer le scroll du body quand le tiroir est ouvert
+  // Sur demande = 6+ jours
+  const isSurDemande = coefficient === null && (startDate !== null && endDate !== null)
+  const canCheckout  = !isSurDemande && !!startDate && !!endDate
+
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
 
-  // Fermeture sur touche Escape
   useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-    }
+    function handleKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
   }, [onClose])
@@ -80,33 +82,31 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   return (
     <>
-      {/* Overlay — clic dessus ferme le tiroir */}
+      {/* Overlay */}
       <div
         onClick={onClose}
         className={`fixed inset-0 bg-black/70 z-40 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         aria-hidden="true"
       />
 
-      {/* Panneau tiroir */}
+      {/* Panneau */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Ma liste"
         className={`fixed top-0 right-0 h-full w-full max-w-md bg-vsonus-dark border-l-2 border-vsonus-red z-50 flex flex-col transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        {/* En-tête du tiroir */}
+        {/* En-tête */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 flex-shrink-0">
           <h2 className="text-lg font-black uppercase tracking-widest text-white">
             Ma liste
             {cart.length > 0 && (
-              <span className="ml-2 text-sm text-vsonus-red">({cart.reduce((a, i) => a + i.quantite, 0)} article{cart.reduce((a, i) => a + i.quantite, 0) > 1 ? 's' : ''})</span>
+              <span className="ml-2 text-sm text-vsonus-red">
+                ({cart.reduce((a, i) => a + i.quantite, 0)} article{cart.reduce((a, i) => a + i.quantite, 0) > 1 ? 's' : ''})
+              </span>
             )}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-white transition-colors p-1"
-            aria-label="Fermer"
-          >
+          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors p-1" aria-label="Fermer">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="square" d="M6 6l12 12M6 18L18 6" />
             </svg>
@@ -121,21 +121,23 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="text-5xl text-gray-700 mb-4">♪</div>
               <p className="text-gray-500 text-sm">Votre liste est vide.</p>
-              <button onClick={onClose} className="mt-4 text-vsonus-red text-sm hover:underline">
+              <Link href="/catalogue" onClick={onClose} className="mt-4 text-vsonus-red text-sm hover:underline">
                 Parcourir le catalogue →
-              </button>
+              </Link>
             </div>
           ) : (
             <>
               {/* Liste articles */}
               <ul className="space-y-3">
                 {cart.map((item) => {
-                  const prix = item.type === 'equipement'
-                    ? item.item.prix_journalier * nbJours
-                    : item.item.prix_base
-                  const imgUrl = item.type === 'equipement'
-                    ? getImageUrl((item.item as Equipement).image, { width: '80', height: '80', fit: 'cover' })
+                  const isPack = item.type === 'pack'
+                  const imgId = isPack
+                    ? (item.item as Pack).image_principale
+                    : (item.item as Equipement).image
+                  const imgUrl = imgId
+                    ? getImageUrl(imgId, { width: '80', height: '80', fit: 'cover' })
                     : null
+                  const prixUnitaire = isPack ? item.item.prix_base : (item.item as Equipement).prix_journalier
 
                   return (
                     <li key={`${item.type}-${item.item.id}`} className="flex gap-3 border-b border-gray-800 pb-3">
@@ -152,11 +154,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-white truncate">{item.item.nom}</p>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          {item.type === 'equipement' ? item.item.prix_journalier : item.item.prix_base} CHF
-                          {item.type === 'equipement' && nbJours > 1 ? ` × ${nbJours}j` : ''}
+                          {prixUnitaire} CHF / jour
+                          {isPack && (
+                            <span className="ml-2 text-green-500 font-medium">✓ Livraison incluse</span>
+                          )}
                         </p>
 
-                        {/* Contrôle quantité */}
+                        {/* Quantité + supprimer */}
                         <div className="flex items-center gap-2 mt-2">
                           <button
                             onClick={() => updateQuantite(item.item.id, item.type, item.quantite - 1)}
@@ -169,15 +173,16 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           >+</button>
                           <button
                             onClick={() => removeFromCart(item.item.id, item.type)}
-                            className="ml-auto text-gray-700 hover:text-vsonus-red transition-colors text-xs"
-                          >Supprimer</button>
+                            className="ml-auto text-vsonus-red hover:text-red-400 transition-colors"
+                            aria-label="Supprimer"
+                          ><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </div>
 
-                      {/* Sous-total ligne */}
+                      {/* Prix unitaire × quantite (1 jour) */}
                       <div className="flex-shrink-0 text-right">
-                        <span className="text-sm font-bold text-white">{(prix * item.quantite).toFixed(2)}</span>
-                        <span className="block text-xs text-gray-600">CHF</span>
+                        <span className="text-sm font-bold text-white">{(prixUnitaire * item.quantite).toFixed(2)}</span>
+                        <span className="block text-xs text-gray-600">CHF/j</span>
                       </div>
                     </li>
                   )
@@ -190,17 +195,18 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   Dates de location
                 </h3>
 
-                <DatePicker
-                  label="Début"
-                  value={startDate}
-                  min={today}
-                  onChange={handleStartDate}
-                />
+                <DatePicker label="Début" value={startDate} min={today} onChange={handleStartDate} />
 
-                {/* Compteur de jours entre les deux champs */}
                 {startDate && endDate && (
                   <p className="text-xs text-center text-gray-500 py-0.5">
-                    ↕ <span className="text-white font-bold">{nbJours} jour{nbJours > 1 ? 's' : ''}</span> de location
+                    ↕{' '}
+                    <span className="text-white font-bold">{nbJours} jour{nbJours > 1 ? 's' : ''}</span>
+                    {coefficient !== null && nbJours > 1 && (
+                      <span className="text-vsonus-red font-bold ml-1">({getCoefficientLabel(nbJours)})</span>
+                    )}
+                    {isSurDemande && (
+                      <span className="text-yellow-500 font-bold ml-1">— Sur demande</span>
+                    )}
                   </p>
                 )}
 
@@ -212,8 +218,21 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 />
               </div>
 
+              {/* Avertissement 6+ jours */}
+              {isSurDemande && (
+                <div className="flex gap-2 border border-yellow-600/50 bg-yellow-600/10 p-3">
+                  <svg className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="square" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  </svg>
+                  <p className="text-xs text-yellow-400 leading-relaxed">
+                    Pour une location de plus de 5 jours, contactez-nous pour un tarif personnalisé.{' '}
+                    <Link href="/contact" onClick={onClose} className="underline hover:text-yellow-300">Nous contacter →</Link>
+                  </p>
+                </div>
+              )}
+
               {/* Avertissement L-Acoustics / levage */}
-              {hasLevageOrLAcoustics && (
+              {!isSurDemande && cart.some((i) => i.type === 'equipement' && (i.item as Equipement).technicien_obligatoire) && (
                 <div className="flex gap-2 border border-yellow-600/50 bg-yellow-600/10 p-3">
                   <svg className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="square" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -225,7 +244,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               )}
 
               {/* Frais annexes obligatoires */}
-              {(needsTech || needsTrans) && (
+              {!isSurDemande && (needsTech || needsTrans) && (
                 <div className="border border-vsonus-red p-3 space-y-2">
                   <p className="text-xs font-bold uppercase tracking-widest text-vsonus-red">Frais obligatoires</p>
                   {needsTrans && (
@@ -244,40 +263,77 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 </div>
               )}
 
-              {/* Total */}
-              <div className="space-y-1 border-t border-gray-800 pt-3">
-                <div className="flex justify-between text-sm text-gray-400">
-                  <span>Sous-total matériel</span>
-                  <span>{sousTotal.toFixed(2)} CHF</span>
+              {/* Pack : livraison incluse */}
+              {hasPacks && (
+                <div className="flex items-start gap-2 text-xs text-green-500/80 border border-green-800/40 bg-green-900/10 p-3">
+                  <svg className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="square" strokeLinejoin="miter" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Livraison et installation incluses dans le prix des packs.</span>
                 </div>
-                {fraisAnnexes > 0 && (
+              )}
+
+              {/* Détail tarifaire */}
+              {!isSurDemande && (
+                <div className="space-y-1.5 border-t border-gray-800 pt-3">
                   <div className="flex justify-between text-sm text-gray-400">
-                    <span>Frais annexes (estimatif)</span>
-                    <span>{fraisAnnexes.toFixed(2)} CHF</span>
+                    <span>Sous-total matériel (1 j)</span>
+                    <span>{sousTotalBrut.toFixed(2)} CHF</span>
                   </div>
-                )}
-                <div className="flex justify-between font-black text-white text-lg pt-2 border-t border-gray-800 mt-1">
-                  <span>TOTAL HT</span>
-                  <span className="text-vsonus-red">{totalHT.toFixed(2)} CHF</span>
+                  {coefficient !== null && coefficient !== 1 && (
+                    <div className="flex justify-between text-sm text-gray-400">
+                      <span>
+                        Coefficient {nbJours} jour{nbJours > 1 ? 's' : ''}
+                        <span className="text-vsonus-red font-bold ml-1">{getCoefficientLabel(nbJours)}</span>
+                      </span>
+                      <span className="text-white font-semibold">{sousTotal.toFixed(2)} CHF</span>
+                    </div>
+                  )}
+                  {fraisAnnexes > 0 && (
+                    <div className="flex justify-between text-sm text-gray-400">
+                      <span>Frais annexes (forfait)</span>
+                      <span>{fraisAnnexes.toFixed(2)} CHF</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-black text-white text-lg pt-2 border-t border-gray-800 mt-1">
+                    <span>TOTAL HT</span>
+                    <span className="text-vsonus-red">{totalHT.toFixed(2)} CHF</span>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {isSurDemande && (
+                <div className="border-t border-gray-800 pt-3 text-center text-sm text-yellow-500 font-semibold">
+                  Tarif sur demande pour {nbJours} jours
+                </div>
+              )}
             </>
           )}
         </div>
 
-        {/* Pied du tiroir — actions */}
+        {/* Pied du tiroir */}
         {cart.length > 0 && (
           <div className="flex-shrink-0 px-6 py-4 border-t border-gray-800 space-y-3">
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              disabled={!startDate || !endDate}
-              onClick={() => { onClose(); router.push('/checkout') }}
-            >
-              Valider la pré-réservation →
-            </Button>
-            {(!startDate || !endDate) && (
+            {isSurDemande ? (
+              <Link
+                href="/contact"
+                onClick={onClose}
+                className="flex items-center justify-center w-full bg-yellow-600 text-white font-bold uppercase tracking-widest text-sm py-3 hover:bg-yellow-700 transition-colors"
+              >
+                Demander un tarif personnalisé →
+              </Link>
+            ) : (
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                disabled={!canCheckout}
+                onClick={() => { onClose(); router.push('/checkout') }}
+              >
+                Valider la pré-réservation →
+              </Button>
+            )}
+            {!isSurDemande && !canCheckout && (
               <p className="text-xs text-center text-gray-600">Sélectionnez vos dates pour continuer.</p>
             )}
             <button

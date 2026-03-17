@@ -3,6 +3,7 @@ import { Resend } from 'resend'
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 const FROM = 'V-Sonus <info@vsonus.ch>'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vsonus.ch'
 
 // ---------------------------------------------------------------------------
 // Fonction générique
@@ -35,9 +36,8 @@ export function emailLayout(title: string, body: string): string {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#231F20;border-top:3px solid #EC1C24;">
         <tr>
-          <td style="padding:28px 32px 20px;border-bottom:1px solid #333;">
-            <span style="font-size:22px;font-weight:900;letter-spacing:0.15em;color:#fff;text-transform:uppercase;">V-SONUS</span>
-            <span style="font-size:11px;color:#EC1C24;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;margin-left:12px;">Événementiel</span>
+          <td style="padding:24px 32px 20px;border-bottom:1px solid #333;">
+            <img src="${SITE_URL}/logo-vsonus.png" alt="V-Sonus" width="140" height="48" style="height:40px;width:auto;display:block;" />
           </td>
         </tr>
         <tr>
