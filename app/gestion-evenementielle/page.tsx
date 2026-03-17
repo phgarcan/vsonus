@@ -10,9 +10,15 @@ import type { Realisation } from '@/lib/directus'
 export const revalidate = 300
 
 export const metadata: Metadata = {
-  title: 'Gestion événementielle Suisse Romande | V-Sonus',
+  title: 'Gestion Événementielle Suisse Romande',
   description:
-    'V-Sonus gère tous les aspects techniques de votre événement en Suisse Romande : conseil, sonorisation L-Acoustics, éclairage, scène, coordination. De l\'idée à la réalisation, on s\'occupe de tout.',
+    'V-Sonus gère tous les aspects techniques de votre événement : conseil, sono L-Acoustics, éclairage, scène, coordination.',
+  openGraph: {
+    title: 'Gestion Événementielle Suisse Romande | V-Sonus',
+    description: 'De l\'idée à la réalisation : conseil, sonorisation, éclairage, scène et coordination technique.',
+    url: 'https://vsonus.ch/gestion-evenementielle',
+  },
+  alternates: { canonical: 'https://vsonus.ch/gestion-evenementielle' },
 }
 
 // ─── Données statiques ─────────────────────────────────────────────────────────

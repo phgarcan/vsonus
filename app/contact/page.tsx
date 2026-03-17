@@ -5,8 +5,14 @@ import { Mail, Phone, MapPin, Clock } from 'lucide-react'
 import { ContactForm } from './ContactForm'
 
 export const metadata: Metadata = {
-  title: 'Contact – V-Sonus',
-  description: "Contactez l'équipe V-Sonus pour toute demande de location de matériel son, lumière et scène en Suisse Romande.",
+  title: 'Contact – Devis Gratuit',
+  description: "Contactez V-Sonus pour un devis gratuit : location sono, éclairage et scènes en Suisse Romande. Réponse sous 24h.",
+  openGraph: {
+    title: 'Contact | V-Sonus – Devis Gratuit',
+    description: 'Demandez un devis gratuit pour la location de matériel événementiel en Suisse Romande.',
+    url: 'https://vsonus.ch/contact',
+  },
+  alternates: { canonical: 'https://vsonus.ch/contact' },
 }
 
 const INFOS = [

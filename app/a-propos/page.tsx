@@ -1,5 +1,17 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Sliders, Zap, Shield, Users, CheckCircle2, Quote } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'À propos de V-Sonus – Location Événementielle Vaud',
+  description: 'Découvrez V-Sonus, entreprise de location de matériel événementiel basée à Vevey. Notre équipe, nos valeurs et notre engagement.',
+  openGraph: {
+    title: 'À propos de V-Sonus | Location Événementielle Vaud',
+    description: 'Notre équipe, nos valeurs et notre engagement pour vos événements en Suisse Romande.',
+    url: 'https://vsonus.ch/a-propos',
+  },
+  alternates: { canonical: 'https://vsonus.ch/a-propos' },
+}
 
 const VALEURS = [
   {

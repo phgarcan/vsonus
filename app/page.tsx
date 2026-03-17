@@ -1,9 +1,21 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star } from 'lucide-react'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { HeroVideo } from '@/components/home/HeroVideo'
 import { Sliders, Zap, Shield, Users } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Location Sonorisation & Éclairage Vaud | V-Sonus Événementiel',
+  description: 'Location de matériel événementiel en Suisse Romande : sono L-Acoustics, éclairage, scènes, DJ et mapping. Devis gratuit, basé à Vevey.',
+  openGraph: {
+    title: 'Location Sonorisation & Éclairage Vaud | V-Sonus Événementiel',
+    description: 'Location de matériel événementiel en Suisse Romande : sono L-Acoustics, éclairage, scènes, DJ et mapping.',
+    url: 'https://vsonus.ch',
+  },
+  alternates: { canonical: 'https://vsonus.ch' },
+}
 
 // ─── Données statiques ────────────────────────────────────────────────────────
 

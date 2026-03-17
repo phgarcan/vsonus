@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Conditions générales de location – V-Sonus',
+  title: 'Conditions générales de location',
   description: 'Conditions générales de location de matériel événementiel V-Sonus, Vevey, Suisse.',
+  robots: { index: false, follow: true },
+  alternates: { canonical: 'https://vsonus.ch/conditions-generales' },
 }
 
 export default function ConditionsGeneralesPage() {

@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Mentions légales – V-Sonus',
+  title: 'Mentions légales',
   description: 'Mentions légales du site V-Sonus, location de matériel événementiel en Suisse Romande.',
+  robots: { index: false, follow: true },
+  alternates: { canonical: 'https://vsonus.ch/mentions-legales' },
 }
 
 export default function MentionsLegalesPage() {

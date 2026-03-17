@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Politique de confidentialité – V-Sonus',
+  title: 'Politique de confidentialité',
   description: 'Politique de confidentialité et traitement des données personnelles – V-Sonus, conforme à la nLPD (RS 235.1).',
+  robots: { index: false, follow: true },
+  alternates: { canonical: 'https://vsonus.ch/politique-de-confidentialite' },
 }
 
 export default function PolitiqueConfidentialitePage() {
