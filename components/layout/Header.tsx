@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu, X, ClipboardList } from 'lucide-react'
+import { Menu, X, ClipboardList, Phone, Mail, MapPin } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { useStore } from '@/lib/store'
@@ -114,47 +114,72 @@ export function Header() {
       {/* ── Menu mobile plein écran ───────────────────────────────────────── */}
       {mobileOpen && (
         <div className="fixed inset-0 z-[60] bg-vsonus-black flex flex-col">
+          {/* Liseré rouge en haut */}
+          <div className="h-1 bg-vsonus-red flex-shrink-0" />
+
           {/* En-tête */}
-          <div className="flex items-center justify-between px-4 h-16 border-b border-vsonus-dark flex-shrink-0">
+          <div className="flex items-center justify-between px-6 h-16 border-b border-gray-900 flex-shrink-0">
             <Link href="/" onClick={() => setMobileOpen(false)}>
               <Image src="/logo-vsonus.png" alt="V-Sonus" width={120} height={40} className="h-9 w-auto object-contain" />
             </Link>
             <button
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center w-10 h-10 text-white hover:text-vsonus-red transition-colors"
+              className="flex items-center justify-center w-9 h-9 border border-gray-800 text-gray-400 hover:text-white hover:border-vsonus-red transition-colors"
               aria-label="Fermer le menu"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Liens */}
-          <nav className="flex flex-col flex-1 justify-center px-8 gap-1">
-            {NAV_LINKS.map(({ href, label }) => (
+          {/* Liens de navigation */}
+          <nav className="flex flex-col flex-1 justify-center px-6 gap-0 overflow-y-auto">
+            {NAV_LINKS.map(({ href, label }, i) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setMobileOpen(false)}
-                className="text-2xl font-black uppercase tracking-widest text-white hover:text-vsonus-red transition-colors py-3 border-b border-gray-900"
+                className="group flex items-center justify-between py-4 border-b border-gray-900 hover:border-vsonus-red transition-colors"
               >
-                {label}
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-bold text-vsonus-red tabular-nums w-5">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="text-xl font-black uppercase tracking-widest text-white group-hover:text-vsonus-red transition-colors">
+                    {label}
+                  </span>
+                </div>
+                <svg className="w-4 h-4 text-gray-700 group-hover:text-vsonus-red transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="square" d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             ))}
           </nav>
 
           {/* Coordonnées + CTA bas */}
-          <div className="px-8 py-8 flex-shrink-0 space-y-4">
-            <div className="space-y-1 text-sm text-gray-400">
-              <a href="tel:+41796512114" className="block hover:text-white transition-colors">+41 79 651 21 14</a>
-              <a href="mailto:info@vsonus.ch" className="block hover:text-white transition-colors">info@vsonus.ch</a>
-              <p>Rue des Bosquets 17, 1800 Vevey</p>
+          <div className="px-6 py-6 flex-shrink-0 space-y-5 border-t border-gray-900">
+            <div className="space-y-2">
+              <a href="tel:+41796512114" className="flex items-center gap-3 text-sm text-gray-400 hover:text-white transition-colors">
+                <Phone className="w-4 h-4 text-vsonus-red flex-shrink-0" strokeWidth={1.5} />
+                +41 79 651 21 14
+              </a>
+              <a href="mailto:info@vsonus.ch" className="flex items-center gap-3 text-sm text-gray-400 hover:text-white transition-colors">
+                <Mail className="w-4 h-4 text-vsonus-red flex-shrink-0" strokeWidth={1.5} />
+                info@vsonus.ch
+              </a>
+              <div className="flex items-center gap-3 text-sm text-gray-400">
+                <MapPin className="w-4 h-4 text-vsonus-red flex-shrink-0" strokeWidth={1.5} />
+                Rue des Bosquets 17, 1800 Vevey
+              </div>
             </div>
             <Link
               href="/contact"
               onClick={() => setMobileOpen(false)}
-              className="block w-full text-center bg-vsonus-red text-white font-bold uppercase tracking-widest px-6 py-4 hover:bg-red-700 transition-colors"
+              className="flex items-center justify-center gap-2 w-full bg-vsonus-red text-white font-bold uppercase tracking-widest px-6 py-4 hover:bg-red-700 transition-colors"
             >
               Demander un devis
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="square" d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
           </div>
         </div>
