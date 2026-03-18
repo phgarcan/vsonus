@@ -203,12 +203,16 @@ export default function ChatBot() {
   const messages = chatMessages
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showTyping, setShowTyping] = useState(false)
+  const [isWriting, setIsWriting] = useState(false)
+  const [openCount, setOpenCount] = useState(0) // triggers fade-in on reopen
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS)
   const [showSuggestions, setShowSuggestions] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
   const [showPulse, setShowPulse] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Init : welcome message si conversation vide
   useEffect(() => {
@@ -252,9 +256,12 @@ export default function ChatBot() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Stop pulse after first open
+  // Stop pulse + increment openCount for fade-in effect
   useEffect(() => {
-    if (open) setShowPulse(false)
+    if (open) {
+      setShowPulse(false)
+      setOpenCount((c) => c + 1)
+    }
   }, [open])
 
   // Scroll to bottom on new messages
@@ -287,6 +294,13 @@ export default function ChatBot() {
     setLoading(true)
     setMessageCount(messageCount + 1)
 
+    // Délai humain : Max "lit" le message avant d'écrire
+    const delay = 500 + Math.random() * 300
+    typingTimerRef.current = setTimeout(() => {
+      setIsWriting(true)
+      setShowTyping(true)
+    }, delay)
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -299,7 +313,10 @@ export default function ChatBot() {
     } catch {
       addChatMessage({ role: 'assistant', content: "Erreur de connexion. Contacte-nous au +41 79 651 21 14" })
     } finally {
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
       setLoading(false)
+      setShowTyping(false)
+      setIsWriting(false)
     }
   }
 
@@ -352,10 +369,15 @@ export default function ChatBot() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-4 bg-vsonus-red">
             <div className="flex items-center gap-2.5">
-              <MaxAvatar size={40} /> {/* header */}
-              <div className="flex flex-col leading-none">
+              <MaxAvatar size={40} />
+              <div className="flex flex-col leading-none gap-0.5">
                 <span className="font-semibold text-sm">Max</span>
-                <span className="text-xs text-red-200">Assistant V-Sonus</span>
+                <div key={openCount} className="flex items-center gap-1.5 animate-fade-in-up">
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isWriting ? 'bg-green-400' : 'bg-green-400 animate-pulse'}`} />
+                  <span className={`text-xs transition-colors duration-300 ${isWriting ? 'text-white' : 'text-green-200'}`}>
+                    {isWriting ? 'écrit...' : 'En ligne'}
+                  </span>
+                </div>
               </div>
             </div>
             <button onClick={() => setChatOpen(false)} aria-label="Fermer" className="hover:opacity-80 transition-opacity">
@@ -401,7 +423,7 @@ export default function ChatBot() {
             )}
 
             {/* Typing indicator */}
-            {loading && (
+            {showTyping && (
               <div className="flex items-end gap-2 justify-start">
                 <MaxAvatar size={36} />
                 <div className="bg-vsonus-dark px-3 py-2 flex gap-1 items-center">
