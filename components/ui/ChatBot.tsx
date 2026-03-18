@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { X, Send, User } from 'lucide-react'
+import { MessageCircle, X, Send, User } from 'lucide-react'
 
 function MaxAvatar({ size = 32 }: { size?: number }) {
   return (
