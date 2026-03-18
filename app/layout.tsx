@@ -82,17 +82,18 @@ export default async function RootLayout({
     .catch(() => [] as TarifAnnexe[])
 
   return (
-    <html lang="fr" className={montserrat.variable}>
+    <html lang="fr" className={`${montserrat.variable} overflow-x-hidden`}>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-vsonus-black text-white font-sans antialiased">
+      <body className="bg-vsonus-black text-white font-sans antialiased overflow-x-hidden">
         <TarifsProvider tarifs={tarifs as TarifAnnexe[]} />
         <Header />
-        <main>{children}</main>
+        <main className="overflow-x-hidden">{children}</main>
         <Footer />
         <CookieBanner />
       </body>
