@@ -1,16 +1,16 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { MessageCircle, X, Send, User } from 'lucide-react'
+import { X, Send, User } from 'lucide-react'
 
 function MaxAvatar({ size = 32 }: { size?: number }) {
   return (
-    <div
-      className="flex-shrink-0 bg-vsonus-red flex items-center justify-center font-bold text-white"
-      style={{ width: size, height: size, fontSize: size * 0.45 }}
-    >
-      V
-    </div>
+    <img
+      src="/images/max-avatar.png"
+      alt="Max"
+      className="flex-shrink-0 rounded-full object-cover"
+      style={{ width: size, height: size }}
+    />
   )
 }
 
@@ -293,10 +293,10 @@ export default function ChatBot() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className={`fixed bottom-6 right-6 z-50 w-14 h-14 bg-vsonus-red text-white flex items-center justify-center shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''}`}
+          className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full ring-2 ring-vsonus-red overflow-hidden shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''}`}
           aria-label="Ouvrir le chat"
         >
-          <MessageCircle size={24} />
+          <img src="/images/max-avatar.png" alt="Max" className="w-full h-full object-cover" />
         </button>
       )}
 
@@ -306,7 +306,7 @@ export default function ChatBot() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-vsonus-red">
             <div className="flex items-center gap-2.5">
-              <MaxAvatar size={30} />
+              <MaxAvatar size={36} />
               <div className="flex flex-col leading-none">
                 <span className="font-semibold text-sm">Max</span>
                 <span className="text-xs text-red-200">Assistant V-Sonus</span>
