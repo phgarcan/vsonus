@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Sliders, Zap, Shield, Users, CheckCircle2, Quote } from 'lucide-react'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
+import { BrandCarousel } from '@/components/ui/BrandCarousel'
 
 export const metadata: Metadata = {
   title: 'À propos de V-Sonus – Location Événementielle Vaud',
@@ -146,6 +147,18 @@ export default function AProposPage() {
               </p>
             </div>
           </AnimateOnScroll>
+        </div>
+      </section>
+
+      {/* ── MARQUES PARTENAIRES ────────────────────────────────────────────── */}
+      <section className="py-14 px-6 bg-vsonus-dark border-b border-gray-800">
+        <div className="max-w-6xl mx-auto">
+          <AnimateOnScroll>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-600 text-center mb-8">
+              Nos partenaires techniques
+            </p>
+          </AnimateOnScroll>
+          <BrandCarousel />
         </div>
       </section>
 
