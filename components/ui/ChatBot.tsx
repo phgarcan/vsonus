@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { X, Send, User } from 'lucide-react'
 
 function MaxAvatar({ size = 32 }: { size?: number }) {
@@ -19,6 +19,47 @@ const WELCOME_MESSAGE =
   "Salut ! Moi c'est Max, l'assistant V-Sonus. Comment puis-je t'aider ? Tu organises un événement ?"
 
 type Message = { role: 'user' | 'assistant'; content: string }
+
+// ── Markdown renderer ─────────────────────────────────────────────────────────
+
+function renderMarkdown(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = []
+  // Split on links [text](url) or bold **text**
+  const regex = /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*/g
+  let last = 0
+  let match: RegExpExecArray | null
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > last) {
+      parts.push(text.slice(last, match.index))
+    }
+    if (match[1] && match[2]) {
+      // Link
+      const href = match[2]
+      const isInternal = href.startsWith('/')
+      parts.push(
+        <a
+          key={match.index}
+          href={href}
+          {...(isInternal ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
+          className="text-vsonus-red underline hover:text-white transition-colors"
+        >
+          {match[1]}
+        </a>
+      )
+    } else if (match[3]) {
+      // Bold
+      parts.push(<strong key={match.index} className="font-bold text-white">{match[3]}</strong>)
+    }
+    last = match.index + match[0].length
+  }
+
+  if (last < text.length) {
+    parts.push(text.slice(last))
+  }
+
+  return parts
+}
 
 // ── Query analysis ────────────────────────────────────────────────────────────
 
@@ -329,7 +370,7 @@ export default function ChatBot() {
                       : 'bg-vsonus-dark text-gray-100'
                   }`}
                 >
-                  {msg.content}
+                  {msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content}
                 </div>
                 {msg.role === 'user' && (
                   <div className="flex-shrink-0 w-6 h-6 bg-gray-700 flex items-center justify-center">
