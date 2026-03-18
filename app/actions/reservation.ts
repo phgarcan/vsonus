@@ -1,10 +1,12 @@
 'use server'
 
-import { createItem } from '@directus/sdk'
+import { createItem, readItems, readUsers, createUser, updateItem } from '@directus/sdk'
 import { getServerDirectus } from '@/lib/directus'
 import { sendEmail, emailLayout, lignesTable } from '@/lib/email'
 import { getLocationCoefficient, getCoefficientLabel } from '@/lib/pricing'
 import type { CartItem } from '@/lib/store'
+
+const CLIENT_ROLE_ID = '3a7b1e18-e5c6-4e31-8992-862377d0b98b'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -114,6 +116,10 @@ export async function soumettreReservation(
 
     sendEmails({ clientData, startDate, endDate, nbJours, coefficient, totalHT, besoinMontage, besoinLivraison, lignes: lignesEmail, reservationId })
       .catch(err => console.error('[email] Erreur envoi emails réservation:', err))
+
+    // 4. Auto-create or link user account (non-blocking)
+    linkOrCreateUser(client, clientData, reservationId)
+      .catch(err => console.error('[user] Erreur création compte client:', err))
 
     return { success: true, id: reservationId }
   } catch (err) {
@@ -298,4 +304,91 @@ async function sendEmails(data: {
       html: emailLayout('Confirmation de votre demande', clientBody),
     }),
   ])
+}
+
+// ---------------------------------------------------------------------------
+// Auto-create or link user account to reservation
+// ---------------------------------------------------------------------------
+
+async function linkOrCreateUser(
+  client: ReturnType<typeof getServerDirectus>,
+  clientData: ClientData,
+  reservationId: string
+) {
+  const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? ''
+
+  // Check if user already exists
+  const existingRes = await fetch(
+    `${DIRECTUS_URL}/users?filter[email][_eq]=${encodeURIComponent(clientData.email)}&fields=id&limit=1`,
+    { headers: { Authorization: `Bearer ${process.env.DIRECTUS_SERVER_TOKEN}` } }
+  )
+
+  let userId: string
+
+  if (existingRes.ok) {
+    const existing = await existingRes.json()
+    if (existing.data?.length > 0) {
+      userId = existing.data[0].id
+    } else {
+      // Create new user with random temporary password
+      const tempPassword = crypto.randomUUID().slice(0, 16) + 'A1!'
+      const nameParts = clientData.nom.split(' ')
+      const firstName = nameParts[0] ?? ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      const createRes = await fetch(`${DIRECTUS_URL}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.DIRECTUS_SERVER_TOKEN}`,
+        },
+        body: JSON.stringify({
+          email: clientData.email,
+          password: tempPassword,
+          first_name: firstName,
+          last_name: lastName,
+          phone: clientData.tel,
+          role: CLIENT_ROLE_ID,
+        }),
+      })
+
+      if (!createRes.ok) {
+        console.error('[user] Failed to create user:', await createRes.text())
+        return
+      }
+
+      const created = await createRes.json()
+      userId = created.data.id
+
+      // Send welcome email with password reset link
+      sendEmail({
+        to: clientData.email,
+        subject: 'V-Sonus — Votre espace client est prêt',
+        html: emailLayout('Bienvenue sur V-Sonus', `
+          <h2 style="margin:0 0 8px;font-size:20px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:0.1em;">
+            Votre espace client
+          </h2>
+          <p style="margin:0 0 24px;font-size:14px;color:#aaa;line-height:1.6;">
+            Bonjour <strong style="color:#fff;">${firstName}</strong>,<br>
+            Un espace client a été créé pour vous suite à votre réservation.
+            Vous pourrez y suivre vos réservations et gérer votre profil.
+          </p>
+          <p style="margin:0 0 24px;">
+            <a href="https://vsonus.ch/mon-compte/mot-de-passe-oublie"
+               style="display:inline-block;background:#EC1C24;color:#fff;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;padding:12px 24px;text-decoration:none;">
+              Définir mon mot de passe →
+            </a>
+          </p>
+          <p style="font-size:12px;color:#666;">
+            Connectez-vous ensuite sur <a href="https://vsonus.ch/mon-compte/connexion" style="color:#EC1C24;">vsonus.ch/mon-compte</a>
+          </p>
+        `),
+      }).catch((err: unknown) => console.error('[email] Welcome email error:', err))
+    }
+  } else {
+    return // API error, skip
+  }
+
+  // Link reservation to user
+  await client.request(updateItem('reservations', reservationId, { user: userId }))
 }

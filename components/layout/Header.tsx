@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown, Headphones, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
+import { AccountLink } from '@/components/portal/AccountLink'
 import { useStore } from '@/lib/store'
 
 // ─── Données de navigation ────────────────────────────────────────────────────
@@ -146,6 +147,7 @@ export function Header() {
             <Link href="/contact" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
               Contact
             </Link>
+            <AccountLink variant="desktop" />
           </nav>
 
           {/* ── Actions droite ────────────────────────────────────────────── */}
@@ -294,6 +296,9 @@ export function Header() {
                 {label}
               </Link>
             ))}
+
+            {/* Mon compte */}
+            <AccountLink variant="mobile" />
 
             {/* Appel rapide */}
             <div className="px-6 py-4 border-b border-gray-900">

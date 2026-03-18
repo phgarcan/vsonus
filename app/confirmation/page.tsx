@@ -68,6 +68,16 @@ export default async function ConfirmationPage({
         </ul>
       </div>
 
+      {/* Espace client */}
+      <div className="bg-vsonus-dark border border-gray-800 px-5 py-4 mb-10">
+        <p className="text-sm text-gray-400 leading-relaxed">
+          Un espace client a été créé pour vous. Vérifiez votre email pour définir votre mot de passe et{' '}
+          <Link href="/mon-compte/connexion" className="text-vsonus-red hover:underline font-bold">
+            suivre vos réservations
+          </Link>.
+        </p>
+      </div>
+
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3">
         <Link
