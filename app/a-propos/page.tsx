@@ -158,7 +158,7 @@ export default function AProposPage() {
               Nos partenaires techniques
             </p>
           </AnimateOnScroll>
-          <BrandCarousel />
+          <BrandCarousel variant="dark" />
         </div>
       </section>
 
