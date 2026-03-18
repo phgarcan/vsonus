@@ -1,5 +1,6 @@
 import { readItems } from '@directus/sdk'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Realisation } from '@/lib/directus'
@@ -65,19 +66,40 @@ export default async function GaleriePage({
   return (
     <main>
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="py-20 px-6 bg-vsonus-black border-b-2 border-vsonus-red">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative flex flex-col justify-end min-h-[55vh] overflow-hidden border-b-2 border-vsonus-red">
+        <Image
+          src="/images/packs/compressed_DSC09742.jpg"
+          alt="Nos réalisations événementielles V-Sonus"
+          fill
+          className="object-cover"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+
+        {/* Breadcrumb */}
+        <div className="absolute top-6 left-0 w-full z-10 px-6">
+          <div className="max-w-7xl mx-auto">
+            <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400">
+              <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
+              <span>/</span>
+              <span className="text-vsonus-red">Réalisations</span>
+            </nav>
+          </div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 pb-16 pt-32 w-full">
           <AnimateOnScroll>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-vsonus-red mb-4">
               Portfolio
             </p>
-            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-widest text-white leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-widest text-white leading-tight">
               Nos <span className="text-vsonus-red">réalisations</span>
             </h1>
-            <div className="mt-4 h-0.5 w-20 bg-vsonus-red" />
-            <p className="mt-6 text-gray-400 max-w-xl leading-relaxed">
-              Découvrez les événements que nous avons réalisés — concerts, festivals, sonorisations
-              et éclairages professionnels en Suisse Romande.
+          </AnimateOnScroll>
+          <AnimateOnScroll delay={200}>
+            <p className="mt-6 text-xl text-gray-300 max-w-2xl leading-relaxed">
+              Concerts, festivals, sonorisations et éclairages professionnels en Suisse Romande.
             </p>
           </AnimateOnScroll>
         </div>

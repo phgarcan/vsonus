@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown, Disc3, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
@@ -35,6 +36,19 @@ const DIRECT_LINKS: { icon: LucideIcon; label: string; href: string }[] = [
 
 // ─── Composant ────────────────────────────────────────────────────────────────
 
+function useActiveNav() {
+  const pathname = usePathname()
+  return (key: 'packs' | 'location' | 'evenementiel' | 'realisations' | 'a-propos' | 'contact') => {
+    if (key === 'packs')         return pathname.startsWith('/prestations')
+    if (key === 'location')      return pathname.startsWith('/catalogue')
+    if (key === 'evenementiel')  return pathname === '/gestion-evenementielle'
+    if (key === 'realisations')  return pathname === '/galerie'
+    if (key === 'a-propos')      return pathname === '/a-propos'
+    if (key === 'contact')       return pathname === '/contact'
+    return false
+  }
+}
+
 export function Header() {
   const [packsOpen, setPacksOpen]           = useState(false)
   const [megaOpen, setMegaOpen]             = useState(false)
@@ -42,6 +56,7 @@ export function Header() {
   const [mobilePacksOpen, setMobilePacksOpen]       = useState(false)
   const [mobileMaterielOpen, setMobileMaterielOpen] = useState(false)
   const [mounted, setMounted]               = useState(false)
+  const isActive = useActiveNav()
 
   const cart           = useStore((s) => s.cart)
   const drawerOpen     = useStore((s) => s.cartDrawerOpen)
@@ -82,7 +97,7 @@ export function Header() {
               onMouseLeave={() => setPacksOpen(false)}
             >
               <button
-                className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+                className={`flex items-center gap-1 text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('packs') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}
                 aria-expanded={packsOpen}
                 aria-haspopup="true"
               >
@@ -126,7 +141,7 @@ export function Header() {
               <button
                 onClick={() => setMegaOpen((v) => !v)}
                 onMouseEnter={() => setMegaOpen(true)}
-                className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+                className={`flex items-center gap-1 text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('location') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}
                 aria-expanded={megaOpen}
                 aria-haspopup="true"
               >
@@ -135,16 +150,16 @@ export function Header() {
               </button>
             </div>
 
-            <Link href="/gestion-evenementielle" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+            <Link href="/gestion-evenementielle" className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('evenementiel') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}>
               Événementiel
             </Link>
-            <Link href="/galerie" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+            <Link href="/galerie" className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('realisations') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}>
               Réalisations
             </Link>
-            <Link href="/a-propos" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+            <Link href="/a-propos" className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('a-propos') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}>
               À propos
             </Link>
-            <Link href="/contact" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+            <Link href="/contact" className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('contact') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}>
               Contact
             </Link>
           </nav>
@@ -227,9 +242,9 @@ export function Header() {
             <div className="border-b border-gray-900">
               <button
                 onClick={() => setMobilePacksOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-6 py-4 text-white hover:text-vsonus-red transition-colors min-h-[56px]"
+                className="w-full flex items-center justify-between px-6 py-4 hover:text-vsonus-red transition-colors duration-200 min-h-[56px]"
               >
-                <span className="text-xl font-black uppercase tracking-widest">Nos Packs</span>
+                <span className={`text-xl font-black uppercase tracking-widest ${isActive('packs') ? 'text-vsonus-red' : 'text-white'}`}>Nos Packs</span>
                 <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${mobilePacksOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
               </button>
               {mobilePacksOpen && (
@@ -259,9 +274,9 @@ export function Header() {
             <div className="border-b border-gray-900">
               <button
                 onClick={() => setMobileMaterielOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-6 py-4 text-white hover:text-vsonus-red transition-colors min-h-[56px]"
+                className="w-full flex items-center justify-between px-6 py-4 hover:text-vsonus-red transition-colors duration-200 min-h-[56px]"
               >
-                <span className="text-xl font-black uppercase tracking-widest">Location Matériel</span>
+                <span className={`text-xl font-black uppercase tracking-widest ${isActive('location') ? 'text-vsonus-red' : 'text-white'}`}>Location Matériel</span>
                 <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${mobileMaterielOpen ? 'rotate-180' : ''}`} strokeWidth={2} />
               </button>
               {mobileMaterielOpen && (
@@ -288,16 +303,22 @@ export function Header() {
             </div>
 
             {/* Liens directs */}
-            {DIRECT_LINKS.map(({ label, href }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={closeAll}
-                className="flex items-center px-6 py-4 text-xl font-black uppercase tracking-widest text-white hover:text-vsonus-red transition-colors border-b border-gray-900 min-h-[56px]"
-              >
-                {label}
-              </Link>
-            ))}
+            {DIRECT_LINKS.map(({ label, href }) => {
+              const key = href === '/gestion-evenementielle' ? 'evenementiel'
+                        : href === '/galerie'                ? 'realisations'
+                        : href === '/a-propos'               ? 'a-propos'
+                        : 'contact' as Parameters<typeof isActive>[0]
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={closeAll}
+                  className={`flex items-center px-6 py-4 text-xl font-black uppercase tracking-widest border-b border-gray-900 min-h-[56px] transition-colors duration-200 ${isActive(key) ? 'text-vsonus-red' : 'text-white hover:text-vsonus-red'}`}
+                >
+                  {label}
+                </Link>
+              )
+            })}
 
             {/* Mon compte */}
             <AccountLink variant="mobile" />
