@@ -195,6 +195,28 @@ function buildProactiveMessage(source: GoogleSource): string {
   return "Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?"
 }
 
+// ── Disclaimer ────────────────────────────────────────────────────────────────
+
+function Disclaimer() {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div className="px-3 py-1.5 border-t border-gray-800 bg-black">
+      {expanded ? (
+        <p className="text-[10px] text-gray-500 leading-relaxed">
+          Max est un assistant automatisé propulsé par l&apos;IA. Ses réponses sont indicatives et ne constituent pas un engagement contractuel. Les conversations sont stockées uniquement dans votre navigateur (sessionStorage) et ne sont ni enregistrées ni transmises à des tiers. Pour toute demande officielle, utilisez notre{' '}
+          <a href="/contact" className="underline hover:text-gray-300">formulaire de contact</a>.{' '}
+          <button onClick={() => setExpanded(false)} className="underline hover:text-gray-300">Réduire</button>
+        </p>
+      ) : (
+        <p className="text-[10px] text-gray-500 text-center">
+          Max est un assistant IA. Il peut faire des erreurs.{' '}
+          <button onClick={() => setExpanded(true)} className="underline hover:text-gray-300">En savoir plus</button>
+        </p>
+      )}
+    </div>
+  )
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function ChatBot() {
@@ -308,6 +330,7 @@ export default function ChatBot() {
         body: JSON.stringify({ messages: newMessages }),
       })
       const data = await res.json()
+      if (data.reply === null) return // duplicate message — silently ignore
       const reply = data.reply ?? "Désolé, une erreur s'est produite. Réessayez ou contacte-nous directement."
       addChatMessage({ role: 'assistant', content: reply })
     } catch {
@@ -436,6 +459,9 @@ export default function ChatBot() {
 
             <div ref={bottomRef} />
           </div>
+
+          {/* Disclaimer */}
+          <Disclaimer />
 
           {/* Input */}
           <form
