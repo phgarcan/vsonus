@@ -82,6 +82,12 @@ export async function POST(req: NextRequest) {
       content: String(m.content).slice(0, 500).replace(/<[^>]*>/g, ''),
     }))
 
+    // Gemini requires conversation to start with a 'user' turn — drop leading assistant messages
+    const geminiContents = sanitized
+      .map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }))
+    const firstUserIdx = geminiContents.findIndex((m) => m.role === 'user')
+    const contents = firstUserIdx > 0 ? geminiContents.slice(firstUserIdx) : geminiContents
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -89,10 +95,7 @@ export async function POST(req: NextRequest) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: sanitized.map((m) => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: m.content }],
-          })),
+          contents,
         }),
       }
     )
