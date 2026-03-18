@@ -130,7 +130,7 @@ export function Header() {
                 aria-expanded={megaOpen}
                 aria-haspopup="true"
               >
-                Location matériel
+                Location
                 <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${megaOpen ? 'rotate-180' : ''}`} strokeWidth={3} />
               </button>
             </div>
