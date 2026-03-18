@@ -1,4 +1,4 @@
-import { Sliders, Lightbulb, Music2, MonitorPlay, Mic2, Projector, LucideIcon } from 'lucide-react'
+import { Volume2, Lightbulb, Disc3, MonitorPlay, Mic2, Landmark, LucideIcon } from 'lucide-react'
 
 export interface Prestation {
   slug: string
@@ -23,7 +23,7 @@ export const PRESTATIONS: Prestation[] = [
     descriptionComplete:
       "Nous proposons des systèmes de sonorisation complets et personnalisés, adaptés à la taille et à la nature de votre événement. Que ce soit pour un événement privé, une conférence, un mariage ou une soirée d'entreprise, notre matériel de sonorisation L-Acoustics professionnel assure une diffusion sonore claire et homogène. L-Acoustics s'appuie sur une démarche scientifique pour révolutionner la conception sonore et anticiper les performances. Des études approfondies dans tous les domaines contribuent à une combinaison unique et étendue d'expertises qui façonnent le futur du son.",
     categorieSlug: 'sonorisation',
-    Icon: Sliders,
+    Icon: Volume2,
     packsLabel: 'Packs Sonorisation',
     image: '/images/packs/photo_2024-12-04-13.01.55.jpeg',
     animation: 'wave',
@@ -49,7 +49,7 @@ export const PRESTATIONS: Prestation[] = [
     descriptionComplete:
       "Nous mettons à disposition des régies DJ professionnelles (platines, contrôleurs, tables de mixage) prêtes à l'emploi. Vous pouvez faire appel à votre propre DJ ou collaborer avec l'un des nôtres. Chaque installation est intégrée dans l'environnement de votre événement, qu'il soit privé ou corporate.",
     categorieSlug: 'dj',
-    Icon: Music2,
+    Icon: Disc3,
     packsLabel: 'Packs DJ',
     image: '/images/packs/image-7.jpeg',
     animation: 'spin-slow',
@@ -75,7 +75,7 @@ export const PRESTATIONS: Prestation[] = [
     descriptionComplete:
       "Nous proposons des scènes modulables, adaptées à tout type d'événement : discours, concerts, défilés ou installations techniques. Les structures sont conformes aux normes de sécurité, faciles à habiller (moquette, jupes, rampes, etc.), et disponibles en plusieurs hauteurs et dimensions. Montage, démontage et stabilisation sont inclus dans chaque prestation.",
     categorieSlug: 'scenes',
-    Icon: MonitorPlay,
+    Icon: Landmark,
     packsLabel: 'Pack Scène',
     image: '/images/packs/compressed_DSC09688.jpg',
     animation: null,
@@ -88,7 +88,7 @@ export const PRESTATIONS: Prestation[] = [
     descriptionComplete:
       "Nous réalisons des mappings vidéo sur mesure, de la conception du contenu à sa projection. Que ce soit pour animer une façade, une scène ou un objet, le mapping vidéo permet de créer des effets visuels immersifs et impactants. Nos prestations incluent la création, la modélisation et la diffusion des projections.",
     categorieSlug: 'mapping',
-    Icon: Projector,
+    Icon: MonitorPlay,
     packsLabel: 'Pack Mapping',
     image: '/images/packs/mapping.jpg',
     animation: 'gradient-x',

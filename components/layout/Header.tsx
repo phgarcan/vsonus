@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown, Headphones, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
+import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown, Disc3, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { AccountLink } from '@/components/portal/AccountLink'
@@ -11,7 +11,7 @@ import { useStore } from '@/lib/store'
 // ─── Données de navigation ────────────────────────────────────────────────────
 
 const PACKS_ITEMS: { icon: LucideIcon; label: string; href: string }[] = [
-  { icon: Headphones, label: 'Packs DJ & Soirées',    href: '/prestations/dj' },
+  { icon: Disc3,      label: 'Packs DJ & Soirées',    href: '/prestations/dj' },
   { icon: Mic2,       label: 'Packs Concerts',         href: '/prestations/concerts' },
   { icon: Volume2,    label: 'Packs Sonorisation',     href: '/prestations/sonorisation-l-acoustics' },
   { icon: Lightbulb,  label: 'Packs Éclairage',        href: '/prestations/eclairage' },
