@@ -145,6 +145,13 @@ export default function AProposPage() {
                 artistes et un service de projection et mapping sur mesure vous permettent de réaliser
                 vos projets et organiser un événement qualitatif à tous les niveaux.
               </p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/brands/l-acoustics.svg"
+                alt="L-Acoustics"
+                className="h-8 mt-6 opacity-60"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
             </div>
           </AnimateOnScroll>
         </div>
