@@ -77,7 +77,7 @@ export default async function GaleriePage({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 pb-16 pt-32 w-full">
+        <div className="relative z-10 max-w-6xl mx-auto px-6 pb-14 pt-32 w-full">
           <AnimateOnScroll>
             <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 mb-6">
               <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
