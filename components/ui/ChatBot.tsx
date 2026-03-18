@@ -3,12 +3,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { X, Send, User } from 'lucide-react'
 
-function MaxAvatar({ size = 32 }: { size?: number }) {
+function MaxAvatar({ size = 40 }: { size?: number }) {
   return (
     <img
       src="/images/max-avatar.png"
       alt="Max"
-      className="flex-shrink-0 rounded-full object-cover"
+      className="flex-shrink-0 rounded-full object-cover ring-2 ring-vsonus-red"
       style={{ width: size, height: size }}
     />
   )
@@ -334,7 +334,7 @@ export default function ChatBot() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full ring-2 ring-vsonus-red overflow-hidden shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''}`}
+          className={`fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full ring-2 ring-vsonus-red overflow-hidden shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''}`}
           aria-label="Ouvrir le chat"
         >
           <img src="/images/max-avatar.png" alt="Max" className="w-full h-full object-cover" />
@@ -345,9 +345,9 @@ export default function ChatBot() {
       {open && (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col w-80 h-[500px] max-sm:inset-4 max-sm:w-auto max-sm:h-auto bg-black border border-gray-800 shadow-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-vsonus-red">
+          <div className="flex items-center justify-between px-4 py-4 bg-vsonus-red">
             <div className="flex items-center gap-2.5">
-              <MaxAvatar size={36} />
+              <MaxAvatar size={40} />
               <div className="flex flex-col leading-none">
                 <span className="font-semibold text-sm">Max</span>
                 <span className="text-xs text-red-200">Assistant V-Sonus</span>
