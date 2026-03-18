@@ -275,7 +275,7 @@ export default async function GestionEvenementielle() {
             </div>
           </AnimateOnScroll>
 
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-stretch">
             {/* Étapes */}
             <div className="relative">
               {/* Ligne verticale connectrice */}
@@ -300,8 +300,8 @@ export default async function GestionEvenementielle() {
             </div>
 
             {/* Image */}
-            <AnimateOnScroll delay={200}>
-              <div className="relative aspect-[3/4] lg:aspect-auto lg:h-full min-h-[400px] overflow-hidden border border-gray-800">
+            <AnimateOnScroll delay={200} className="flex items-center self-stretch">
+              <div className="relative w-full h-full min-h-[400px] overflow-hidden border border-gray-800">
                 <Image
                   src="/images/packs/compressed_DSC09688.jpg"
                   alt="Installation événementielle V-Sonus"
@@ -309,15 +309,6 @@ export default async function GestionEvenementielle() {
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-vsonus-red mb-1">
-                    V-Sonus
-                  </p>
-                  <p className="text-white font-black uppercase tracking-widest text-sm">
-                    De l&apos;idée à la réalisation
-                  </p>
-                </div>
               </div>
             </AnimateOnScroll>
           </div>
