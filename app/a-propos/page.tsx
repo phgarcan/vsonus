@@ -128,14 +128,6 @@ export default function AProposPage() {
               </ul>
             </AnimateOnScroll>
 
-            <AnimateOnScroll delay={300}>
-              <blockquote className="border-l-2 border-gray-700 pl-6">
-                <p className="text-gray-400 italic text-sm">
-                  &ldquo;Parce qu&apos;un événement réussi, c&apos;est d&apos;abord une histoire de
-                  confiance.&rdquo;
-                </p>
-              </blockquote>
-            </AnimateOnScroll>
           </div>
 
           {/* Colonne description équipements */}
