@@ -77,19 +77,13 @@ export default async function GaleriePage({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
 
-        {/* Breadcrumb */}
-        <div className="absolute top-6 left-0 w-full z-10 px-6">
-          <div className="max-w-7xl mx-auto">
-            <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400">
-              <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
-              <span>/</span>
-              <span className="text-vsonus-red">Réalisations</span>
-            </nav>
-          </div>
-        </div>
-
         <div className="relative z-10 max-w-7xl mx-auto px-6 pb-16 pt-32 w-full">
           <AnimateOnScroll>
+            <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 mb-6">
+              <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
+              <span className="text-gray-600">/</span>
+              <span className="text-vsonus-red">Réalisations</span>
+            </nav>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-vsonus-red mb-4">
               Portfolio
             </p>
