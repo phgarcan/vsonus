@@ -57,6 +57,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
   const [cgvAccepted, setCgvAccepted] = useState(false)
   const [cgvOpen, setCgvOpen] = useState(false)
   const [billingSame, setBillingSame] = useState(true)
+  const [createAccount, setCreateAccount] = useState(false)
 
   const [form, setForm] = useState({
     nom: '',
@@ -98,6 +99,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
         totalHT,
         besoinMontage: besoinTech,
         besoinLivraison: besoinTransport,
+        createAccount,
       })
 
       if (result.success) {
@@ -314,6 +316,34 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
             </span>
           </label>
           <CgvModal open={cgvOpen} onClose={() => setCgvOpen(false)} onAccept={() => setCgvAccepted(true)} />
+        </div>
+
+        {/* Espace client */}
+        <div className="space-y-3">
+          <label className="flex items-start gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={createAccount}
+              onChange={(e) => setCreateAccount(e.target.checked)}
+              className="mt-0.5 accent-vsonus-red flex-shrink-0"
+            />
+            <span className="text-sm text-gray-300">
+              Je souhaite créer un espace client V-Sonus
+            </span>
+          </label>
+          {createAccount && (
+            <div className="bg-vsonus-dark border-l-2 border-vsonus-red px-4 py-3">
+              <p className="text-xs text-gray-400 leading-relaxed">
+                En créant votre espace client, vous pourrez :
+              </p>
+              <ul className="mt-2 space-y-1 text-xs text-gray-500">
+                <li>• Suivre le statut de vos réservations en temps réel</li>
+                <li>• Retrouver l&apos;historique de vos locations</li>
+                <li>• Accéder à vos documents (devis, factures)</li>
+                <li>• Faciliter vos prochaines réservations</li>
+              </ul>
+            </div>
+          )}
         </div>
 
         {error && (
