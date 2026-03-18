@@ -1,3 +1,4 @@
+import { Music } from 'lucide-react'
 import { readItems } from '@directus/sdk'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -128,7 +129,7 @@ function EquipementCard({ equipement }: { equipement: Equipement }) {
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-700 text-4xl">♪</div>
+            <div className="w-full h-full flex items-center justify-center"><Music className="w-8 h-8 text-gray-700" strokeWidth={1} /></div>
           )}
           {(equipement.technicien_obligatoire || equipement.transport_obligatoire) && (
             <span className="absolute top-2 right-2 bg-vsonus-red text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">

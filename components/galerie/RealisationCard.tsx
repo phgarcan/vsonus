@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { MapPin } from 'lucide-react'
+import { MapPin, Music } from 'lucide-react'
 import type { Realisation } from '@/lib/directus'
 import { RealisationLightbox } from './RealisationLightbox'
 
@@ -57,7 +57,7 @@ export function RealisationCard({ realisation, coverUrl, imageUrls }: Props) {
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-800 text-5xl">♪</div>
+            <div className="w-full h-full flex items-center justify-center"><Music className="w-10 h-10 text-gray-800" strokeWidth={1} /></div>
           )}
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors duration-300 flex items-center justify-center">

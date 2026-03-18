@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { readItems } from '@directus/sdk'
-import { Headphones, Truck, Volume2, Lightbulb, MonitorPlay, UserCheck, Star } from 'lucide-react'
+import { Headphones, Truck, Volume2, Lightbulb, MonitorPlay, UserCheck, Star, Heart, Building2, Music, Users } from 'lucide-react'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Realisation } from '@/lib/directus'
@@ -102,26 +102,26 @@ const TEMOIGNAGES = [
   },
 ]
 
-const TYPES_EVENEMENTS = [
+const TYPES_EVENEMENTS: { label: string; desc: string; Icon: typeof Heart }[] = [
   {
     label: 'Événements privés',
     desc: 'Anniversaires, mariages, soirées thématiques — on crée l\'ambiance qui vous ressemble.',
-    emoji: '🎂',
+    Icon: Heart,
   },
   {
     label: 'Événements d\'entreprise',
     desc: 'Soirées corporate, séminaires, lancements produit — une prestation professionnelle et discrète.',
-    emoji: '💼',
+    Icon: Building2,
   },
   {
     label: 'Festivals & Concerts',
     desc: 'De 50 à 2000 personnes, en intérieur ou en plein air — on a l\'équipement et l\'expérience.',
-    emoji: '🎵',
+    Icon: Music,
   },
   {
     label: 'Événements publics',
     desc: 'Manifestations culturelles, fêtes locales, événements associatifs — partenaire de confiance.',
-    emoji: '🎪',
+    Icon: Users,
   },
 ]
 
@@ -275,28 +275,51 @@ export default async function GestionEvenementielle() {
             </div>
           </AnimateOnScroll>
 
-          <div className="relative">
-            {/* Ligne verticale connectrice */}
-            <div className="absolute left-8 top-8 bottom-8 w-px bg-gray-800 hidden md:block" />
-
-            <div className="flex flex-col gap-0">
-              {PROCESSUS.map(({ num, label, desc }, i) => (
-                <AnimateOnScroll key={num} delay={i * 100}>
-                  <div className="flex gap-8 items-start py-6 border-b border-gray-800 last:border-0 relative">
-                    {/* Numéro */}
-                    <div className="w-16 h-16 bg-vsonus-black border-2 border-vsonus-red flex items-center justify-center flex-shrink-0 relative z-10">
-                      <span className="text-vsonus-red font-black text-lg">{num}</span>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            {/* Étapes */}
+            <div className="relative">
+              {/* Ligne verticale connectrice */}
+              <div className="absolute left-8 top-8 bottom-8 w-px bg-gray-800 hidden md:block" />
+              <div className="flex flex-col gap-0">
+                {PROCESSUS.map(({ num, label, desc }, i) => (
+                  <AnimateOnScroll key={num} delay={i * 100}>
+                    <div className="flex gap-8 items-start py-6 border-b border-gray-800 last:border-0 relative">
+                      <div className="w-16 h-16 bg-vsonus-black border-2 border-vsonus-red flex items-center justify-center flex-shrink-0 relative z-10">
+                        <span className="text-vsonus-red font-black text-lg">{num}</span>
+                      </div>
+                      <div className="pt-3">
+                        <h3 className="text-white font-black uppercase tracking-widest text-base mb-2">
+                          {label}
+                        </h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+                      </div>
                     </div>
-                    <div className="pt-3">
-                      <h3 className="text-white font-black uppercase tracking-widest text-base mb-2">
-                        {label}
-                      </h3>
-                      <p className="text-gray-400 text-sm leading-relaxed max-w-2xl">{desc}</p>
-                    </div>
-                  </div>
-                </AnimateOnScroll>
-              ))}
+                  </AnimateOnScroll>
+                ))}
+              </div>
             </div>
+
+            {/* Image */}
+            <AnimateOnScroll delay={200}>
+              <div className="relative aspect-[3/4] lg:aspect-auto lg:h-full min-h-[400px] overflow-hidden border border-gray-800">
+                <Image
+                  src="/images/packs/compressed_DSC09688.jpg"
+                  alt="Installation événementielle V-Sonus"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-vsonus-red mb-1">
+                    V-Sonus
+                  </p>
+                  <p className="text-white font-black uppercase tracking-widest text-sm">
+                    De l&apos;idée à la réalisation
+                  </p>
+                </div>
+              </div>
+            </AnimateOnScroll>
           </div>
         </div>
       </section>
@@ -342,7 +365,7 @@ export default async function GestionEvenementielle() {
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-800 text-4xl">♪</div>
+                        <div className="w-full h-full flex items-center justify-center"><Music className="w-8 h-8 text-gray-800" strokeWidth={1} /></div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:via-black/30 transition-all duration-300" />
                       <div className="absolute inset-x-0 bottom-0 p-4">
@@ -422,10 +445,12 @@ export default async function GestionEvenementielle() {
           </AnimateOnScroll>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-800">
-            {TYPES_EVENEMENTS.map(({ label, desc, emoji }, i) => (
+            {TYPES_EVENEMENTS.map(({ label, desc, Icon }, i) => (
               <AnimateOnScroll key={label} delay={i * 80}>
                 <div className="bg-vsonus-black p-8 flex flex-col gap-4 h-full hover:bg-vsonus-dark transition-colors duration-200 group">
-                  <span className="text-4xl">{emoji}</span>
+                  <div className="w-12 h-12 border border-gray-800 group-hover:border-vsonus-red flex items-center justify-center transition-colors duration-200 flex-shrink-0">
+                    <Icon className="w-6 h-6 text-vsonus-red" strokeWidth={1.5} />
+                  </div>
                   <h3 className="text-sm font-black uppercase tracking-widest text-white group-hover:text-vsonus-red transition-colors duration-200">
                     {label}
                   </h3>
