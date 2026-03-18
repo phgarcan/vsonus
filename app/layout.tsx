@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { TarifsProvider } from '@/components/layout/TarifsProvider'
 import { CookieBanner } from '@/components/ui/CookieBanner'
+import ChatBot from '@/components/ui/ChatBot'
 import { getServerDirectus } from '@/lib/directus'
 import type { TarifAnnexe } from '@/lib/directus'
 import { readItems } from '@directus/sdk'
@@ -96,6 +97,7 @@ export default async function RootLayout({
         <main className="overflow-x-hidden">{children}</main>
         <Footer />
         <CookieBanner />
+        <ChatBot />
       </body>
     </html>
   )
