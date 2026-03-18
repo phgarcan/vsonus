@@ -50,6 +50,15 @@ const config: Config = {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
         },
+        'slide-in-right': {
+          '0%': { opacity: '0', transform: 'translateX(24px)' },
+          '80%': { transform: 'translateX(-4px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'pulse-once': {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(236, 28, 36, 0)' },
+          '50%': { boxShadow: '0 0 0 8px rgba(236, 28, 36, 0.35)' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
@@ -59,6 +68,8 @@ const config: Config = {
         'spin-slow': 'spin-slow 10s linear infinite',
         'gradient-x': 'gradient-x 3s ease infinite',
         scroll: 'scroll 35s linear infinite',
+        'slide-in-right': 'slide-in-right 0.4s ease-out forwards',
+        'pulse-once': 'pulse-once 1.5s ease-in-out 2',
       },
       borderRadius: {
         DEFAULT: '0px',
