@@ -39,6 +39,9 @@ export interface ReservationInput {
   besoinMontage: boolean
   besoinLivraison: boolean
   createAccount?: boolean
+  est_entreprise?: boolean
+  nom_entreprise?: string
+  numero_ide?: string
 }
 
 export type ReservationResult =
@@ -52,7 +55,7 @@ export type ReservationResult =
 export async function soumettreReservation(
   input: ReservationInput
 ): Promise<ReservationResult> {
-  const { clientData, cartItems, startDate, endDate, nbJours, totalHT, besoinMontage, besoinLivraison, createAccount } = input
+  const { clientData, cartItems, startDate, endDate, nbJours, totalHT, besoinMontage, besoinLivraison, createAccount, est_entreprise, nom_entreprise, numero_ide } = input
 
   if (!clientData.nom || !clientData.email || !clientData.tel || !clientData.rue || !clientData.npa || !clientData.ville) {
     return { success: false, error: 'Tous les champs obligatoires doivent être remplis.' }
@@ -83,7 +86,10 @@ export async function soumettreReservation(
         total_ht: totalHT,
         besoin_montage: besoinMontage,
         besoin_livraison: besoinLivraison,
-      })
+        est_entreprise: est_entreprise ?? false,
+        nom_entreprise: nom_entreprise ?? null,
+        numero_ide: numero_ide ?? null,
+      } as Record<string, unknown>)
     )
 
     const reservationId = (reservation as { id: string }).id
@@ -115,7 +121,7 @@ export async function soumettreReservation(
       prix_total,
     }))
 
-    sendEmails({ clientData, startDate, endDate, nbJours, coefficient, totalHT, besoinMontage, besoinLivraison, lignes: lignesEmail, reservationId })
+    sendEmails({ clientData, startDate, endDate, nbJours, coefficient, totalHT, besoinMontage, besoinLivraison, lignes: lignesEmail, reservationId, est_entreprise, nom_entreprise, numero_ide })
       .catch(err => console.error('[email] Erreur envoi emails réservation:', err))
 
     // 4. Create or link user account if requested (non-blocking)
@@ -146,9 +152,23 @@ async function sendEmails(data: {
   besoinLivraison: boolean
   lignes: Array<{ label: string; quantite: number; prix_total: number }>
   reservationId: string
+  est_entreprise?: boolean
+  nom_entreprise?: string
+  numero_ide?: string
 }) {
-  const { clientData, startDate, endDate, nbJours, coefficient, totalHT, besoinMontage, besoinLivraison, lignes, reservationId } = data
+  const { clientData, startDate, endDate, nbJours, coefficient, totalHT, besoinMontage, besoinLivraison, lignes, reservationId, est_entreprise, nom_entreprise, numero_ide } = data
   const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? ''
+
+  const entrepriseHtml = est_entreprise && nom_entreprise ? `
+    <tr>
+      <td style="padding:6px 0;font-size:13px;color:#888;">Entreprise</td>
+      <td style="padding:6px 0;font-size:13px;color:#fff;font-weight:700;">${nom_entreprise}</td>
+    </tr>
+    ${numero_ide ? `<tr>
+      <td style="padding:6px 0;font-size:13px;color:#888;">N° IDE/TVA</td>
+      <td style="padding:6px 0;font-size:13px;color:#fff;">${numero_ide}</td>
+    </tr>` : ''}
+  ` : ''
 
   // ── A) Email au gérant ────────────────────────────────────────────────────
   const fraisHtml = (besoinMontage || besoinLivraison) ? `
@@ -168,6 +188,7 @@ async function sendEmails(data: {
         <td style="padding:6px 0;font-size:13px;color:#888;width:130px;">Nom</td>
         <td style="padding:6px 0;font-size:13px;color:#fff;font-weight:700;">${clientData.nom}</td>
       </tr>
+      ${entrepriseHtml}
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;">Email</td>
         <td style="padding:6px 0;font-size:13px;color:#fff;">
@@ -231,6 +252,7 @@ async function sendEmails(data: {
       Récapitulatif de votre demande
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+      ${entrepriseHtml}
       <tr>
         <td style="padding:5px 0;font-size:13px;color:#888;width:100px;">Dates</td>
         <td style="padding:5px 0;font-size:13px;color:#fff;">${startDate} → ${endDate} (${nbJours} jour${nbJours > 1 ? 's' : ''}${coefficient !== 1 ? ` <span style="color:#EC1C24;font-weight:700;">${getCoefficientLabel(nbJours)}</span>` : ''})</td>
