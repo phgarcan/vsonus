@@ -1,3 +1,4 @@
+import { Music } from 'lucide-react'
 import { readItem, readItems } from '@directus/sdk'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -111,7 +112,7 @@ export default async function ProduitPage({
                 priority
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-700 text-6xl">♪</div>
+              <div className="w-full h-full flex items-center justify-center"><Music className="w-12 h-12 text-gray-700" strokeWidth={1} /></div>
             )}
           </div>
         </div>
@@ -204,7 +205,7 @@ export default async function ProduitPage({
                       <Image src={sImg} alt={s.nom} fill className="object-contain p-3"
                         sizes="(max-width: 640px) 100vw, 33vw" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl">♪</div>
+                      <div className="w-full h-full flex items-center justify-center"><Music className="w-6 h-6 text-gray-700" strokeWidth={1} /></div>
                     )}
                   </div>
                   <div className="p-3">

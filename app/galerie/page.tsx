@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Realisation } from '@/lib/directus'
+import { Music } from 'lucide-react'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { RealisationCard } from '@/components/galerie/RealisationCard'
 
@@ -126,7 +127,7 @@ export default async function GaleriePage({
           {/* Grille */}
           {realisations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-32 text-center border border-gray-800">
-              <div className="text-6xl text-gray-800 mb-6">♪</div>
+              <Music className="w-14 h-14 text-gray-800 mb-6" strokeWidth={1} />
               <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">
                 Aucune réalisation trouvée pour cette sélection.
               </p>

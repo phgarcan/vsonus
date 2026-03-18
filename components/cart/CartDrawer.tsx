@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Music } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
 import { DatePicker } from '@/components/ui/DatePicker'
@@ -119,7 +119,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           {/* État vide */}
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="text-5xl text-gray-700 mb-4">♪</div>
+              <Music className="w-12 h-12 text-gray-700 mb-4" strokeWidth={1} />
               <p className="text-gray-500 text-sm">Votre liste est vide.</p>
               <Link href="/catalogue" onClick={onClose} className="mt-4 text-vsonus-red text-sm hover:underline">
                 Parcourir le catalogue →
@@ -146,7 +146,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                         {imgUrl ? (
                           <Image src={imgUrl} alt={item.item.nom} fill className="object-contain p-1" sizes="64px" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-700 text-xl">♪</div>
+                          <div className="w-full h-full flex items-center justify-center"><Music className="w-5 h-5 text-gray-700" strokeWidth={1} /></div>
                         )}
                       </div>
 
