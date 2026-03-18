@@ -60,11 +60,7 @@ function AnimatedAccent({ animation }: { animation: string | null }) {
     return <div className="w-16 h-0.5 bg-vsonus-red animate-glow-pulse mb-6" />
   }
   if (animation === 'spin-slow') {
-    return (
-      <div className="mb-6">
-        <div className="w-8 h-8 border-2 border-vsonus-red animate-spin-slow inline-block" style={{ borderRadius: '0' }} />
-      </div>
-    )
+    return <div className="w-16 h-0.5 bg-vsonus-red mb-6" />
   }
   if (animation === 'gradient-x') {
     return (
