@@ -147,11 +147,13 @@ export function Header() {
             <Link href="/contact" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
               Contact
             </Link>
-            <AccountLink variant="desktop" />
           </nav>
 
           {/* ── Actions droite ────────────────────────────────────────────── */}
           <div className="flex items-center gap-3">
+            {/* Icône Mon compte */}
+            <AccountLink variant="desktop" />
+
             {/* Bouton MA LISTE */}
             <button
               onClick={() => setDrawerOpen(true)}

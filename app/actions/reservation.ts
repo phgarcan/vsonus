@@ -1,6 +1,6 @@
 'use server'
 
-import { createItem, readItems, readUsers, createUser, updateItem } from '@directus/sdk'
+import { createItem, updateItem } from '@directus/sdk'
 import { getServerDirectus } from '@/lib/directus'
 import { sendEmail, emailLayout, lignesTable } from '@/lib/email'
 import { getLocationCoefficient, getCoefficientLabel } from '@/lib/pricing'
@@ -38,6 +38,7 @@ export interface ReservationInput {
   totalHT: number
   besoinMontage: boolean
   besoinLivraison: boolean
+  createAccount?: boolean
 }
 
 export type ReservationResult =
@@ -51,7 +52,7 @@ export type ReservationResult =
 export async function soumettreReservation(
   input: ReservationInput
 ): Promise<ReservationResult> {
-  const { clientData, cartItems, startDate, endDate, nbJours, totalHT, besoinMontage, besoinLivraison } = input
+  const { clientData, cartItems, startDate, endDate, nbJours, totalHT, besoinMontage, besoinLivraison, createAccount } = input
 
   if (!clientData.nom || !clientData.email || !clientData.tel || !clientData.rue || !clientData.npa || !clientData.ville) {
     return { success: false, error: 'Tous les champs obligatoires doivent être remplis.' }
@@ -117,9 +118,11 @@ export async function soumettreReservation(
     sendEmails({ clientData, startDate, endDate, nbJours, coefficient, totalHT, besoinMontage, besoinLivraison, lignes: lignesEmail, reservationId })
       .catch(err => console.error('[email] Erreur envoi emails réservation:', err))
 
-    // 4. Auto-create or link user account (non-blocking)
-    linkOrCreateUser(client, clientData, reservationId)
-      .catch(err => console.error('[user] Erreur création compte client:', err))
+    // 4. Create or link user account if requested (non-blocking)
+    if (createAccount) {
+      linkOrCreateUser(client, clientData, reservationId)
+        .catch(err => console.error('[user] Erreur création compte client:', err))
+    }
 
     return { success: true, id: reservationId }
   } catch (err) {
