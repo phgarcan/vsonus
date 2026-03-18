@@ -1,14 +1,14 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { X, Send, User } from 'lucide-react'
+import { MessageCircle, X, Send, User } from 'lucide-react'
 
-function MaxAvatar({ size = 40 }: { size?: number }) {
+function MaxAvatar({ size = 36 }: { size?: number }) {
   return (
     <img
       src="/images/max-avatar.png"
       alt="Max"
-      className="flex-shrink-0 rounded-full object-cover ring-2 ring-vsonus-red"
+      className="flex-shrink-0 rounded-full object-cover ring-2 ring-vsonus-red shadow-lg shadow-vsonus-red/20"
       style={{ width: size, height: size }}
     />
   )
@@ -334,10 +334,10 @@ export default function ChatBot() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className={`fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full ring-2 ring-vsonus-red overflow-hidden shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''}`}
+          className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-vsonus-red text-white flex items-center justify-center shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''}`}
           aria-label="Ouvrir le chat"
         >
-          <img src="/images/max-avatar.png" alt="Max" className="w-full h-full object-cover" />
+          <MessageCircle size={24} />
         </button>
       )}
 
@@ -347,7 +347,7 @@ export default function ChatBot() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-4 bg-vsonus-red">
             <div className="flex items-center gap-2.5">
-              <MaxAvatar size={40} />
+              <MaxAvatar size={40} /> {/* header */}
               <div className="flex flex-col leading-none">
                 <span className="font-semibold text-sm">Max</span>
                 <span className="text-xs text-red-200">Assistant V-Sonus</span>
@@ -362,7 +362,7 @@ export default function ChatBot() {
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {messages.map((msg, i) => (
               <div key={i} className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {msg.role === 'assistant' && <MaxAvatar size={24} />}
+                {msg.role === 'assistant' && <MaxAvatar size={36} />}
                 <div
                   className={`max-w-[78%] text-sm px-3 py-2 leading-snug whitespace-pre-wrap ${
                     msg.role === 'user'
@@ -398,7 +398,7 @@ export default function ChatBot() {
             {/* Typing indicator */}
             {loading && (
               <div className="flex items-end gap-2 justify-start">
-                <MaxAvatar size={24} />
+                <MaxAvatar size={36} />
                 <div className="bg-vsonus-dark px-3 py-2 flex gap-1 items-center">
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
