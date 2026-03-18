@@ -1,7 +1,7 @@
 'use client'
 
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Equipement, Pack, TarifAnnexe } from './directus'
 import { getLocationCoefficient } from './pricing'
 
@@ -62,6 +62,47 @@ interface StoreState {
 // ---------------------------------------------------------------------------
 // Store Zustand
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Store chat (session — persiste pendant la navigation, pas entre sessions)
+// ---------------------------------------------------------------------------
+
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+interface ChatState {
+  chatMessages: ChatMessage[]
+  chatOpen: boolean
+  messageCount: number
+  addChatMessage: (message: ChatMessage) => void
+  setChatOpen: (open: boolean) => void
+  setMessageCount: (count: number) => void
+  clearChat: () => void
+}
+
+const sessionStorageAdapter =
+  typeof window !== 'undefined' ? createJSONStorage(() => sessionStorage) : undefined
+
+export const useChatStore = create<ChatState>()(
+  persist(
+    (set) => ({
+      chatMessages: [],
+      chatOpen: false,
+      messageCount: 0,
+      addChatMessage: (message) =>
+        set((state) => ({ chatMessages: [...state.chatMessages, message] })),
+      setChatOpen: (open) => set({ chatOpen: open }),
+      setMessageCount: (count) => set({ messageCount: count }),
+      clearChat: () => set({ chatMessages: [], messageCount: 0 }),
+    }),
+    {
+      name: 'vsonus-chat',
+      ...(sessionStorageAdapter ? { storage: sessionStorageAdapter } : {}),
+    }
+  )
+)
 
 export const useStore = create<StoreState>()(
   persist(
