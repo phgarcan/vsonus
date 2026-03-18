@@ -48,6 +48,9 @@ interface Reservation {
   total_ht: number
   notes: string | null
   date_created: string
+  est_entreprise: boolean
+  nom_entreprise: string | null
+  numero_ide: string | null
 }
 
 interface Ligne {
@@ -196,6 +199,14 @@ export default async function ReservationDetailPage({
           </div>
           <div className="bg-vsonus-dark border border-gray-800 p-5">
             <h3 className="text-xs font-black uppercase tracking-widest text-vsonus-red mb-3">Informations client</h3>
+            {reservation.est_entreprise && reservation.nom_entreprise && (
+              <div className="mb-2">
+                <p className="text-white font-bold text-sm">{reservation.nom_entreprise}</p>
+                {reservation.numero_ide && (
+                  <p className="text-gray-500 text-xs">IDE : {reservation.numero_ide}</p>
+                )}
+              </div>
+            )}
             <p className="text-white font-bold text-sm">{reservation.nom_client}</p>
             <p className="text-gray-400 text-xs mt-1">{reservation.email_client}</p>
             <p className="text-gray-400 text-xs">{reservation.tel_client}</p>

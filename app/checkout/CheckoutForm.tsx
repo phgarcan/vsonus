@@ -7,6 +7,7 @@ import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
 import { CgvModal } from '@/components/ui/CgvModal'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
+import { CompanySearch } from '@/components/ui/CompanySearch'
 import { soumettreReservation } from '@/app/actions/reservation'
 import { getCoefficientLabel } from '@/lib/pricing'
 import type { TarifAnnexe } from '@/lib/directus'
@@ -58,6 +59,8 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
   const [cgvOpen, setCgvOpen] = useState(false)
   const [billingSame, setBillingSame] = useState(true)
   const [createAccount, setCreateAccount] = useState(false)
+  const [isEntreprise, setIsEntreprise] = useState(false)
+  const [entreprise, setEntreprise] = useState({ nom_entreprise: '', numero_ide: '' })
 
   const [form, setForm] = useState({
     nom: '',
@@ -100,6 +103,9 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
         besoinMontage: besoinTech,
         besoinLivraison: besoinTransport,
         createAccount,
+        est_entreprise: isEntreprise,
+        nom_entreprise: isEntreprise ? entreprise.nom_entreprise : undefined,
+        numero_ide: isEntreprise ? entreprise.numero_ide : undefined,
       })
 
       if (result.success) {
@@ -158,6 +164,51 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
             required placeholder="+41 79 XXX XX XX"
             className={inputCls} autoComplete="tel"
           />
+        </div>
+
+        {/* ── Entreprise (facultatif) ─────────────────────────────────── */}
+        <div className="pt-2">
+          <label className="flex items-center gap-3 cursor-pointer select-none mb-4">
+            <div className="relative flex-shrink-0">
+              <input
+                type="checkbox"
+                checked={isEntreprise}
+                onChange={(e) => setIsEntreprise(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-10 h-5 bg-gray-700 peer-checked:bg-vsonus-red transition-colors" />
+              <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white transition-transform peer-checked:translate-x-5" />
+            </div>
+            <span className="text-sm text-gray-400">
+              Je réserve pour une entreprise
+            </span>
+          </label>
+
+          {isEntreprise && (
+            <div className="space-y-4 border-l-2 border-vsonus-red pl-4 mb-4">
+              <div>
+                <label className={labelCls}>Nom de l&apos;entreprise</label>
+                <CompanySearch
+                  value={entreprise.nom_entreprise}
+                  onChange={(v) => setEntreprise((prev) => ({ ...prev, nom_entreprise: v }))}
+                  onSelect={(c) => {
+                    setEntreprise({ nom_entreprise: c.name, numero_ide: c.uid ?? '' })
+                    if (c.rue) setForm((prev) => ({ ...prev, rue: c.rue!, npa: c.npa ?? prev.npa, ville: c.ville ?? prev.ville }))
+                  }}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>N° IDE / TVA</label>
+                <input
+                  type="text"
+                  value={entreprise.numero_ide}
+                  onChange={(e) => setEntreprise((prev) => ({ ...prev, numero_ide: e.target.value }))}
+                  placeholder="CHE-XXX.XXX.XXX"
+                  className={inputCls}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Adresse de l'événement ──────────────────────────────────── */}
