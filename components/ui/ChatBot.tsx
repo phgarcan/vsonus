@@ -1,11 +1,22 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { MessageCircle, X, Send } from 'lucide-react'
+import { X, Send, User } from 'lucide-react'
+
+function MaxAvatar({ size = 32 }: { size?: number }) {
+  return (
+    <div
+      className="flex-shrink-0 bg-vsonus-red flex items-center justify-center font-bold text-white"
+      style={{ width: size, height: size, fontSize: size * 0.45 }}
+    >
+      V
+    </div>
+  )
+}
 
 const MAX_MESSAGES = 20
 const WELCOME_MESSAGE =
-  "Bonjour ! Je suis l'assistant V-Sonus. Comment puis-je vous aider ? Vous organisez un événement ?"
+  "Salut ! Moi c'est Max, l'assistant V-Sonus. Comment puis-je t'aider ? Tu organises un événement ?"
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
@@ -101,10 +112,10 @@ const CATEGORY_CONFIG: Record<
 }
 
 const DEFAULT_SUGGESTIONS = [
-  'Je cherche un pack sono',
-  'Combien pour un mariage ?',
+  'Pack sono 🔊',
+  'Prix pour un mariage',
   'Comment ça marche ?',
-  'Contacter V-Sonus',
+  'Parler à l\'équipe',
 ]
 
 // ── Google provenance detection ───────────────────────────────────────────────
@@ -137,8 +148,8 @@ function buildProactiveMessage(source: GoogleSource): string {
     const cat = CATEGORY_CONFIG[source.category]
     return cat.message
   }
-  if (source.type === 'ads_no_term') return "Besoin d'aide pour votre événement ? Je peux vous guider !"
-  return 'Bienvenue ! Vous organisez un événement en Suisse Romande ?'
+  if (source.type === 'ads_no_term') return "Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?"
+  return "Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?"
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -179,7 +190,7 @@ export default function ChatBot() {
 
     // Show notification bubble after 5s
     const timer = setTimeout(() => {
-      setNotification(proactiveMsg)
+      setNotification("Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?")
       sessionStorage.setItem('vsonus_chat_notif_shown', '1')
 
       // Auto-hide after 10s
@@ -294,9 +305,12 @@ export default function ChatBot() {
         <div className="fixed bottom-6 right-6 z-50 flex flex-col w-80 h-[500px] max-sm:inset-4 max-sm:w-auto max-sm:h-auto bg-black border border-gray-800 shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-vsonus-red">
-            <div className="flex items-center gap-2">
-              <MessageCircle size={18} />
-              <span className="font-semibold text-sm">Assistant V-Sonus</span>
+            <div className="flex items-center gap-2.5">
+              <MaxAvatar size={30} />
+              <div className="flex flex-col leading-none">
+                <span className="font-semibold text-sm">Max</span>
+                <span className="text-xs text-red-200">Assistant V-Sonus</span>
+              </div>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Fermer" className="hover:opacity-80 transition-opacity">
               <X size={18} />
@@ -306,9 +320,10 @@ export default function ChatBot() {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={i} className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.role === 'assistant' && <MaxAvatar size={24} />}
                 <div
-                  className={`max-w-[85%] text-sm px-3 py-2 leading-snug whitespace-pre-wrap ${
+                  className={`max-w-[78%] text-sm px-3 py-2 leading-snug whitespace-pre-wrap ${
                     msg.role === 'user'
                       ? 'bg-vsonus-red/20 border border-vsonus-red/30 text-white'
                       : 'bg-vsonus-dark text-gray-100'
@@ -316,6 +331,11 @@ export default function ChatBot() {
                 >
                   {msg.content}
                 </div>
+                {msg.role === 'user' && (
+                  <div className="flex-shrink-0 w-6 h-6 bg-gray-700 flex items-center justify-center">
+                    <User size={12} className="text-gray-400" />
+                  </div>
+                )}
               </div>
             ))}
 
@@ -336,7 +356,8 @@ export default function ChatBot() {
 
             {/* Typing indicator */}
             {loading && (
-              <div className="flex justify-start">
+              <div className="flex items-end gap-2 justify-start">
+                <MaxAvatar size={24} />
                 <div className="bg-vsonus-dark px-3 py-2 flex gap-1 items-center">
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
