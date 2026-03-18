@@ -46,6 +46,10 @@ const config: Config = {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
         },
+        scroll: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
@@ -54,6 +58,7 @@ const config: Config = {
         'wave': 'wave 2s ease-in-out infinite',
         'spin-slow': 'spin-slow 10s linear infinite',
         'gradient-x': 'gradient-x 3s ease infinite',
+        scroll: 'scroll 35s linear infinite',
       },
       borderRadius: {
         DEFAULT: '0px',

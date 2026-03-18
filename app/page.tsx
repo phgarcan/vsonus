@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Star } from 'lucide-react'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { HeroVideo } from '@/components/home/HeroVideo'
+import { BrandCarousel } from '@/components/ui/BrandCarousel'
 import { Sliders, Zap, Shield, Users } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -237,6 +238,18 @@ export default function HomePage() {
               </div>
             </AnimateOnScroll>
           </div>
+        </div>
+      </section>
+
+      {/* ── 3b. MARQUES PARTENAIRES ──────────────────────────────────────────── */}
+      <section className="py-14 px-6 bg-vsonus-black border-b border-gray-800">
+        <div className="max-w-6xl mx-auto">
+          <AnimateOnScroll>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-600 text-center mb-8">
+              Nos marques partenaires
+            </p>
+          </AnimateOnScroll>
+          <BrandCarousel />
         </div>
       </section>
 
