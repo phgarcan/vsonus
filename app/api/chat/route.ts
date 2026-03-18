@@ -82,29 +82,29 @@ export async function POST(req: NextRequest) {
       content: String(m.content).slice(0, 500).replace(/<[^>]*>/g, ''),
     }))
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY ?? '',
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: sanitized,
-      }),
-    })
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: sanitized.map((m) => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.content }],
+          })),
+        }),
+      }
+    )
 
     if (!response.ok) {
       const err = await response.text()
-      console.error('Anthropic API error:', err)
+      console.error('[CHAT API] Status:', response.status, 'Body:', err)
       return NextResponse.json({ error: 'Erreur du service IA' }, { status: 502 })
     }
 
     const data = await response.json()
-    const text = data.content?.[0]?.text ?? ''
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 
     return NextResponse.json({ reply: text })
   } catch (err) {
