@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { MessageCircle, X, Send, User } from 'lucide-react'
+import { useChatStore } from '@/lib/store'
+import type { ChatMessage } from '@/lib/store'
 
 function MaxAvatar({ size = 36 }: { size?: number }) {
   return (
@@ -18,7 +20,7 @@ const MAX_MESSAGES = 20
 const WELCOME_MESSAGE =
   "Salut ! Moi c'est Max, l'assistant V-Sonus. Comment puis-je t'aider ? Tu organises un événement ?"
 
-type Message = { role: 'user' | 'assistant'; content: string }
+type Message = ChatMessage
 
 // ── Markdown renderer ─────────────────────────────────────────────────────────
 
@@ -196,10 +198,9 @@ function buildProactiveMessage(source: GoogleSource): string {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function ChatBot() {
-  const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: WELCOME_MESSAGE },
-  ])
+  const { chatMessages, chatOpen, messageCount, addChatMessage, setChatOpen, setMessageCount, clearChat } = useChatStore()
+  const open = chatOpen
+  const messages = chatMessages
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS)
@@ -208,7 +209,14 @@ export default function ChatBot() {
   const [showPulse, setShowPulse] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const messageCount = useRef(0)
+
+  // Init : welcome message si conversation vide
+  useEffect(() => {
+    if (chatMessages.length === 0) {
+      addChatMessage({ role: 'assistant', content: WELCOME_MESSAGE })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Google provenance detection + proactive message
   useEffect(() => {
@@ -220,28 +228,31 @@ export default function ChatBot() {
 
     const proactiveMsg = buildProactiveMessage(source)
 
-    // Update welcome message and suggestions based on source
-    if (source.type === 'ads_with_term') {
-      const config = CATEGORY_CONFIG[source.category]
-      setMessages([{ role: 'assistant', content: proactiveMsg }])
-      setSuggestions(config.suggestions)
-    } else {
-      setMessages([{ role: 'assistant', content: proactiveMsg }])
+    // Update welcome message and suggestions based on source (only if no real conversation yet)
+    if (chatMessages.length <= 1) {
+      if (source.type === 'ads_with_term') {
+        const config = CATEGORY_CONFIG[source.category]
+        clearChat()
+        addChatMessage({ role: 'assistant', content: proactiveMsg })
+        setSuggestions(config.suggestions)
+      } else {
+        clearChat()
+        addChatMessage({ role: 'assistant', content: proactiveMsg })
+      }
     }
 
     // Show notification bubble after 5s
     const timer = setTimeout(() => {
       setNotification("Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?")
       sessionStorage.setItem('vsonus_chat_notif_shown', '1')
-
-      // Auto-hide after 10s
       setTimeout(() => setNotification(null), 10000)
     }, 5000)
 
     return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Stop pulse after first interaction
+  // Stop pulse after first open
   useEffect(() => {
     if (open) setShowPulse(false)
   }, [open])
@@ -260,24 +271,21 @@ export default function ChatBot() {
     const trimmed = text.trim()
     if (!trimmed || loading) return
 
-    if (messageCount.current >= MAX_MESSAGES) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content:
-            'Vous avez atteint la limite de messages. Pour continuer, contactez-nous directement au +41 79 651 21 14',
-        },
-      ])
+    if (messageCount >= MAX_MESSAGES) {
+      addChatMessage({
+        role: 'assistant',
+        content: 'Tu as atteint la limite de messages. Pour continuer, contacte-nous directement au +41 79 651 21 14',
+      })
       return
     }
 
-    const newMessages: Message[] = [...messages, { role: 'user', content: trimmed }]
-    setMessages(newMessages)
+    const userMsg: Message = { role: 'user', content: trimmed }
+    const newMessages: Message[] = [...messages, userMsg]
+    addChatMessage(userMsg)
     setInput('')
     setShowSuggestions(false)
     setLoading(true)
-    messageCount.current += 1
+    setMessageCount(messageCount + 1)
 
     try {
       const res = await fetch('/api/chat', {
@@ -286,13 +294,10 @@ export default function ChatBot() {
         body: JSON.stringify({ messages: newMessages }),
       })
       const data = await res.json()
-      const reply = data.reply ?? "Désolé, une erreur s'est produite. Réessayez ou contactez-nous directement."
-      setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
+      const reply = data.reply ?? "Désolé, une erreur s'est produite. Réessayez ou contacte-nous directement."
+      addChatMessage({ role: 'assistant', content: reply })
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: "Erreur de connexion. Contactez-nous au +41 79 651 21 14" },
-      ])
+      addChatMessage({ role: 'assistant', content: "Erreur de connexion. Contacte-nous au +41 79 651 21 14" })
     } finally {
       setLoading(false)
     }
@@ -304,7 +309,7 @@ export default function ChatBot() {
 
   function handleNotificationClick() {
     setNotification(null)
-    setOpen(true)
+    setChatOpen(true)
   }
 
   return (
@@ -333,7 +338,7 @@ export default function ChatBot() {
       {/* Floating button */}
       {!open && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => setChatOpen(true)}
           className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-vsonus-red text-white flex items-center justify-center shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''}`}
           aria-label="Ouvrir le chat"
         >
@@ -353,7 +358,7 @@ export default function ChatBot() {
                 <span className="text-xs text-red-200">Assistant V-Sonus</span>
               </div>
             </div>
-            <button onClick={() => setOpen(false)} aria-label="Fermer" className="hover:opacity-80 transition-opacity">
+            <button onClick={() => setChatOpen(false)} aria-label="Fermer" className="hover:opacity-80 transition-opacity">
               <X size={18} />
             </button>
           </div>
