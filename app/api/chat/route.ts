@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { GoogleGenerativeAI } from '@google/generative-ai'
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 const SYSTEM_PROMPT = `Tu t'appelles Max. Tu es l'assistant virtuel de V-Sonus, entreprise de location de matériel événementiel basée à Vevey, Suisse Romande. Tu es sympathique, tu tutoies les visiteurs, et tu utilises un ton décontracté mais professionnel. Tu parles en français.
 
@@ -68,50 +70,54 @@ COMPORTEMENT :
 - Si tu ne sais pas, propose de contacter V-Sonus directement
 - Réponds uniquement aux questions liées à V-Sonus et l'événementiel`
 
-export async function POST(req: NextRequest) {
+const MAX_HISTORY = 20
+
+export async function POST(request: Request) {
   try {
-    const { messages } = await req.json()
+    const { messages } = await request.json()
 
     if (!Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: 'Messages invalides' }, { status: 400 })
+      return Response.json({ error: 'Messages invalides' }, { status: 400 })
     }
 
-    // Sanitize messages
-    const sanitized = messages.slice(-20).map((m: { role: string; content: string }) => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: String(m.content).slice(0, 500).replace(/<[^>]*>/g, ''),
+    // Sanitize
+    const sanitized: { role: 'user' | 'assistant'; content: string }[] = messages
+      .slice(-MAX_HISTORY)
+      .map((m: { role: string; content: string }) => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: String(m.content).slice(0, 500).replace(/<[^>]*>/g, ''),
+      }))
+
+    // Map to Gemini format
+    const geminiHistory = sanitized.map((m) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
     }))
 
-    // Gemini requires conversation to start with a 'user' turn — drop leading assistant messages
-    const geminiContents = sanitized
-      .map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }))
-    const firstUserIdx = geminiContents.findIndex((m) => m.role === 'user')
-    const contents = firstUserIdx > 0 ? geminiContents.slice(firstUserIdx) : geminiContents
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents,
-        }),
-      }
-    )
-
-    if (!response.ok) {
-      const err = await response.text()
-      console.error('[CHAT API] Status:', response.status, 'Body:', err)
-      return NextResponse.json({ error: 'Erreur du service IA' }, { status: 502 })
+    // Extract last message (the one to send)
+    const lastMessage = geminiHistory.pop()
+    if (!lastMessage) {
+      return Response.json({ error: 'Messages invalides' }, { status: 400 })
     }
 
-    const data = await response.json()
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+    // Gemini requires history to start with a 'user' turn
+    while (geminiHistory.length > 0 && geminiHistory[0].role !== 'user') {
+      geminiHistory.shift()
+    }
 
-    return NextResponse.json({ reply: text })
-  } catch (err) {
-    console.error('Chat route error:', err)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      systemInstruction: SYSTEM_PROMPT,
+    })
+
+    const chat = model.startChat({ history: geminiHistory })
+    const result = await chat.sendMessage(lastMessage.parts[0].text)
+    const reply = result.response.text()
+
+    return Response.json({ reply })
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('[CHAT] Error:', msg)
+    return Response.json({ error: 'Erreur du chatbot' }, { status: 500 })
   }
 }
