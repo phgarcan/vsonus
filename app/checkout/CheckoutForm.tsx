@@ -62,6 +62,8 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
   const [isEntreprise, setIsEntreprise] = useState(false)
   const [entreprise, setEntreprise] = useState({ nom_entreprise: '', numero_ide: '' })
 
+  const [honeypot, setHoneypot] = useState('')
+
   const [form, setForm] = useState({
     nom: '',
     email: '',
@@ -106,6 +108,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
         est_entreprise: isEntreprise,
         nom_entreprise: isEntreprise ? entreprise.nom_entreprise : undefined,
         numero_ide: isEntreprise ? entreprise.numero_ide : undefined,
+        honeypot,
       })
 
       if (result.success) {
@@ -135,6 +138,18 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
       {/* Formulaire client */}
       <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-5">
+
+        {/* Honeypot anti-bot — invisible pour les humains */}
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          className="hidden"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+        />
 
         {/* ── Coordonnées ──────────────────────────────────────────────── */}
         <h2 className="text-xl font-black uppercase tracking-widest text-white border-b-2 border-vsonus-red pb-3">

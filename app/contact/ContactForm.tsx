@@ -30,6 +30,7 @@ export function ContactForm() {
     telephone: '',
     sujet: searchParams.get('sujet') === 'devis' ? SUBJECT_DEVIS : '',
     message: '',
+    website: '', // honeypot anti-bot
   })
 
   function set(field: string, value: string) {
@@ -45,7 +46,7 @@ export function ContactForm() {
 
     if (result.success) {
       setStatus('success')
-      setForm({ nom: '', email: '', telephone: '', sujet: '', message: '' })
+      setForm({ nom: '', email: '', telephone: '', sujet: '', message: '', website: '' })
     } else {
       setStatus('error')
       setErrorMsg(result.error)
@@ -76,6 +77,17 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Honeypot anti-bot — invisible pour les humains */}
+      <input
+        type="text"
+        name="website"
+        value={form.website}
+        onChange={(e) => set('website', e.target.value)}
+        className="hidden"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+      />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
           <label htmlFor="nom" className={labelClass}>Nom *</label>

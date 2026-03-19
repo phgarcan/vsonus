@@ -10,7 +10,7 @@ import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Pack } from '@/lib/directus'
 import { AddToCartButton } from '@/components/catalogue/AddToCartButton'
 
-export const revalidate = 300
+export const revalidate = 3600
 
 interface Props {
   params: Promise<{ slug: string }>
