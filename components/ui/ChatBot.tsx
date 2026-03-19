@@ -223,6 +223,7 @@ export default function ChatBot() {
   const { chatMessages, chatOpen, messageCount, addChatMessage, setChatOpen, setMessageCount, clearChat } = useChatStore()
   const open = chatOpen
   const messages = chatMessages
+  const [cookieBannerVisible, setCookieBannerVisible] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [showTyping, setShowTyping] = useState(false)
@@ -235,6 +236,15 @@ export default function ChatBot() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Détection bannière cookies pour ajuster la position du bouton
+  useEffect(() => {
+    const hasCookie = document.cookie.includes('vsonus_cookies_ok=1')
+    setCookieBannerVisible(!hasCookie)
+    const handler = () => setCookieBannerVisible(false)
+    window.addEventListener('cookieAccepted', handler)
+    return () => window.removeEventListener('cookieAccepted', handler)
+  }, [])
 
   // Init : welcome message si conversation vide
   useEffect(() => {
@@ -379,7 +389,7 @@ export default function ChatBot() {
       {!open && (
         <button
           onClick={() => setChatOpen(true)}
-          className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-vsonus-red text-white flex items-center justify-center shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''}`}
+          className={`fixed right-6 z-50 w-14 h-14 rounded-full bg-vsonus-red text-white flex items-center justify-center shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''} ${cookieBannerVisible ? 'bottom-40 sm:bottom-4' : 'bottom-6'}`}
           aria-label="Ouvrir le chat"
         >
           <MessageCircle size={24} />
