@@ -59,6 +59,19 @@ const config: Config = {
           '0%, 100%': { boxShadow: '0 0 0 0 rgba(236, 28, 36, 0)' },
           '50%': { boxShadow: '0 0 0 8px rgba(236, 28, 36, 0.35)' },
         },
+        'check-bounce': {
+          '0%': { transform: 'scale(0)', opacity: '0' },
+          '60%': { transform: 'scale(1.2)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        'fade-in-delayed': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'confetti-fall': {
+          '0%': { transform: 'translateY(0) rotate(0deg)', opacity: '1' },
+          '100%': { transform: 'translateY(100vh) rotate(720deg)', opacity: '0' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
@@ -70,6 +83,9 @@ const config: Config = {
         scroll: 'scroll 35s linear infinite',
         'slide-in-right': 'slide-in-right 0.4s ease-out forwards',
         'pulse-once': 'pulse-once 1.5s ease-in-out 2',
+        'check-bounce': 'check-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        'fade-in-delayed': 'fade-in-delayed 0.5s ease-out 400ms forwards',
+        'confetti-fall': 'confetti-fall 2s ease-in forwards',
       },
       borderRadius: {
         DEFAULT: '0px',

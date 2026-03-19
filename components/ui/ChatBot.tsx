@@ -100,58 +100,128 @@ function analyzeQuery(term: string): QueryCategory {
 
 const CATEGORY_CONFIG: Record<
   QueryCategory,
-  { message: string; suggestions: string[] }
+  { message: string; suggestions: string[]; notification?: string }
 > = {
   sonorisation: {
     message:
       'Vous cherchez une sonorisation ? Nos systèmes L-Acoustics couvrent de 50 à 2000 personnes. Quel est votre événement ?',
     suggestions: ['Pack Sono pour mariage', 'Pack Sono pour festival', 'Voir les prix sono'],
+    notification: 'Tu cherches une sono ? Je peux t\'aider !',
   },
   eclairage: {
     message:
       "Besoin d'éclairage pour votre événement ? Nos packs Light vont de 120 à 780 CHF. Quelle est la taille de votre salle ?",
     suggestions: ['Pack Light pour soirée', 'Éclairage mariage', 'Voir les prix éclairage'],
+    notification: 'Besoin d\'éclairage ? Je suis là !',
   },
   scenes: {
     message:
       "Vous cherchez une scène ? Notre Pack Scène 6x6 est idéal pour les festivals et concerts. Dites-m'en plus !",
     suggestions: ['Pack Scène 6x6', 'Structure Line Array', 'Scène + sono'],
+    notification: 'Tu cherches une scène ? Je peux t\'aider !',
   },
   dj: {
     message:
       'Vous avez besoin de matériel DJ ? Nos packs incluent platines Pioneer et table de mixage. Pour combien de personnes ?',
     suggestions: ['DJ Pack mariage', 'DJ Pack festival', 'Voir les prix DJ'],
+    notification: 'Besoin de matos DJ ? On a tout !',
   },
   concerts: {
     message:
       'Vous organisez un concert ? Nos packs concert incluent sono, retours et micros. Quelle est la capacité du lieu ?',
     suggestions: ['Pack Concert M', 'Pack Concert L', 'Concert en plein air'],
+    notification: 'Tu organises un concert ? Je peux t\'aider !',
   },
   mapping: {
     message:
       'Vous cherchez du mapping vidéo ? Notre Pack Mapping à 300 CHF est parfait pour des projections événementielles. Dites-moi votre projet !',
     suggestions: ['Pack Mapping 300 CHF', 'Mapping + sono', 'Contacter V-Sonus'],
+    notification: 'Intéressé par le mapping vidéo ? Parlons-en !',
   },
   evenement_prive: {
     message:
       'Vous organisez un événement privé ? Mariage, anniversaire… je peux vous recommander le pack idéal selon vos besoins.',
     suggestions: ['Pack mariage', 'Anniversaire 100 pers.', 'Soirée privée'],
+    notification: 'Tu organises un événement ? Je peux t\'aider !',
   },
   evenement_entreprise: {
     message:
       'Vous planifiez un événement corporate ? Séminaire, team-building… nos packs sont adaptés à tous les formats pro.',
     suggestions: ['Séminaire 200 pers.', 'Soirée entreprise', 'Demander un devis'],
+    notification: 'Un événement d\'entreprise ? On s\'en occupe !',
   },
   festival: {
     message:
       "Vous organisez un festival ? On a les scènes, la sono L-Acoustics et l'éclairage qu'il vous faut !",
     suggestions: ['Pack Festival sono', 'Scène + sono + light', 'Contacter V-Sonus'],
+    notification: 'Tu organises un festival ? Parlons-en !',
   },
   general: {
     message:
       'Bienvenue chez V-Sonus ! Je peux vous aider à trouver le matériel idéal pour votre événement. Que cherchez-vous ?',
     suggestions: ['Je cherche un pack sono', 'Combien pour un mariage ?', 'Comment ça marche ?'],
   },
+}
+
+// Build contextual messages from utm_term keywords
+function buildUtmMessage(term: string, category: QueryCategory): string {
+  const lower = term.toLowerCase().replace(/\+/g, ' ')
+  const config = CATEGORY_CONFIG[category]
+
+  // Detect event type
+  const isMariage = lower.includes('mariage')
+  const isAnniversaire = lower.includes('anniversaire')
+  const isFestival = lower.includes('festival')
+  const isConcert = lower.includes('concert')
+
+  // Detect canton/region
+  const cantons: Record<string, string> = {
+    vaud: 'le canton de Vaud',
+    geneve: 'le canton de Genève', genève: 'le canton de Genève',
+    valais: 'le Valais',
+    fribourg: 'le canton de Fribourg',
+    neuchatel: 'le canton de Neuchâtel', neuchâtel: 'le canton de Neuchâtel',
+    lausanne: 'la région de Lausanne',
+    montreux: 'la région de Montreux',
+  }
+  let region = ''
+  for (const [key, label] of Object.entries(cantons)) {
+    if (lower.includes(key)) { region = label; break }
+  }
+
+  const regionPart = region ? ` dans ${region}` : ''
+
+  if (isMariage && category === 'sonorisation') {
+    return `Salut ! Tu cherches une sonorisation pour un mariage${regionPart} ? J'ai exactement ce qu'il te faut. Quel est le nombre d'invités prévu ?`
+  }
+  if (isMariage) {
+    return `Salut ! Tu prépares un mariage${regionPart} ? Je peux te recommander le pack idéal. Combien d'invités prévois-tu ?`
+  }
+  if (isFestival) {
+    return `Salut ! Tu organises un festival${regionPart} ? On a les scènes, la sono L-Acoustics et l'éclairage qu'il te faut !`
+  }
+  if (isConcert) {
+    return `Salut ! Tu organises un concert${regionPart} ? Nos packs concert incluent sono, retours et micros. Dis-m'en plus !`
+  }
+  if (isAnniversaire) {
+    return `Salut ! Tu prépares un anniversaire${regionPart} ? Je peux te recommander le pack idéal selon le nombre d'invités.`
+  }
+
+  return config.message
+}
+
+function buildUtmSuggestions(term: string, category: QueryCategory): string[] {
+  const lower = term.toLowerCase().replace(/\+/g, ' ')
+  const isMariage = lower.includes('mariage')
+
+  if (isMariage && category === 'sonorisation') {
+    return ['Pack Sono pour mariage', 'Prix pour 100-200 personnes', 'Voir les packs sono']
+  }
+  if (isMariage) {
+    return ['Pack mariage', 'Prix pour 100-200 personnes', 'Voir les packs']
+  }
+
+  return CATEGORY_CONFIG[category].suggestions
 }
 
 const DEFAULT_SUGGESTIONS = [
@@ -183,16 +253,6 @@ function detectGoogleSource(): GoogleSource {
   if (utmTerm) return { type: 'ads_with_term', term: utmTerm, category: analyzeQuery(utmTerm) }
   if (gclid) return { type: 'ads_no_term' }
   return { type: 'organic' }
-}
-
-function buildProactiveMessage(source: GoogleSource): string {
-  if (!source) return WELCOME_MESSAGE
-  if (source.type === 'ads_with_term') {
-    const cat = CATEGORY_CONFIG[source.category]
-    return cat.message
-  }
-  if (source.type === 'ads_no_term') return "Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?"
-  return "Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?"
 }
 
 // ── Disclaimer ────────────────────────────────────────────────────────────────
@@ -236,6 +296,7 @@ export default function ChatBot() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const initRef = useRef(false)
 
   // Détection bannière cookies pour ajuster la position du bouton
   useEffect(() => {
@@ -246,45 +307,48 @@ export default function ChatBot() {
     return () => window.removeEventListener('cookieAccepted', handler)
   }, [])
 
-  // Init : welcome message si conversation vide
+  // Init : welcome message + Google provenance (runs once)
   useEffect(() => {
-    if (chatMessages.length === 0) {
-      addChatMessage({ role: 'assistant', content: WELCOME_MESSAGE })
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // Google provenance detection + proactive message
-  useEffect(() => {
-    const alreadyShown = sessionStorage.getItem('vsonus_chat_notif_shown')
-    if (alreadyShown) return
+    if (initRef.current) return
+    initRef.current = true
 
     const source = detectGoogleSource()
-    if (!source) return
+    const alreadyShown = sessionStorage.getItem('vsonus_chat_notif_shown')
 
-    const proactiveMsg = buildProactiveMessage(source)
-
-    // Update welcome message and suggestions based on source (only if no real conversation yet)
-    if (chatMessages.length <= 1) {
-      if (source.type === 'ads_with_term') {
-        const config = CATEGORY_CONFIG[source.category]
-        clearChat()
-        addChatMessage({ role: 'assistant', content: proactiveMsg })
-        setSuggestions(config.suggestions)
-      } else {
-        clearChat()
-        addChatMessage({ role: 'assistant', content: proactiveMsg })
+    // If conversation already has messages, restore suggestions but don't re-add welcome
+    if (chatMessages.length > 0) {
+      // Restore contextual suggestions if from Google Ads
+      if (source?.type === 'ads_with_term') {
+        setSuggestions(buildUtmSuggestions(source.term, source.category))
       }
+      return
     }
 
-    // Show notification bubble after 5s
-    const timer = setTimeout(() => {
-      setNotification("Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?")
-      sessionStorage.setItem('vsonus_chat_notif_shown', '1')
-      setTimeout(() => setNotification(null), 10000)
-    }, 5000)
+    // Empty conversation — set welcome message
+    if (source?.type === 'ads_with_term') {
+      const contextualMessage = buildUtmMessage(source.term, source.category)
+      addChatMessage({ role: 'assistant', content: contextualMessage })
+      setSuggestions(buildUtmSuggestions(source.term, source.category))
+    } else if (source?.type === 'ads_no_term' || source?.type === 'organic') {
+      addChatMessage({ role: 'assistant', content: "Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?" })
+    } else {
+      addChatMessage({ role: 'assistant', content: WELCOME_MESSAGE })
+    }
 
-    return () => clearTimeout(timer)
+    // Show notification bubble after 5s (only once per session)
+    if (!alreadyShown) {
+      const notifMessage = source?.type === 'ads_with_term'
+        ? (CATEGORY_CONFIG[source.category].notification ?? "Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?")
+        : "Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?"
+
+      const timer = setTimeout(() => {
+        setNotification(notifMessage)
+        sessionStorage.setItem('vsonus_chat_notif_shown', '1')
+        setTimeout(() => setNotification(null), 10000)
+      }, 5000)
+
+      return () => clearTimeout(timer)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

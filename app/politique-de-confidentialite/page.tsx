@@ -117,7 +117,7 @@ export default function PolitiqueConfidentialitePage() {
           <h2 className="text-base font-bold text-white uppercase tracking-widest mb-3">8. Cookies</h2>
           <p>
             Ce site utilise uniquement des <span className="text-white font-semibold">cookies techniques nécessaires</span> au
-            fonctionnement du site (panier de sélection, préférences de session).
+            fonctionnement du site (liste de matériel, préférences de session).
             Aucun cookie publicitaire, aucun tracker tiers ni aucune technologie de profilage
             n&apos;est utilisé.
           </p>

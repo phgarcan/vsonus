@@ -361,7 +361,7 @@ export function Header() {
         </div>
       )}
 
-      {/* Tiroir sélection */}
+      {/* Tiroir liste */}
       <CartDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </>
   )

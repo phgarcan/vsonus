@@ -209,10 +209,14 @@ export const useStore = create<StoreState>()(
       /**
        * Règle métier L-Acoustics / Levage :
        * Si le panier contient un équipement avec technicien_obligatoire = true
-       * → retirer l'option "retrait sur place", technicien requis.
+       * → technicien requis.
+       * MAIS si un pack est présent → pas de frais (le pack inclut déjà la livraison).
        */
       requiresTechnicien: () => {
-        return get().cart.some(
+        const { cart } = get()
+        const hasPack = cart.some((i) => i.type === 'pack')
+        if (hasPack) return false
+        return cart.some(
           (i) => i.type === 'equipement' && (i.item as Equipement).technicien_obligatoire
         )
       },
@@ -221,9 +225,13 @@ export const useStore = create<StoreState>()(
        * Règle métier transport :
        * Si le panier contient un équipement avec transport_obligatoire = true
        * → transport obligatoire.
+       * MAIS si un pack est présent → pas de frais (le pack inclut déjà la livraison).
        */
       requiresTransport: () => {
-        return get().cart.some(
+        const { cart } = get()
+        const hasPack = cart.some((i) => i.type === 'pack')
+        if (hasPack) return false
+        return cart.some(
           (i) => i.type === 'equipement' && (i.item as Equipement).transport_obligatoire
         )
       },

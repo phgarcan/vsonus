@@ -1,11 +1,14 @@
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? ''
+  const isDev = siteUrl.includes('dev.') || !siteUrl.includes('vsonus.ch')
+
   return {
     rules: {
       userAgent: '*',
-      allow: '/',
+      ...(isDev ? { disallow: '/' } : { allow: '/' }),
     },
-    sitemap: 'https://vsonus.ch/sitemap.xml',
+    ...(isDev ? {} : { sitemap: 'https://vsonus.ch/sitemap.xml' }),
   }
 }

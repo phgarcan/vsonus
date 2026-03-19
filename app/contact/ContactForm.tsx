@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { envoyerMessage } from '@/app/actions/contact'
 import { PrivacyModal } from '@/components/ui/PrivacyModal'
+import { formatSwissPhone } from '@/lib/utils'
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
@@ -107,8 +108,8 @@ export function ContactForm() {
             id="telephone"
             type="tel"
             value={form.telephone}
-            onChange={(e) => set('telephone', e.target.value)}
-            placeholder="+41 79 000 00 00"
+            onChange={(e) => set('telephone', formatSwissPhone(e.target.value))}
+            placeholder="+41 79 XXX XX XX"
             className={inputClass}
           />
         </div>
