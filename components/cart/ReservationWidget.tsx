@@ -80,10 +80,10 @@ export function ReservationWidget({ tarifsAnnexes }: ReservationWidgetProps) {
         )}
       </div>
 
-      {/* Liste du panier */}
+      {/* Liste du matériel */}
       <div className="space-y-2">
         <h3 className="text-xs font-bold uppercase tracking-widest text-vsonus-red">
-          Matériel sélectionné
+          Ma liste
         </h3>
 
         {cart.length === 0 ? (
@@ -157,7 +157,7 @@ export function ReservationWidget({ tarifsAnnexes }: ReservationWidgetProps) {
             </div>
           )}
           <p className="text-xs text-gray-500 mt-1">
-            Le matériel sélectionné requiert une livraison et/ou installation par un technicien V-Sonus.
+            Le matériel de votre liste requiert une livraison et/ou installation par un technicien V-Sonus.
           </p>
         </div>
       )}

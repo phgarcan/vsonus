@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ConfirmationAnimations } from './ConfirmationAnimations'
 
 export const metadata: Metadata = {
   title: 'Demande envoyée – V-Sonus',
@@ -8,29 +9,33 @@ export const metadata: Metadata = {
 export default async function ConfirmationPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>
+  searchParams: Promise<{ id?: string; email?: string; nom?: string; account?: string }>
 }) {
-  const { id } = await searchParams
+  const { id, email, nom, account } = await searchParams
+  const hasAccount = account === '1'
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-20">
+    <div className="max-w-2xl mx-auto px-6 py-20 relative overflow-hidden">
+
+      {/* Confettis CSS */}
+      <ConfirmationAnimations />
 
       {/* En-tête succès */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-vsonus-red mb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-vsonus-red mb-6 animate-check-bounce">
           <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="square" strokeLinejoin="miter" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-4">
+        <h1 className="text-3xl font-black uppercase tracking-widest text-white mb-4 animate-fade-in-delayed">
           Demande envoyée !
         </h1>
-        <p className="text-gray-400 leading-relaxed">
+        <p className="text-gray-400 leading-relaxed animate-fade-in-delayed [animation-delay:600ms]">
           Votre demande de devis a bien été enregistrée. Un email de confirmation vous a été envoyé.
           Notre équipe vous répondra <strong className="text-white">dans les 24 heures</strong>.
         </p>
         {id && (
-          <p className="text-xs text-gray-600 mt-3">
+          <p className="text-xs text-gray-600 mt-3 animate-fade-in-delayed [animation-delay:800ms]">
             Référence : <span className="font-mono text-gray-400">{id}</span>
           </p>
         )}
@@ -48,7 +53,11 @@ export default async function ConfirmationPage({
             { n: 3, label: 'Validation du devis et règlement de l\'acompte pour confirmer la réservation.' },
             { n: 4, label: 'Livraison et installation le jour J par notre équipe.' },
           ].map(({ n, label }) => (
-            <li key={n} className="flex gap-4 py-4 border-b border-gray-900">
+            <li
+              key={n}
+              className="flex gap-4 py-4 border-b border-gray-900 animate-fade-in-up"
+              style={{ animationDelay: `${800 + n * 150}ms` }}
+            >
               <span className="flex-shrink-0 w-7 h-7 bg-vsonus-red text-white font-black text-xs flex items-center justify-center">
                 {n}
               </span>
@@ -62,21 +71,23 @@ export default async function ConfirmationPage({
       <div className="bg-vsonus-dark border-l-2 border-vsonus-red px-5 py-4 mb-10">
         <p className="text-xs font-bold uppercase tracking-widest text-vsonus-red mb-2">À savoir</p>
         <ul className="space-y-1 text-sm text-gray-500 leading-relaxed">
-          <li>• Annulation gratuite jusqu'à 5 jours avant l'événement.</li>
+          <li>• Annulation gratuite jusqu&apos;à 5 jours avant l&apos;événement.</li>
           <li>• Le devis officiel fera foi — ce récapitulatif est indicatif.</li>
           <li>• Une question ? <a href="tel:+41796512114" className="text-vsonus-red hover:underline">+41 79 651 21 14</a></li>
         </ul>
       </div>
 
       {/* Espace client */}
-      <div className="bg-vsonus-dark border border-gray-800 px-5 py-4 mb-10">
-        <p className="text-sm text-gray-400 leading-relaxed">
-          Si vous avez créé un espace client, vérifiez votre email pour définir votre mot de passe et{' '}
-          <Link href="/mon-compte/connexion" className="text-vsonus-red hover:underline font-bold">
-            suivre vos réservations
-          </Link>.
-        </p>
-      </div>
+      {hasAccount && (
+        <div className="bg-vsonus-dark border border-gray-800 px-5 py-4 mb-10">
+          <p className="text-sm text-gray-400 leading-relaxed">
+            Un espace client a été créé pour vous ! Vérifiez votre email pour définir votre mot de passe et{' '}
+            <Link href="/mon-compte/connexion" className="text-vsonus-red hover:underline font-bold">
+              suivre vos réservations
+            </Link>.
+          </p>
+        </div>
+      )}
 
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -96,6 +107,14 @@ export default async function ConfirmationPage({
           </svg>
         </Link>
       </div>
+
+      {/* Bouton créer compte si pas déjà fait */}
+      {!hasAccount && email && (
+        <CreateAccountSection email={email} nom={nom ?? ''} reservationId={id ?? ''} />
+      )}
     </div>
   )
 }
+
+// ── Section "Créer mon espace client" (client component import) ──────────────
+import { CreateAccountSection } from './CreateAccountSection'

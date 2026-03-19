@@ -10,6 +10,7 @@ import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 import { CompanySearch } from '@/components/ui/CompanySearch'
 import { soumettreReservation } from '@/app/actions/reservation'
 import { getCoefficientLabel } from '@/lib/pricing'
+import { formatSwissPhone } from '@/lib/utils'
 import type { TarifAnnexe } from '@/lib/directus'
 
 interface CheckoutFormProps {
@@ -113,7 +114,14 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
 
       if (result.success) {
         clearCart()
-        router.push(`/confirmation?id=${result.id}`)
+        const params = new URLSearchParams({ id: result.id })
+        if (createAccount) {
+          params.set('account', '1')
+        } else {
+          params.set('email', form.email)
+          params.set('nom', form.nom)
+        }
+        router.push(`/confirmation?${params.toString()}`)
       } else {
         setError(result.error)
       }
@@ -175,7 +183,8 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
         <div>
           <label className={labelCls}>Téléphone <span className="text-vsonus-red">*</span></label>
           <input
-            type="tel" name="tel" value={form.tel} onChange={handleChange}
+            type="tel" name="tel" value={form.tel}
+            onChange={(e) => setForm((prev) => ({ ...prev, tel: formatSwissPhone(e.target.value) }))}
             required placeholder="+41 79 XXX XX XX"
             className={inputCls} autoComplete="tel"
           />

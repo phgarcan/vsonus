@@ -178,7 +178,7 @@ export default async function ProduitPage({
             </div>
           )}
 
-          {/* Ajout au panier */}
+          {/* Ajout à la liste */}
           <div className="border-t border-gray-800 pt-6">
             <AddToCartSection equipement={equipement} />
           </div>

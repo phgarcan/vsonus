@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { requestPasswordReset } from '@/lib/auth'
 
 export default function MotDePasseOubliePage() {
   const [email, setEmail] = useState('')
@@ -12,7 +11,11 @@ export default function MotDePasseOubliePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    await requestPasswordReset(email)
+    await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }).catch(() => {})
     setSent(true)
     setLoading(false)
   }

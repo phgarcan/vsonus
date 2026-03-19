@@ -70,7 +70,7 @@ export async function soumettreReservation(
     return { success: false, error: 'Les dates de location sont obligatoires.' }
   }
   if (cartItems.length === 0) {
-    return { success: false, error: 'La sélection est vide.' }
+    return { success: false, error: 'Votre liste est vide.' }
   }
 
   try {
@@ -405,13 +405,13 @@ async function linkOrCreateUser(
             Vous pourrez y suivre vos réservations et gérer votre profil.
           </p>
           <p style="margin:0 0 24px;">
-            <a href="https://vsonus.ch/mon-compte/mot-de-passe-oublie"
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dev.vsonus.ch'}/mon-compte/definir-mot-de-passe"
                style="display:inline-block;background:#EC1C24;color:#fff;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;padding:12px 24px;text-decoration:none;">
               Définir mon mot de passe →
             </a>
           </p>
           <p style="font-size:12px;color:#666;">
-            Connectez-vous ensuite sur <a href="https://vsonus.ch/mon-compte/connexion" style="color:#EC1C24;">vsonus.ch/mon-compte</a>
+            Connectez-vous ensuite sur <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dev.vsonus.ch'}/mon-compte/connexion" style="color:#EC1C24;">vsonus.ch/mon-compte</a>
           </p>
         `),
       }).catch((err: unknown) => console.error('[email] Welcome email error:', err))

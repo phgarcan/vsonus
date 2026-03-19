@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getSession, updateProfile, changePassword, type SessionUser } from '@/lib/auth'
+import { formatSwissPhone } from '@/lib/utils'
 
 export default function ProfilPage() {
   const router = useRouter()
@@ -84,7 +85,7 @@ export default function ProfilPage() {
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Téléphone</label>
-          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+          <input type="tel" value={phone} onChange={(e) => setPhone(formatSwissPhone(e.target.value))} placeholder="+41 79 XXX XX XX"
             className="w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:border-vsonus-red focus:outline-none transition-colors" />
         </div>
 
