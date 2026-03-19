@@ -24,32 +24,32 @@ export function PrivacyModal({ open, onClose }: PrivacyModalProps) {
   if (!open) return null
 
   const modal = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center" onClick={onClose}>
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/80" />
-
-      {/* Modal */}
+    <div
+      className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center"
+      onClick={onClose}
+    >
+      {/* Modal — plein écran mobile, centré desktop */}
       <div
-        className="relative flex flex-col bg-vsonus-dark border-t-2 border-t-vsonus-red inset-2 absolute md:relative md:inset-auto md:max-w-3xl md:max-h-[85vh] md:w-full md:border md:border-gray-700"
+        className="relative w-full h-full md:max-w-3xl md:max-h-[85vh] md:h-auto bg-vsonus-dark border-t-2 border-vsonus-red md:border md:border-gray-700 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Sticky header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-800 bg-vsonus-dark">
+        {/* Header — toujours visible */}
+        <div className="flex-shrink-0 flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-800 bg-vsonus-dark">
           <h2 className="text-sm font-black uppercase tracking-widest text-white">
             Politique de confidentialité
           </h2>
           <button
             onClick={onClose}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors bg-vsonus-dark/90 px-2 py-1"
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors px-2 py-1"
             aria-label="Fermer"
           >
             <X className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-widest md:hidden">Fermer</span>
+            <span className="text-xs font-bold uppercase tracking-widest">Fermer</span>
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-5 space-y-6 text-sm text-gray-400 leading-relaxed">
+        {/* Body — seul élément scrollable. min-h-0 indispensable pour que overflow-y-auto fonctionne dans un flex. */}
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 md:px-6 py-5 space-y-6 text-sm text-gray-400 leading-relaxed">
           <p className="text-xs text-gray-600">V-Sonus – Paul Villommet · Rue des Bosquets 17, 1800 Vevey, Suisse</p>
 
           <section>
@@ -161,8 +161,8 @@ export function PrivacyModal({ open, onClose }: PrivacyModalProps) {
           </p>
         </div>
 
-        {/* Footer */}
-        <div className="px-4 md:px-6 py-3 md:py-4 border-t border-gray-800 flex-shrink-0 bg-vsonus-dark">
+        {/* Footer — toujours visible */}
+        <div className="flex-shrink-0 px-4 md:px-6 py-3 md:py-4 border-t border-gray-800 bg-vsonus-dark">
           <button
             onClick={onClose}
             className="w-full border border-gray-700 text-gray-400 font-bold uppercase tracking-widest text-xs py-3 hover:border-white hover:text-white transition-colors"
