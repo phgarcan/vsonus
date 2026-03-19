@@ -231,8 +231,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 </div>
               )}
 
-              {/* Avertissement L-Acoustics / levage */}
-              {!isSurDemande && cart.some((i) => i.type === 'equipement' && (i.item as Equipement).technicien_obligatoire) && (
+              {/* Avertissement L-Acoustics / levage — masqué si un pack est présent */}
+              {!isSurDemande && !hasPacks && cart.some((i) => i.type === 'equipement' && (i.item as Equipement).technicien_obligatoire) && (
                 <div className="flex gap-2 border border-yellow-600/50 bg-yellow-600/10 p-3">
                   <svg className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="square" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />

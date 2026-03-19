@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { MessageCircle, X, Send, User } from 'lucide-react'
 import { useChatStore } from '@/lib/store'
 import type { ChatMessage } from '@/lib/store'
@@ -280,6 +281,9 @@ function Disclaimer() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function ChatBot() {
+  const pathname = usePathname()
+  const isMonCompte = pathname.startsWith('/mon-compte')
+
   const { chatMessages, chatOpen, messageCount, addChatMessage, setChatOpen, setMessageCount, clearChat } = useChatStore()
   const open = chatOpen
   const messages = chatMessages
@@ -425,6 +429,9 @@ export default function ChatBot() {
     setNotification(null)
     setChatOpen(true)
   }
+
+  // Ne pas afficher le chatbot dans l'espace client
+  if (isMonCompte) return null
 
   return (
     <>

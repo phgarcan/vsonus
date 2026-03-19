@@ -25,6 +25,8 @@ export async function login(email: string, password: string): Promise<{ success:
   })
 
   if (!res.ok) {
+    const errorBody = await res.text().catch(() => '')
+    console.error('[AUTH] Login error:', res.status, errorBody)
     return { success: false, error: 'Email ou mot de passe incorrect.' }
   }
 
