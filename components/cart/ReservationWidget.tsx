@@ -43,7 +43,7 @@ export function ReservationWidget({ tarifsAnnexes }: ReservationWidgetProps) {
   return (
     <aside className="w-full bg-vsonus-dark border border-gray-800 p-6 space-y-6">
       <h2 className="text-lg font-black uppercase tracking-widest text-white border-b-2 border-vsonus-red pb-3">
-        Mon projet
+        Ma liste
       </h2>
 
       {/* Sélecteur de dates */}

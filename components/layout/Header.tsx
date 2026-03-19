@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ClipboardList, Phone, Mail, MapPin, ChevronDown, Disc3, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
+import { Menu, X, ListOrdered, Phone, Mail, MapPin, ChevronDown, Disc3, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { AccountLink } from '@/components/portal/AccountLink'
@@ -173,9 +173,9 @@ export function Header() {
             <button
               onClick={() => setDrawerOpen(true)}
               className="relative flex items-center gap-2 bg-vsonus-dark border border-gray-700 px-3 sm:px-4 py-2 text-sm font-bold uppercase tracking-widest hover:border-vsonus-red hover:shadow-glow-red transition-all duration-200"
-              aria-label="Ouvrir ma sélection"
+              aria-label="Ouvrir ma liste"
             >
-              <ClipboardList className="w-5 h-5" strokeWidth={2} />
+              <ListOrdered className="w-5 h-5" strokeWidth={2} />
               <span className="hidden sm:inline">Ma liste</span>
               {mounted && cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-vsonus-red text-white text-xs font-bold w-5 h-5 flex items-center justify-center">
@@ -216,9 +216,9 @@ export function Header() {
               <button
                 onClick={() => { setDrawerOpen(true); setMobileOpen(false) }}
                 className="relative flex items-center gap-2 bg-transparent border border-gray-800 px-3 py-2 text-sm font-bold uppercase tracking-widest hover:border-vsonus-red transition-all duration-200"
-                aria-label="Ouvrir ma sélection"
+                aria-label="Ouvrir ma liste"
               >
-                <ClipboardList className="w-5 h-5" strokeWidth={2} />
+                <ListOrdered className="w-5 h-5" strokeWidth={2} />
                 {mounted && cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-vsonus-red text-white text-xs font-bold w-5 h-5 flex items-center justify-center">
                     {cartCount}

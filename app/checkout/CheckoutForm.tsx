@@ -123,7 +123,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
   if (cart.length === 0) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-400 text-lg">Votre projet est vide.</p>
+        <p className="text-gray-400 text-lg">Votre liste est vide.</p>
         <a href="/catalogue" className="mt-4 inline-block text-vsonus-red underline hover:no-underline">
           Retourner au catalogue
         </a>
