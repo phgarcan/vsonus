@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getSession, updateProfile, changePassword, type SessionUser } from '@/lib/auth'
 import { formatSwissPhone } from '@/lib/utils'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 
 export default function ProfilPage() {
   const router = useRouter()
@@ -103,14 +104,12 @@ export default function ProfilPage() {
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Mot de passe actuel</label>
-          <input type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} required
-            className="w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:border-vsonus-red focus:outline-none transition-colors" />
+          <PasswordInput value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} required />
         </div>
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Nouveau mot de passe</label>
-          <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} required minLength={6}
-            className="w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:border-vsonus-red focus:outline-none transition-colors" />
+          <PasswordInput value={newPw} onChange={(e) => setNewPw(e.target.value)} required minLength={6} />
         </div>
 
         {pwMsg && <p className={`text-sm ${pwMsg.includes('Erreur') ? 'text-red-500' : 'text-green-500'}`}>{pwMsg}</p>}

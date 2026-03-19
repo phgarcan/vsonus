@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 
 export default function DefinirMotDePassePage() {
   const router = useRouter()
@@ -99,14 +100,11 @@ export default function DefinirMotDePassePage() {
               <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
                 Nouveau mot de passe
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:border-vsonus-red focus:outline-none transition-colors"
-                placeholder="••••••••"
               />
             </div>
 
@@ -114,14 +112,11 @@ export default function DefinirMotDePassePage() {
               <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
                 Confirmer le mot de passe
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 required
                 minLength={6}
-                className="w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:border-vsonus-red focus:outline-none transition-colors"
-                placeholder="••••••••"
               />
             </div>
 
