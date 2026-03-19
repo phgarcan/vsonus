@@ -85,7 +85,7 @@ export default async function RootLayout({
   return (
     <html lang="fr" className={`${montserrat.variable} overflow-x-hidden`}>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

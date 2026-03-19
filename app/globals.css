@@ -17,3 +17,47 @@
     @apply bg-vsonus-black text-white;
   }
 }
+
+/* ── Anti-zoom iOS mobile ────────────────────────────────────────────────────
+   Sur iOS, un champ avec font-size < 16px déclenche un zoom automatique au
+   focus. On force 16px sur mobile pour éviter ce comportement. */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── Validation visuelle des champs ──────────────────────────────────────────
+   Ordre de priorité (du moins au plus prioritaire) :
+   1. Défaut      → border-gray-700 (Tailwind, dans les composants)
+   2. Valide      → vert #22C55E
+   3. Focus       → rouge vsonus #EC1C24 (priorité max, toujours visible)
+   4. :user-invalid → rouge erreur (après interaction utilisateur uniquement) */
+
+input:not(:placeholder-shown):valid,
+textarea:not(:placeholder-shown):valid,
+select:required:valid {
+  border-color: #22C55E;
+  transition-property: border-color;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Focus toujours rouge vsonus — priorité max (3 pseudo-classes) */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #EC1C24 !important;
+}
+
+/* Invalide après interaction utilisateur (:user-invalid = Chrome 119+, FF 88+, Safari 16.5+) */
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid {
+  border-color: #EF4444;
+  transition-property: border-color;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
