@@ -42,6 +42,7 @@ export interface ReservationInput {
   est_entreprise?: boolean
   nom_entreprise?: string
   numero_ide?: string
+  honeypot?: string // anti-bot
 }
 
 export type ReservationResult =
@@ -56,6 +57,11 @@ export async function soumettreReservation(
   input: ReservationInput
 ): Promise<ReservationResult> {
   const { clientData, cartItems, startDate, endDate, nbJours, totalHT, besoinMontage, besoinLivraison, createAccount, est_entreprise, nom_entreprise, numero_ide } = input
+
+  // Honeypot — si rempli, c'est un bot : rejeter silencieusement
+  if (input.honeypot) {
+    return { success: true, id: 'bot' }
+  }
 
   if (!clientData.nom || !clientData.email || !clientData.tel || !clientData.rue || !clientData.npa || !clientData.ville) {
     return { success: false, error: 'Tous les champs obligatoires doivent être remplis.' }

@@ -76,10 +76,41 @@ function checkRateLimit(ip: string, message: string): string | null {
   return null
 }
 
+// ── FAQ cache (évite d'appeler Gemini pour les questions fréquentes) ──────────
+
+const FAQ_CACHE: Array<{ keywords: string[]; reply: string }> = [
+  {
+    keywords: ['comment ça marche', 'comment ca marche', 'comment fonctionne', 'comment réserver', 'comment reserver'],
+    reply: "C'est simple ! Tu choisis ton matériel dans le [catalogue](/catalogue), tu ajoutes les articles à ton projet, tu sélectionnes tes dates et tu envoies ta demande de devis. Un technicien V-Sonus te recontacte sous 24h pour confirmer. 👍",
+  },
+  {
+    keywords: ['prix', 'tarif', 'coût', 'cout', 'combien', 'coûte', 'coute'],
+    reply: "Nos packs commencent à **120 CHF/j** pour l'éclairage et à **800 CHF/j** pour la sono (livraison et installation incluses). Pour plusieurs jours, des coefficients s'appliquent. [Voir le catalogue complet](/catalogue)",
+  },
+  {
+    keywords: ['contact', 'joindre', 'appeler', 'téléphone', 'telephone', 'email', 'adresse'],
+    reply: "Tu peux joindre Paul au **+41 79 651 21 14** ou via le [formulaire de contact](/contact). On répond sous 24h ! 📞",
+  },
+  {
+    keywords: ['horaire', 'disponible', 'ouvert', 'heure'],
+    reply: "On est disponibles du lundi au vendredi, 9h–18h. Pour les urgences événementielles, appelle directement le **+41 79 651 21 14**.",
+  },
+]
+
+function checkFaqCache(text: string): string | null {
+  const lower = text.toLowerCase()
+  for (const entry of FAQ_CACHE) {
+    if (entry.keywords.some((kw) => lower.includes(kw))) {
+      return entry.reply
+    }
+  }
+  return null
+}
+
 // ── Message validation ────────────────────────────────────────────────────────
 
 function validateMessage(text: string): string | null {
-  if (text.length < 2)   return 'Message trop court.'
+  if (text.length < 5)   return 'Peux-tu m\'en dire plus ?'
   if (text.length > 300) return 'Message trop long (300 caractères max).'
   if (/^(.)\1{4,}$/.test(text)) return 'Message invalide.'
   return null
@@ -118,6 +149,17 @@ export async function POST(request: Request) {
       return Response.json({ reply: rateLimitMsg })
     }
 
+    // X-RateLimit-Remaining header
+    const rec = ipMap.get(ip)
+    const remaining = rec ? Math.max(0, 10 - rec.hourCount) : 10
+    const rateLimitHeaders = { 'X-RateLimit-Remaining': String(remaining) }
+
+    // FAQ cache — répond sans appeler Gemini
+    const cachedReply = checkFaqCache(lastContent)
+    if (cachedReply) {
+      return Response.json({ reply: cachedReply }, { headers: rateLimitHeaders })
+    }
+
     // Sanitize full history, keep only last MAX_HISTORY messages
     const sanitized: { role: 'user' | 'assistant'; content: string }[] = messages
       .slice(-MAX_HISTORY)
@@ -152,7 +194,7 @@ export async function POST(request: Request) {
     const result = await chat.sendMessage(lastMessage.parts[0].text)
     const reply = result.response.text()
 
-    return Response.json({ reply })
+    return Response.json({ reply }, { headers: rateLimitHeaders })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error)
     console.error('[CHAT] Error:', msg)

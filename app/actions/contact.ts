@@ -10,6 +10,7 @@ export interface ContactInput {
   telephone: string
   sujet: string
   message: string
+  website?: string // honeypot anti-bot
 }
 
 export type ContactResult =
@@ -17,6 +18,11 @@ export type ContactResult =
   | { success: false; error: string }
 
 export async function envoyerMessage(input: ContactInput): Promise<ContactResult> {
+  // Honeypot — si rempli, c'est un bot : rejeter silencieusement
+  if (input.website) {
+    return { success: true }
+  }
+
   if (!input.nom || !input.email || !input.message) {
     return { success: false, error: 'Les champs Nom, Email et Message sont obligatoires.' }
   }
