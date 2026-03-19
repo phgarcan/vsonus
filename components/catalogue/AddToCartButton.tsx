@@ -23,7 +23,7 @@ export function AddToCartButton({ type, item }: Props) {
 
   return (
     <Button variant="primary" size="sm" fullWidth onClick={handleAdd}>
-      + Ajouter au projet
+      + AJOUTER À MA LISTE
     </Button>
   )
 }

@@ -21,7 +21,7 @@ export function AddToCartPackSection({ pack }: { pack: Pack }) {
       onClick={handleAdd}
       className="w-full bg-vsonus-red text-white font-bold uppercase tracking-widest py-4 hover:shadow-glow-red-hover transition-shadow duration-200 disabled:opacity-60"
     >
-      {added ? '✓ Ajouté à la sélection !' : '+ Ajouter à ma sélection'}
+      {added ? '✓ Ajouté à ma liste !' : '+ AJOUTER À MA LISTE'}
     </button>
   )
 }

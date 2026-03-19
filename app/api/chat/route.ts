@@ -81,7 +81,7 @@ function checkRateLimit(ip: string, message: string): string | null {
 const FAQ_CACHE: Array<{ keywords: string[]; reply: string }> = [
   {
     keywords: ['comment ça marche', 'comment ca marche', 'comment fonctionne', 'comment réserver', 'comment reserver'],
-    reply: "C'est simple ! Tu choisis ton matériel dans le [catalogue](/catalogue), tu ajoutes les articles à ton projet, tu sélectionnes tes dates et tu envoies ta demande de devis. Un technicien V-Sonus te recontacte sous 24h pour confirmer. 👍",
+    reply: "C'est simple ! Tu choisis ton matériel dans le [catalogue](/catalogue), tu ajoutes les articles à ta liste, tu sélectionnes tes dates et tu envoies ta demande de devis. Un technicien V-Sonus te recontacte sous 24h pour confirmer. 👍",
   },
   {
     keywords: ['prix', 'tarif', 'coût', 'cout', 'combien', 'coûte', 'coute'],

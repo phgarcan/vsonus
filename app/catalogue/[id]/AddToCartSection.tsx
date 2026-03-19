@@ -45,7 +45,7 @@ export function AddToCartSection({ equipement }: { equipement: Equipement }) {
         fullWidth
         onClick={handleAdd}
       >
-        {added ? '✓ Ajouté à la sélection !' : '+ Ajouter à ma sélection'}
+        {added ? '✓ Ajouté à ma liste !' : '+ AJOUTER À MA LISTE'}
       </Button>
     </div>
   )
