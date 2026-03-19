@@ -25,12 +25,13 @@ export function CookieBanner() {
   const accept = () => {
     setCookie('vsonus_cookies_ok', '1', 365)
     setVisible(false)
+    window.dispatchEvent(new Event('cookieAccepted'))
   }
 
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t-2 border-vsonus-red bg-vsonus-dark px-4 py-4 sm:px-6 sm:py-5">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t-2 border-vsonus-red bg-vsonus-dark px-4 py-5 sm:px-6 sm:py-6">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <p className="text-sm text-gray-300 flex-1">
           Ce site utilise des cookies techniques nécessaires à son fonctionnement.
