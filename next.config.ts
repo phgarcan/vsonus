@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'directus-production-daaa.up.railway.app',
       },
+      // Domaine custom Directus
+      {
+        protocol: 'https',
+        hostname: 'admin.vsonus.ch',
+      },
       // Local développement
       {
         protocol: 'http',

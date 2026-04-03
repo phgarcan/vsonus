@@ -10,6 +10,8 @@ import { AddToCartButton } from '@/components/catalogue/AddToCartButton'
 import { CatalogueFilters } from '@/components/catalogue/CatalogueFilters'
 import { ScrollToHash } from '@/components/catalogue/ScrollToHash'
 
+export const revalidate = 300
+
 export const metadata: Metadata = {
   title: 'Catalogue Location Matériel Événementiel',
   description: 'Louez du matériel événementiel pro en Suisse Romande : enceintes L-Acoustics, lyres, LED, consoles DJ Pioneer, scènes modulaires.',

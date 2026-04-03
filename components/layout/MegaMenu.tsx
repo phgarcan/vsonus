@@ -6,33 +6,35 @@ const COLUMNS = [
   {
     heading: 'Sonorisation',
     items: [
-      { label: 'Enceintes L-Acoustics',   href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
-      { label: 'Subwoofers & Retours',     href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
-      { label: 'Consoles de mixage',       href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
-      { label: 'Équipement DJ (Pioneer)',  href: '/catalogue?categorie=dj#materiel-unitaire' },
+      { label: 'Enceintes L-Acoustics et RCF',          href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
+      { label: 'Régie, table de mixage, contrôleur DJ', href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
+      { label: 'Micro, Pieds, DI',                      href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
+      { label: 'Câblage',                               href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
     ],
   },
   {
     heading: 'Éclairage',
     items: [
-      { label: 'Lyres (Moving Heads)',      href: '/catalogue?categorie=eclairage#materiel-unitaire' },
-      { label: 'Projecteurs & Barres LED',  href: '/catalogue?categorie=eclairage#materiel-unitaire' },
-      { label: 'Effets (Strob, UV)',        href: '/catalogue?categorie=eclairage#materiel-unitaire' },
+      { label: 'Lyres (Moving Head) LED IP65',          href: '/catalogue?categorie=eclairage#materiel-unitaire' },
+      { label: 'Projecteur & Barre LED / UV IP65',      href: '/catalogue?categorie=eclairage#materiel-unitaire' },
+      { label: 'Câblage',                               href: '/catalogue?categorie=eclairage#materiel-unitaire' },
     ],
   },
   {
     heading: 'Scènes & Structures',
     items: [
-      { label: 'Praticables & Podiums',    href: '/catalogue?categorie=scenes#materiel-unitaire' },
-      { label: 'Structure Alu (Truss)',     href: '/catalogue?categorie=scenes#materiel-unitaire' },
-      { label: 'Levage (Palans & Pieds)',   href: '/catalogue?categorie=scenes#materiel-unitaire' },
+      { label: 'Structures alu (Truss)',                 href: '/catalogue?categorie=scenes#materiel-unitaire' },
+      { label: 'Praticables',                            href: '/catalogue?categorie=scenes#materiel-unitaire' },
+      { label: 'Levage (Pieds et Palan)',                href: '/catalogue?categorie=scenes#materiel-unitaire' },
+      { label: 'Pavillons pliable & Tables',             href: '/catalogue?categorie=scenes#materiel-unitaire' },
     ],
   },
   {
     heading: 'Vidéo & Mapping',
     items: [
-      { label: 'Vidéoprojecteurs',         href: '/catalogue?categorie=mapping#materiel-unitaire' },
-      { label: 'Câblage & Accessoires',    href: '/catalogue?categorie=mapping#materiel-unitaire' },
+      { label: 'Vidéoprojecteurs',                       href: '/catalogue?categorie=mapping#materiel-unitaire' },
+      { label: 'Câblage & Accessoires',                  href: '/catalogue?categorie=cablage#materiel-unitaire' },
+      { label: 'Laser',                                   href: '/catalogue?categorie=laser#materiel-unitaire' },
     ],
   },
 ]
