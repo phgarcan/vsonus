@@ -4,21 +4,20 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Trash2, Music } from 'lucide-react'
+import { Trash2, Music, Truck } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
 import { DatePicker } from '@/components/ui/DatePicker'
 import { getImageUrl } from '@/lib/directus'
 import { getCoefficientLabel } from '@/lib/pricing'
+import { FALLBACK_TRANSPORT_PRIX, FALLBACK_MONTAGE_PRIX } from '@/lib/pricing'
+import { equipementHasLivraisonOption } from '@/lib/directus'
 import type { Equipement, Pack } from '@/lib/directus'
 
 interface CartDrawerProps {
   open: boolean
   onClose: () => void
 }
-
-const FALLBACK_TRANSPORT = { label: 'Transport – Fourgon',  prix: 200 }
-const FALLBACK_MONTAGE   = { label: 'Montage / Démontage',  prix: 400 }
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const router = useRouter()
@@ -35,9 +34,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     getSousTotalBrut,
     getSousTotal,
     getCoefficient,
+    getFraisLivraison,
+    getFraisDetail,
     requiresTechnicien,
     requiresTransport,
     tarifsAnnexes,
+    livraisonChoix,
+    setLivraisonChoix,
   } = useStore()
 
   const nbJours      = getNbJours()
@@ -46,17 +49,18 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const coefficient  = getCoefficient()    // null = 6+ jours = sur demande
   const needsTech    = requiresTechnicien()
   const needsTrans   = requiresTransport()
-
+  const fraisLivraison = getFraisLivraison()
+  const fraisDetail = getFraisDetail()
   const hasPacks = cart.some((i) => i.type === 'pack')
 
-  const tarifTransport = tarifsAnnexes.find((t) => t.type === 'transport') ?? FALLBACK_TRANSPORT
-  const tarifMontage   = tarifsAnnexes.find((t) => t.type === 'montage')   ?? FALLBACK_MONTAGE
+  const tarifTransport = tarifsAnnexes.find((t) => t.type === 'transport')
+  const tarifMontage   = tarifsAnnexes.find((t) => t.type === 'montage')
 
-  const fraisAnnexes =
-    (needsTrans ? tarifTransport.prix : 0) +
-    (needsTech  ? tarifMontage.prix   : 0)
+  const fraisAnnexesEquip =
+    (needsTrans ? (tarifTransport?.prix ?? FALLBACK_TRANSPORT_PRIX) : 0) +
+    (needsTech  ? (tarifMontage?.prix ?? FALLBACK_MONTAGE_PRIX)   : 0)
 
-  const totalHT = sousTotal + fraisAnnexes
+  const totalHT = sousTotal + fraisLivraison + fraisAnnexesEquip
 
   // Sur demande = 6+ jours
   const isSurDemande = coefficient === null && (startDate !== null && endDate !== null)
@@ -139,51 +143,137 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     : null
                   const prixUnitaire = isPack ? item.item.prix_base : (item.item as Equipement).prix_journalier
 
+                  const pack = isPack ? (item.item as Pack) : null
+                  const modeLivraison = pack?.mode_livraison ?? 'obligatoire'
+                  const choixLivraison = pack ? (livraisonChoix[pack.id] ?? 'retrait') : null
+
                   return (
-                    <li key={`${item.type}-${item.item.id}`} className="flex gap-3 border-b border-gray-800 pb-3">
-                      {/* Miniature */}
-                      <div className="relative w-16 h-16 flex-shrink-0 bg-black border border-gray-800 overflow-hidden">
-                        {imgUrl ? (
-                          <Image src={imgUrl} alt={item.item.nom} fill className="object-contain p-1" sizes="64px" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center"><Music className="w-5 h-5 text-gray-700" strokeWidth={1} /></div>
-                        )}
-                      </div>
-
-                      {/* Infos */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{item.item.nom}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {prixUnitaire} CHF / jour
-                          {isPack && (
-                            <span className="ml-2 text-green-500 font-medium">✓ Livraison incluse</span>
+                    <li key={`${item.type}-${item.item.id}`} className="border-b border-gray-800 pb-3">
+                      <div className="flex gap-3">
+                        {/* Miniature */}
+                        <div className="relative w-16 h-16 flex-shrink-0 bg-black border border-gray-800 overflow-hidden">
+                          {imgUrl ? (
+                            <Image src={imgUrl} alt={item.item.nom} fill className="object-contain p-1" sizes="64px" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><Music className="w-5 h-5 text-gray-700" strokeWidth={1} /></div>
                           )}
-                        </p>
+                        </div>
 
-                        {/* Quantité + supprimer */}
-                        <div className="flex items-center gap-2 mt-2">
-                          <button
-                            onClick={() => updateQuantite(item.item.id, item.type, item.quantite - 1)}
-                            className="w-6 h-6 bg-gray-800 text-white flex items-center justify-center hover:bg-vsonus-red text-sm font-bold transition-colors"
-                          >−</button>
-                          <span className="text-sm text-white w-4 text-center">{item.quantite}</span>
-                          <button
-                            onClick={() => updateQuantite(item.item.id, item.type, item.quantite + 1)}
-                            className="w-6 h-6 bg-gray-800 text-white flex items-center justify-center hover:bg-vsonus-red text-sm font-bold transition-colors"
-                          >+</button>
-                          <button
-                            onClick={() => removeFromCart(item.item.id, item.type)}
-                            className="ml-auto text-vsonus-red hover:text-red-400 transition-colors"
-                            aria-label="Supprimer"
-                          ><Trash2 className="w-4 h-4" /></button>
+                        {/* Infos */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{item.item.nom}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {prixUnitaire} CHF / jour
+                          </p>
+
+                          {/* Quantité + supprimer */}
+                          <div className="flex items-center gap-2 mt-2">
+                            <button
+                              onClick={() => updateQuantite(item.item.id, item.type, item.quantite - 1)}
+                              className="w-6 h-6 bg-gray-800 text-white flex items-center justify-center hover:bg-vsonus-red text-sm font-bold transition-colors"
+                            >−</button>
+                            <span className="text-sm text-white w-4 text-center">{item.quantite}</span>
+                            <button
+                              onClick={() => updateQuantite(item.item.id, item.type, item.quantite + 1)}
+                              className="w-6 h-6 bg-gray-800 text-white flex items-center justify-center hover:bg-vsonus-red text-sm font-bold transition-colors"
+                            >+</button>
+                            <button
+                              onClick={() => removeFromCart(item.item.id, item.type)}
+                              className="ml-auto text-vsonus-red hover:text-red-400 transition-colors"
+                              aria-label="Supprimer"
+                            ><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </div>
+
+                        {/* Prix unitaire × quantite (1 jour) */}
+                        <div className="flex-shrink-0 text-right">
+                          <span className="text-sm font-bold text-white">{(prixUnitaire * item.quantite).toFixed(2)}</span>
+                          <span className="block text-xs text-gray-600">CHF/j</span>
                         </div>
                       </div>
 
-                      {/* Prix unitaire × quantite (1 jour) */}
-                      <div className="flex-shrink-0 text-right">
-                        <span className="text-sm font-bold text-white">{(prixUnitaire * item.quantite).toFixed(2)}</span>
-                        <span className="block text-xs text-gray-600">CHF/j</span>
-                      </div>
+                      {/* Frais livraison/fourgon pour les packs */}
+                      {isPack && pack && modeLivraison === 'obligatoire' && (
+                        <div className="mt-2 ml-19 space-y-0.5">
+                          {(pack.prix_livraison ?? 0) > 0 && (
+                            <p className="text-xs text-gray-500 flex justify-between">
+                              <span><Truck className="w-3 h-3 inline mr-1" />Livraison / Installation (1×)</span>
+                              <span className="text-gray-400">{pack.prix_livraison} CHF</span>
+                            </p>
+                          )}
+                          {(pack.prix_fourgon ?? 0) > 0 && (
+                            <p className="text-xs text-gray-500 flex justify-between">
+                              <span>Location fourgon (1×)</span>
+                              <span className="text-gray-400">{pack.prix_fourgon} CHF</span>
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {isPack && pack && modeLivraison === 'optionnel' && (
+                        <div className="mt-2 ml-19">
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setLivraisonChoix(pack.id, 'retrait')}
+                              className={`text-xs px-2 py-1 border transition-colors ${
+                                choixLivraison === 'retrait'
+                                  ? 'border-vsonus-red text-white bg-vsonus-red/20'
+                                  : 'border-gray-700 text-gray-500 hover:border-gray-500'
+                              }`}
+                            >
+                              Retrait sur place (0.-)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setLivraisonChoix(pack.id, 'livraison')}
+                              className={`text-xs px-2 py-1 border transition-colors ${
+                                choixLivraison === 'livraison'
+                                  ? 'border-vsonus-red text-white bg-vsonus-red/20'
+                                  : 'border-gray-700 text-gray-500 hover:border-gray-500'
+                              }`}
+                            >
+                              Livraison ({pack.prix_livraison ?? 0} CHF)
+                            </button>
+                          </div>
+                          {choixLivraison === 'livraison' && (pack.prix_fourgon ?? 0) > 0 && (
+                            <p className="text-xs text-gray-500 mt-1 flex justify-between">
+                              <span>Location fourgon (1×)</span>
+                              <span className="text-gray-400">{pack.prix_fourgon} CHF</span>
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Retrait/livraison pour équipements éclairage */}
+                      {!isPack && equipementHasLivraisonOption(item.item as Equipement) && (
+                        <div className="mt-2 ml-19">
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setLivraisonChoix(`equip-${item.item.id}`, 'retrait')}
+                              className={`text-xs px-2 py-1 border transition-colors ${
+                                (livraisonChoix[`equip-${item.item.id}`] ?? 'retrait') === 'retrait'
+                                  ? 'border-vsonus-red text-white bg-vsonus-red/20'
+                                  : 'border-gray-700 text-gray-500 hover:border-gray-500'
+                              }`}
+                            >
+                              Retrait sur place (0.-)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setLivraisonChoix(`equip-${item.item.id}`, 'livraison')}
+                              className={`text-xs px-2 py-1 border transition-colors ${
+                                (livraisonChoix[`equip-${item.item.id}`] ?? 'retrait') === 'livraison'
+                                  ? 'border-vsonus-red text-white bg-vsonus-red/20'
+                                  : 'border-gray-700 text-gray-500 hover:border-gray-500'
+                              }`}
+                            >
+                              Livraison ({(item.item as Equipement).prix_livraison} CHF)
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </li>
                   )
                 })}
@@ -243,33 +333,23 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 </div>
               )}
 
-              {/* Frais annexes obligatoires */}
+              {/* Frais annexes obligatoires (équipements uniquement — pas de doublon avec frais packs) */}
               {!isSurDemande && (needsTech || needsTrans) && (
                 <div className="border border-vsonus-red p-3 space-y-2">
-                  <p className="text-xs font-bold uppercase tracking-widest text-vsonus-red">Frais obligatoires</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-vsonus-red">Frais obligatoires (équipements)</p>
                   {needsTrans && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">{tarifTransport.label}</span>
-                      <span className="text-white font-semibold">{tarifTransport.prix} CHF</span>
+                      <span className="text-gray-400">{tarifTransport?.label ?? 'Transport – Fourgon'}</span>
+                      <span className="text-white font-semibold">{(tarifTransport?.prix ?? FALLBACK_TRANSPORT_PRIX)} CHF</span>
                     </div>
                   )}
                   {needsTech && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">{tarifMontage.label}</span>
-                      <span className="text-white font-semibold">{tarifMontage.prix} CHF</span>
+                      <span className="text-gray-400">{tarifMontage?.label ?? 'Montage / Démontage'}</span>
+                      <span className="text-white font-semibold">{(tarifMontage?.prix ?? FALLBACK_MONTAGE_PRIX)} CHF</span>
                     </div>
                   )}
                   <p className="text-xs text-gray-600 pt-1">Les montants exacts seront confirmés dans votre devis.</p>
-                </div>
-              )}
-
-              {/* Pack : livraison incluse */}
-              {hasPacks && (
-                <div className="flex items-start gap-2 text-xs text-green-500/80 border border-green-800/40 bg-green-900/10 p-3">
-                  <svg className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="square" strokeLinejoin="miter" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Livraison et installation incluses dans le prix des packs.</span>
                 </div>
               )}
 
@@ -277,7 +357,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               {!isSurDemande && (
                 <div className="space-y-1.5 border-t border-gray-800 pt-3">
                   <div className="flex justify-between text-sm text-gray-400">
-                    <span>Sous-total matériel (1 j)</span>
+                    <span>Location matériel (1 j)</span>
                     <span>{sousTotalBrut.toFixed(2)} CHF</span>
                   </div>
                   {coefficient !== null && coefficient !== 1 && (
@@ -289,10 +369,22 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                       <span className="text-white font-semibold">{sousTotal.toFixed(2)} CHF</span>
                     </div>
                   )}
-                  {fraisAnnexes > 0 && (
+                  {fraisDetail.livraison > 0 && (
                     <div className="flex justify-between text-sm text-gray-400">
-                      <span>Frais annexes (forfait)</span>
-                      <span>{fraisAnnexes.toFixed(2)} CHF</span>
+                      <span>Livraison et installation (1×)</span>
+                      <span>{fraisDetail.livraison.toFixed(2)} CHF</span>
+                    </div>
+                  )}
+                  {fraisDetail.fourgon > 0 && (
+                    <div className="flex justify-between text-sm text-gray-400">
+                      <span>Location fourgon et essence (1×)</span>
+                      <span>{fraisDetail.fourgon.toFixed(2)} CHF</span>
+                    </div>
+                  )}
+                  {fraisAnnexesEquip > 0 && (
+                    <div className="flex justify-between text-sm text-gray-400">
+                      <span>Frais annexes équipements</span>
+                      <span>{fraisAnnexesEquip.toFixed(2)} CHF</span>
                     </div>
                   )}
                   <div className="flex justify-between font-black text-white text-lg pt-2 border-t border-gray-800 mt-1">

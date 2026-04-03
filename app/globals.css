@@ -9,12 +9,11 @@
 
   html,
   body {
-    overflow-x: hidden;
     max-width: 100vw;
   }
 
   body {
-    @apply bg-vsonus-black text-white;
+    @apply bg-vsonus-black;
   }
 }
 

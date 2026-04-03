@@ -137,12 +137,16 @@ export function PrivacyModal({ open, onClose }: PrivacyModalProps) {
 
           <section>
             <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-2">8. Cookies</h3>
-            <p>
-              Ce site utilise uniquement des <span className="text-white font-semibold">cookies techniques nécessaires</span> au
-              fonctionnement du site (liste de matériel, préférences de session).
-              Aucun cookie publicitaire, aucun tracker tiers ni aucune technologie de profilage
-              n&apos;est utilisé.
+            <p className="mb-2">
+              Ce site utilise des cookies répartis en quatre catégories. Vous pouvez gérer vos préférences
+              à tout moment via le lien «&nbsp;Gérer mes cookies&nbsp;» en pied de page.
             </p>
+            <ul className="space-y-1.5 text-[11px]">
+              <li><span className="text-white font-semibold">Nécessaires</span> (toujours actifs) — Session, panier, consentement.</li>
+              <li><span className="text-white font-semibold">Fonctionnels</span> — Assistant virtuel Max (chatbot).</li>
+              <li><span className="text-white font-semibold">Analytiques</span> — Google Analytics, Hotjar.</li>
+              <li><span className="text-white font-semibold">Marketing</span> — Google Ads.</li>
+            </ul>
           </section>
 
           <section>

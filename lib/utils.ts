@@ -47,3 +47,12 @@ export function formatSwissPhone(value: string): string {
 
   return value
 }
+
+/**
+ * Formate une date en format européen DD.MM.YYYY (ex: 04.04.2026).
+ * Accepte une string YYYY-MM-DD ou un objet Date.
+ */
+export function formatDateEU(date: string | Date): string {
+  const d = typeof date === 'string' ? new Date(date + (date.includes('T') ? '' : 'T00:00:00')) : date
+  return d.toLocaleDateString('fr-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}

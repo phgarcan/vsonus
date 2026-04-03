@@ -1,10 +1,14 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { Montserrat } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { TarifsProvider } from '@/components/layout/TarifsProvider'
 import { CookieBanner } from '@/components/ui/CookieBanner'
+import { ConsentScripts } from '@/components/layout/ConsentScripts'
+import { ScrollToTop } from '@/components/layout/ScrollToTop'
+import { AccountDeletedBanner } from '@/components/layout/AccountDeletedBanner'
 import ChatBot from '@/components/ui/ChatBot'
 import { getServerDirectus } from '@/lib/directus'
 import type { TarifAnnexe } from '@/lib/directus'
@@ -83,19 +87,22 @@ export default async function RootLayout({
     .catch(() => [] as TarifAnnexe[])
 
   return (
-    <html lang="fr" className={`${montserrat.variable} overflow-x-hidden`}>
+    <html lang="fr" className={montserrat.variable}>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-vsonus-black text-white font-sans antialiased overflow-x-hidden">
+      <body className="bg-vsonus-black text-white font-sans antialiased" suppressHydrationWarning>
+        <ScrollToTop />
         <TarifsProvider tarifs={tarifs as TarifAnnexe[]} />
+        <Suspense><AccountDeletedBanner /></Suspense>
         <Header />
         <main className="overflow-x-hidden">{children}</main>
         <Footer />
         <CookieBanner />
+        <ConsentScripts />
         <ChatBot />
       </body>
     </html>

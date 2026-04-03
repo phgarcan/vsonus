@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { PRESTATIONS } from './prestations/data'
+import { PRESTATIONS } from './packs/data'
 
 const SITE_URL = 'https://vsonus.ch'
 
@@ -20,7 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/prestations`,
+      url: `${SITE_URL}/packs`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.9,
@@ -70,7 +70,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ]
 
   const prestationPages: MetadataRoute.Sitemap = PRESTATIONS.map((p) => ({
-    url: `${SITE_URL}/prestations/${p.slug}`,
+    url: `${SITE_URL}/packs/${p.slug}`,
     lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: 0.8,

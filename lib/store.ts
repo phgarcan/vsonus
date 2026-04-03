@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Equipement, Pack, TarifAnnexe } from './directus'
@@ -37,6 +38,9 @@ interface StoreState {
   tarifsAnnexes: TarifAnnexe[]
   // Tiroir panier (contrôle global)
   cartDrawerOpen: boolean
+  // Choix de livraison par article (packs optionnels + équipements éclairage)
+  // Clés : ID nu pour les packs, "equip-{id}" pour les équipements
+  livraisonChoix: Record<string, 'retrait' | 'livraison'>
 
   // --- Actions ---
   setCartDrawerOpen: (open: boolean) => void
@@ -46,13 +50,18 @@ interface StoreState {
   clearCart: () => void
   setDates: (start: string, end: string) => void
   setTarifsAnnexes: (tarifs: TarifAnnexe[]) => void
+  setLivraisonChoix: (itemKey: string, choix: 'retrait' | 'livraison') => void
 
   // --- Getters (dérivés) ---
   getNbJours: () => number
-  /** Somme brute : prix unitaire × quantite (sans coefficient de durée) */
+  /** Somme brute : prix de location × quantite (sans coefficient de durée) */
   getSousTotalBrut: () => number
   /** Sous-total avec coefficient de durée appliqué (0 si 6+ jours → "sur demande") */
   getSousTotal: () => number
+  /** Total des frais de livraison + fourgon (facturés 1×, hors coefficient) */
+  getFraisLivraison: () => number
+  /** Détail des frais : livraison seule et fourgon seul (facturés 1×, hors coefficient) */
+  getFraisDetail: () => { livraison: number; fourgon: number }
   /** Coefficient de durée actuel (null = 6+ jours = sur demande) */
   getCoefficient: () => number | null
   requiresTechnicien: () => boolean
@@ -104,6 +113,18 @@ export const useChatStore = create<ChatState>()(
   )
 )
 
+// Flag pour savoir si le store chat a été réhydraté depuis sessionStorage
+export const useChatHydrated = () => {
+  const [hydrated, setHydrated] = React.useState(false)
+  React.useEffect(() => {
+    const unsub = useChatStore.persist.onFinishHydration(() => setHydrated(true))
+    // Si déjà hydraté (appel tardif)
+    if (useChatStore.persist.hasHydrated()) setHydrated(true)
+    return unsub
+  }, [])
+  return hydrated
+}
+
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
@@ -112,6 +133,7 @@ export const useStore = create<StoreState>()(
       endDate: null,
       tarifsAnnexes: [],
       cartDrawerOpen: false,
+      livraisonChoix: {},
 
       // -----------------------------------------------------------------------
       // Actions
@@ -138,9 +160,14 @@ export const useStore = create<StoreState>()(
       },
 
       removeFromCart: (id, type) => {
-        set((state) => ({
-          cart: state.cart.filter((i) => !(i.item.id === id && i.type === type)),
-        }))
+        set((state) => {
+          const key = type === 'pack' ? id : `equip-${id}`
+          const { [key]: _, ...restChoix } = state.livraisonChoix
+          return {
+            cart: state.cart.filter((i) => !(i.item.id === id && i.type === type)),
+            livraisonChoix: restChoix,
+          }
+        })
       },
 
       updateQuantite: (id, type, quantite) => {
@@ -155,11 +182,16 @@ export const useStore = create<StoreState>()(
         }))
       },
 
-      clearCart: () => set({ cart: [], startDate: null, endDate: null }),
+      clearCart: () => set({ cart: [], startDate: null, endDate: null, livraisonChoix: {} }),
 
       setDates: (start, end) => set({ startDate: start, endDate: end }),
 
       setTarifsAnnexes: (tarifs) => set({ tarifsAnnexes: tarifs }),
+
+      setLivraisonChoix: (itemKey, choix) =>
+        set((state) => ({
+          livraisonChoix: { ...state.livraisonChoix, [itemKey]: choix },
+        })),
 
       // -----------------------------------------------------------------------
       // Getters / Logique dérivée
@@ -191,7 +223,7 @@ export const useStore = create<StoreState>()(
       },
 
       /**
-       * Sous-total avec coefficient de durée appliqué.
+       * Sous-total avec coefficient de durée appliqué (location seule, sans frais livraison/fourgon).
        * Retourne 0 si 6+ jours (tarif sur demande — la UI bloque la validation).
        */
       getSousTotal: () => {
@@ -199,6 +231,73 @@ export const useStore = create<StoreState>()(
         const nbJours = get().getNbJours()
         const coeff = getLocationCoefficient(nbJours)
         return coeff !== null ? brut * coeff : 0
+      },
+
+      /**
+       * Total des frais de livraison + fourgon (facturés 1× hors coefficient).
+       * Inclut les packs (selon mode_livraison) et les équipements éclairage (selon choix utilisateur).
+       */
+      getFraisLivraison: () => {
+        const { cart, livraisonChoix } = get()
+        let total = 0
+        for (const item of cart) {
+          if (item.type === 'pack') {
+            const pack = item.item as Pack
+            const mode = pack.mode_livraison ?? 'obligatoire'
+            if (mode === 'retrait_uniquement') continue
+            if (mode === 'obligatoire') {
+              total += (pack.prix_livraison ?? 0) + (pack.prix_fourgon ?? 0)
+            } else if (mode === 'optionnel') {
+              const choix = livraisonChoix[pack.id] ?? 'retrait'
+              if (choix === 'livraison') {
+                total += (pack.prix_livraison ?? 0) + (pack.prix_fourgon ?? 0)
+              }
+            }
+          } else if (item.type === 'equipement') {
+            const eq = item.item as Equipement
+            if (eq.categorie !== 'eclairage' || eq.prix_livraison == null) continue
+            const choix = livraisonChoix[`equip-${eq.id}`] ?? 'retrait'
+            if (choix === 'livraison') {
+              total += eq.prix_livraison
+            }
+          }
+        }
+        return total
+      },
+
+      /**
+       * Détail des frais : livraison seule et fourgon seul.
+       * Même logique que getFraisLivraison mais ventilé.
+       */
+      getFraisDetail: () => {
+        const { cart, livraisonChoix } = get()
+        let livraison = 0
+        let fourgon = 0
+        for (const item of cart) {
+          if (item.type === 'pack') {
+            const pack = item.item as Pack
+            const mode = pack.mode_livraison ?? 'obligatoire'
+            if (mode === 'retrait_uniquement') continue
+            if (mode === 'obligatoire') {
+              livraison += pack.prix_livraison ?? 0
+              fourgon += pack.prix_fourgon ?? 0
+            } else if (mode === 'optionnel') {
+              const choix = livraisonChoix[pack.id] ?? 'retrait'
+              if (choix === 'livraison') {
+                livraison += pack.prix_livraison ?? 0
+                fourgon += pack.prix_fourgon ?? 0
+              }
+            }
+          } else if (item.type === 'equipement') {
+            const eq = item.item as Equipement
+            if (eq.categorie !== 'eclairage' || eq.prix_livraison == null) continue
+            const choix = livraisonChoix[`equip-${eq.id}`] ?? 'retrait'
+            if (choix === 'livraison') {
+              livraison += eq.prix_livraison
+            }
+          }
+        }
+        return { livraison, fourgon }
       },
 
       /** Coefficient de durée pour les dates actuelles (null = 6+ jours = sur demande) */

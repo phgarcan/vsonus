@@ -30,10 +30,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${prestation.titre} | V-Sonus`,
       description: prestation.intro,
-      url: `https://vsonus.ch/prestations/${slug}`,
+      url: `https://vsonus.ch/packs/${slug}`,
       images: [{ url: `https://vsonus.ch${prestation.image}`, alt: prestation.titre }],
     },
-    alternates: { canonical: `https://vsonus.ch/prestations/${slug}` },
+    alternates: { canonical: `https://vsonus.ch/packs/${slug}` },
   }
 }
 
@@ -91,7 +91,8 @@ export default async function PrestationDetailPage({ params }: Props) {
       readItems('packs', {
         filter: { categorie: { _eq: categorieSlug } },
         limit: 10,
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'image_principale', 'description'],
+        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort'],
+        sort: ['sort'],
       })
     )
     .catch(() => [] as Pack[])
@@ -117,7 +118,7 @@ export default async function PrestationDetailPage({ params }: Props) {
           <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 mb-6 flex-wrap">
             <Link href="/" className="hover:text-vsonus-red transition-colors">Accueil</Link>
             <span className="text-gray-700">/</span>
-            <Link href="/prestations" className="hover:text-vsonus-red transition-colors">Packs</Link>
+            <Link href="/packs" className="hover:text-vsonus-red transition-colors">Packs</Link>
             <span className="text-gray-700">/</span>
             <span className="text-vsonus-red">{titre}</span>
           </nav>
@@ -187,19 +188,19 @@ export default async function PrestationDetailPage({ params }: Props) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {packs.map((pack, i) => {
-                const imgUrl = getImageUrl(pack.image_principale, { width: '600', height: '400', fit: 'cover', quality: '85' })
+                const imgUrl = getImageUrl(pack.image_principale, { width: '600', height: '400', fit: 'contain', quality: '85' })
                 return (
                   <AnimateOnScroll key={pack.id} delay={i * 100}>
                     <article className="bg-vsonus-black border border-gray-800 flex flex-col hover:border-vsonus-red transition-colors duration-300 group">
                       <Link href={`/catalogue/pack/${pack.id}`} className="block">
                         {/* Image */}
-                        <div className="relative w-full h-44 bg-vsonus-dark overflow-hidden">
+                        <div className="relative w-full h-44 bg-white overflow-hidden">
                           {imgUrl ? (
                             <Image
                               src={imgUrl}
                               alt={pack.nom}
                               fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                               sizes="(max-width: 768px) 100vw, 33vw"
                             />
                           ) : (

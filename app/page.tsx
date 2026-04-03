@@ -2,10 +2,14 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star } from 'lucide-react'
+import { readSingleton, readItems } from '@directus/sdk'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { HeroVideo } from '@/components/home/HeroVideo'
 import { BrandCarousel } from '@/components/ui/BrandCarousel'
+import type { BrandItem } from '@/components/ui/BrandCarousel'
 import { Sliders, Zap, Shield, Users } from 'lucide-react'
+import { directus, getAssetUrl, getImageUrl } from '@/lib/directus'
+import type { SiteSettings, LogoPartenaire } from '@/lib/directus'
 
 export const metadata: Metadata = {
   title: 'Location Sonorisation & Éclairage Vaud | V-Sonus Événementiel',
@@ -67,14 +71,40 @@ const INSTAGRAM = [
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Récupération vidéo hero depuis Directus (singleton site_settings)
+  const settings = await directus.request(
+    readSingleton('site_settings', { fields: ['hero_video', 'hero_video_poster'] })
+  ).catch(() => null as SiteSettings | null)
+
+  const heroVideoUrl = getAssetUrl(settings?.hero_video)
+  const heroPosterUrl = getImageUrl(settings?.hero_video_poster, { width: '1920', quality: '80' })
+
+  // Récupération des logos partenaires depuis Directus
+  const logosRaw = await directus.request(
+    readItems('logos_partenaires', {
+      filter: { status: { _eq: 'published' } },
+      sort: ['sort'],
+      limit: 50,
+      fields: ['id', 'nom', 'logo', 'url', 'sort'],
+    })
+  ).catch(() => [] as LogoPartenaire[])
+
+  const brandItems: BrandItem[] = (logosRaw as LogoPartenaire[])
+    .filter((l) => l.logo)
+    .map((l) => ({
+      name: l.nom,
+      src: getAssetUrl(l.logo)!,
+      url: l.url,
+    }))
+
   return (
     <main>
 
       {/* ── 1. HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative flex flex-col items-center justify-center min-h-[600px] text-center px-4 sm:px-6 py-28 overflow-hidden bg-vsonus-black border-b-2 border-vsonus-red">
         {/* Vidéo de fond avec parallax */}
-        <HeroVideo />
+        <HeroVideo videoUrl={heroVideoUrl} posterUrl={heroPosterUrl} />
 
         {/* Overlay sombre */}
         <div aria-hidden className="absolute inset-0 bg-black/60" />
@@ -166,7 +196,7 @@ export default function HomePage() {
           <AnimateOnScroll delay={200}>
             <div className="mt-10 text-center">
               <Link
-                href="/prestations"
+                href="/packs"
                 className="inline-flex items-center gap-2 border-2 border-vsonus-red text-vsonus-red font-bold uppercase tracking-widest px-8 py-3 hover:bg-vsonus-red hover:text-white transition-colors duration-200"
               >
                 Voir tous nos packs
@@ -249,7 +279,7 @@ export default function HomePage() {
               Nos marques partenaires
             </p>
           </AnimateOnScroll>
-          <BrandCarousel />
+          <BrandCarousel brands={brandItems} />
         </div>
       </section>
 

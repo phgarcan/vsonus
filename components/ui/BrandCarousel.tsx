@@ -2,7 +2,13 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-const BRANDS = [
+export interface BrandItem {
+  name: string
+  src: string
+  url?: string | null
+}
+
+const FALLBACK_BRANDS: BrandItem[] = [
   { name: 'L-Acoustics', src: '/images/brands/l-acoustics.svg', url: 'https://www.l-acoustics.com' },
   { name: 'Yamaha', src: '/images/brands/yamaha.png', url: 'https://www.yamaha.com' },
   { name: 'Pioneer', src: '/images/brands/pioneer.png', url: 'https://www.pioneerdj.com' },
@@ -21,8 +27,14 @@ const BRANDS = [
   { name: 'Stageworx', src: '/images/brands/stageworx.png', url: 'https://www.stageworx.com' },
 ]
 
-export function BrandCarousel({ variant = 'black' }: { variant?: 'dark' | 'black' }) {
-  const items = [...BRANDS, ...BRANDS]
+interface BrandCarouselProps {
+  variant?: 'dark' | 'black'
+  brands?: BrandItem[]
+}
+
+export function BrandCarousel({ variant = 'black', brands }: BrandCarouselProps) {
+  const source = brands && brands.length > 0 ? brands : FALLBACK_BRANDS
+  const items = [...source, ...source]
   const from = variant === 'dark' ? 'from-[#231F20]' : 'from-black'
 
   return (
@@ -32,25 +44,39 @@ export function BrandCarousel({ variant = 'black' }: { variant?: 'dark' | 'black
       <div className={`absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l ${from} to-transparent z-10 pointer-events-none`} />
 
       <div className="flex items-center gap-14 md:gap-20 brand-scroll group-hover:[animation-play-state:paused]">
-        {items.map((brand, i) => (
-          <a
-            key={`${brand.name}-${i}`}
-            href={brand.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-shrink-0 opacity-40 hover:opacity-100 transition-all duration-300"
-            title={brand.name}
-          >
+        {items.map((brand, i) => {
+          const img = (
             <img
               src={brand.src}
               alt={brand.name}
-              className="h-10 md:h-14 w-auto max-w-[140px] md:max-w-[180px] object-contain"
+              className="h-10 md:h-12 w-auto max-w-[140px] md:max-w-[180px] object-contain"
               style={{ filter: 'brightness(0) invert(1)' }}
               onMouseEnter={(e) => { e.currentTarget.style.filter = 'none' }}
               onMouseLeave={(e) => { e.currentTarget.style.filter = 'brightness(0) invert(1)' }}
             />
-          </a>
-        ))}
+          )
+
+          return brand.url ? (
+            <a
+              key={`${brand.name}-${i}`}
+              href={brand.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 opacity-40 hover:opacity-100 transition-all duration-300"
+              title={brand.name}
+            >
+              {img}
+            </a>
+          ) : (
+            <span
+              key={`${brand.name}-${i}`}
+              className="flex-shrink-0 opacity-40 hover:opacity-100 transition-all duration-300"
+              title={brand.name}
+            >
+              {img}
+            </span>
+          )
+        })}
       </div>
 
       <style jsx>{`

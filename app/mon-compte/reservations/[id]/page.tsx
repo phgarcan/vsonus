@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getSession, getAccessToken } from '@/lib/auth'
+import { formatDateEU } from '@/lib/utils'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { ClipboardCheck, FileText, CheckCircle2, PartyPopper, CircleDot } from 'lucide-react'
 
@@ -192,9 +193,9 @@ export default async function ReservationDetailPage({
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <div className="bg-vsonus-dark border border-gray-800 p-5">
             <h3 className="text-xs font-black uppercase tracking-widest text-vsonus-red mb-3">Dates de location</h3>
-            <p className="text-white font-bold">{reservation.date_debut} → {reservation.date_fin}</p>
+            <p className="text-white font-bold">{formatDateEU(reservation.date_debut)} → {formatDateEU(reservation.date_fin)}</p>
             <p className="text-gray-500 text-xs mt-1">
-              Demande effectuée le {new Date(reservation.date_created).toLocaleDateString('fr-CH')}
+              Demande effectuée le {formatDateEU(reservation.date_created)}
             </p>
           </div>
           <div className="bg-vsonus-dark border border-gray-800 p-5">

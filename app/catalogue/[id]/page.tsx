@@ -49,7 +49,7 @@ export default async function ProduitPage({
   try {
     equipement = await client.request(
       readItem('equipements', id, {
-        fields: ['id', 'nom', 'marque', 'categorie', 'description', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image'],
+        fields: ['id', 'nom', 'marque', 'categorie', 'description', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image', 'prix_livraison'],
       })
     ) as Equipement
   } catch {
@@ -61,13 +61,14 @@ export default async function ProduitPage({
     readItems('equipements', {
       ...(equipement.categorie ? { filter: { categorie: { _eq: equipement.categorie } } } : {}),
       limit: 4,
-      fields: ['id', 'nom', 'prix_journalier', 'image', 'marque'],
+      fields: ['id', 'nom', 'prix_journalier', 'image', 'marque', 'sort'],
+      sort: ['sort'],
     })
   ).catch(() => [] as Equipement[])
 
   const filteredSuggestions = (suggestions as Equipement[]).filter((s) => s.id !== equipement.id).slice(0, 3)
 
-  const imageUrl = getImageUrl(equipement.image, { width: '900', height: '600', fit: 'cover' })
+  const imageUrl = getImageUrl(equipement.image, { width: '900', height: '600', fit: 'contain' })
   const catLabel: Record<string, string> = {
     sonorisation: 'Sonorisation',
     eclairage: 'Éclairage',
@@ -101,7 +102,7 @@ export default async function ProduitPage({
 
         {/* Colonne image */}
         <div className="space-y-4">
-          <div className="relative w-full aspect-[3/2] bg-vsonus-dark border border-gray-800 overflow-hidden">
+          <div className="relative w-full aspect-[3/2] bg-white border border-gray-800 overflow-hidden">
             {imageUrl ? (
               <Image
                 src={imageUrl}
@@ -193,14 +194,14 @@ export default async function ProduitPage({
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {filteredSuggestions.map((s) => {
-              const sImg = getImageUrl(s.image, { width: '300', height: '200', fit: 'cover' })
+              const sImg = getImageUrl(s.image, { width: '300', height: '200', fit: 'contain' })
               return (
                 <Link
                   key={s.id}
                   href={`/catalogue/${s.id}`}
                   className="bg-vsonus-dark border border-gray-800 hover:border-vsonus-red transition-colors duration-200 flex flex-col"
                 >
-                  <div className="relative h-36 bg-black overflow-hidden">
+                  <div className="relative h-36 bg-white overflow-hidden">
                     {sImg ? (
                       <Image src={sImg} alt={s.nom} fill className="object-contain p-3"
                         sizes="(max-width: 640px) 100vw, 33vw" />

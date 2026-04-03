@@ -72,7 +72,7 @@ export default async function PackDetailPage({
   try {
     pack = await client.request(
       readItem('packs', id, {
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'image_principale', 'description'],
+        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description'],
       })
     ) as Pack
   } catch {
@@ -84,13 +84,14 @@ export default async function PackDetailPage({
     readItems('packs', {
       ...(pack.categorie ? { filter: { categorie: { _eq: pack.categorie } } } : {}),
       limit: 4,
-      fields: ['id', 'nom', 'prix_base', 'image_principale', 'categorie'],
+      fields: ['id', 'nom', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'categorie', 'sort'],
+      sort: ['sort'],
     })
   ).catch(() => [] as Pack[])
 
   const filteredSuggestions = (suggestions as Pack[]).filter((s) => s.id !== pack.id).slice(0, 3)
 
-  const imageUrl = getImageUrl(pack.image_principale, { width: '900', height: '600', fit: 'cover' })
+  const imageUrl = getImageUrl(pack.image_principale, { width: '900', height: '600', fit: 'contain' })
   const catLabel = CAT_LABEL[pack.categorie ?? ''] ?? pack.categorie ?? ''
   const { intro, items: materiel } = parseMateriel(pack.description)
 
@@ -118,13 +119,13 @@ export default async function PackDetailPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
         {/* Image */}
-        <div className="relative w-full aspect-[3/2] bg-vsonus-dark border-2 border-vsonus-red overflow-hidden">
+        <div className="relative w-full aspect-[3/2] bg-white border-2 border-vsonus-red overflow-hidden">
           {imageUrl ? (
             <Image
               src={imageUrl}
               alt={pack.nom}
               fill
-              className="object-cover"
+              className="object-contain p-4"
               sizes="(max-width: 1024px) 100vw, 50vw"
               priority
             />
@@ -201,16 +202,16 @@ export default async function PackDetailPage({
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {filteredSuggestions.map((s) => {
-              const sImg = getImageUrl(s.image_principale, { width: '300', height: '200', fit: 'cover' })
+              const sImg = getImageUrl(s.image_principale, { width: '300', height: '200', fit: 'contain' })
               return (
                 <Link
                   key={s.id}
                   href={`/catalogue/pack/${s.id}`}
                   className="bg-vsonus-dark border border-vsonus-red hover:shadow-glow-red transition-shadow duration-200 flex flex-col group"
                 >
-                  <div className="relative h-36 bg-black overflow-hidden">
+                  <div className="relative h-36 bg-white overflow-hidden">
                     {sImg ? (
-                      <Image src={sImg} alt={s.nom} fill className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      <Image src={sImg} alt={s.nom} fill className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 640px) 100vw, 33vw" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl">★</div>

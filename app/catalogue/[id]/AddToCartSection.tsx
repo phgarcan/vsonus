@@ -3,15 +3,23 @@
 import { useState } from 'react'
 import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
+import { equipementHasLivraisonOption } from '@/lib/directus'
 import type { Equipement } from '@/lib/directus'
 
 export function AddToCartSection({ equipement }: { equipement: Equipement }) {
   const [quantite, setQuantite] = useState(1)
   const [added, setAdded] = useState(false)
+  const [choixLivraison, setChoixLocal] = useState<'retrait' | 'livraison'>('retrait')
   const addToCart = useStore((s) => s.addToCart)
+  const setLivraisonChoix = useStore((s) => s.setLivraisonChoix)
+
+  const showLivraisonOption = equipementHasLivraisonOption(equipement)
 
   function handleAdd() {
     addToCart({ type: 'equipement', item: equipement, quantite })
+    if (showLivraisonOption) {
+      setLivraisonChoix(`equip-${equipement.id}`, choixLivraison)
+    }
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
@@ -38,6 +46,37 @@ export function AddToCartSection({ equipement }: { equipement: Equipement }) {
         </div>
         <span className="text-xs text-gray-600">Max : {equipement.stock_total}</span>
       </div>
+
+      {/* Sélecteur retrait / livraison (éclairage uniquement) */}
+      {showLivraisonOption && (
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Mode de récupération</p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setChoixLocal('retrait')}
+              className={`flex-1 text-sm font-bold uppercase tracking-widest px-4 py-3 border transition-colors ${
+                choixLivraison === 'retrait'
+                  ? 'border-vsonus-red text-white bg-vsonus-red/20'
+                  : 'border-gray-700 text-gray-500 hover:border-gray-500'
+              }`}
+            >
+              Retrait sur place — 0.- CHF
+            </button>
+            <button
+              type="button"
+              onClick={() => setChoixLocal('livraison')}
+              className={`flex-1 text-sm font-bold uppercase tracking-widest px-4 py-3 border transition-colors ${
+                choixLivraison === 'livraison'
+                  ? 'border-vsonus-red text-white bg-vsonus-red/20'
+                  : 'border-gray-700 text-gray-500 hover:border-gray-500'
+              }`}
+            >
+              Livraison — {equipement.prix_livraison} CHF
+            </button>
+          </div>
+        </div>
+      )}
 
       <Button
         variant="primary"

@@ -47,14 +47,16 @@ export default async function CataloguePage({
         ...(categorie ? { filter: { categorie: { _eq: categorie } } } : {}),
         ...(q ? { search: q } : {}),
         limit: 100,
-        fields: ['id', 'nom', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image', 'categorie', 'marque', 'description'],
+        fields: ['id', 'nom', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image', 'categorie', 'marque', 'description', 'prix_livraison', 'sort'],
+        sort: ['sort'],
       })
     ).catch(() => [] as Equipement[]),
     client.request(
       readItems('packs', {
         ...(categorie ? { filter: { categorie: { _eq: categorie } } } : {}),
         limit: 50,
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'image_principale', 'description'],
+        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort'],
+        sort: ['sort'],
       })
     ).catch(() => [] as Pack[]),
   ])
@@ -80,7 +82,7 @@ export default async function CataloguePage({
       {packs.length > 0 && (
         <section className="mb-14">
           <h2 className="text-xl font-black uppercase tracking-widest text-vsonus-red mb-6 border-b-2 border-vsonus-red pb-2">
-            Packs tout-en-un
+            Packs clé en main
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {packs.map((pack) => (
@@ -114,12 +116,12 @@ export default async function CataloguePage({
 // ---------------------------------------------------------------------------
 
 function EquipementCard({ equipement }: { equipement: Equipement }) {
-  const imageUrl = getImageUrl(equipement.image, { width: '400', height: '300', fit: 'cover' })
+  const imageUrl = getImageUrl(equipement.image, { width: '400', height: '300', fit: 'contain' })
 
   return (
     <article className="bg-vsonus-dark border border-gray-800 flex flex-col hover:border-vsonus-red hover:scale-[1.02] hover:shadow-card-hover transition-all duration-300 group">
       <Link href={`/catalogue/${equipement.id}`} className="block">
-        <div className="relative w-full h-48 bg-black overflow-hidden">
+        <div className="relative w-full h-48 bg-white overflow-hidden">
           {imageUrl ? (
             <Image
               src={imageUrl}
@@ -164,18 +166,18 @@ function EquipementCard({ equipement }: { equipement: Equipement }) {
 }
 
 function PackCard({ pack }: { pack: Pack }) {
-  const imageUrl = getImageUrl(pack.image_principale, { width: '400', height: '300', fit: 'cover' })
+  const imageUrl = getImageUrl(pack.image_principale, { width: '400', height: '300', fit: 'contain' })
 
   return (
     <article className="bg-vsonus-dark border-2 border-vsonus-red flex flex-col hover:shadow-glow-red hover:scale-[1.02] transition-all duration-300 group">
       <Link href={`/catalogue/pack/${pack.id}`} className="block">
-        <div className="relative w-full h-48 bg-black overflow-hidden">
+        <div className="relative w-full h-48 bg-white overflow-hidden">
           {imageUrl ? (
             <Image
               src={imageUrl}
               alt={pack.nom}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
           ) : (

@@ -17,6 +17,14 @@ export interface Equipement {
   categorie?: string
   marque?: string
   description?: string
+  /** Frais de livraison éclairage (facturés 1×, null = pas de livraison proposée) */
+  prix_livraison?: number | null
+  sort?: number | null
+}
+
+/** Vérifie si un équipement propose l'option retrait/livraison (éclairage avec prix_livraison renseigné) */
+export function equipementHasLivraisonOption(eq: Equipement): boolean {
+  return eq.categorie === 'eclairage' && eq.prix_livraison != null
 }
 
 export interface Pack {
@@ -24,9 +32,16 @@ export interface Pack {
   nom: string
   categorie: 'sonorisation' | 'eclairage' | 'scene' | 'mapping' | string
   prix_base: number
+  /** Frais de livraison et installation (facturés 1×, null = pas de livraison) */
+  prix_livraison?: number | null
+  /** Frais de location fourgon + essence (facturés 1×, null = pas de fourgon) */
+  prix_fourgon?: number | null
+  /** Mode de livraison : obligatoire, optionnel ou retrait uniquement */
+  mode_livraison?: 'obligatoire' | 'optionnel' | 'retrait_uniquement'
   image_principale: string | null
   description?: string
   pack_equipements?: PackEquipement[]
+  sort?: number | null
 }
 
 export interface PackEquipement {
@@ -34,6 +49,7 @@ export interface PackEquipement {
   pack_id: string
   equipement_id: Equipement
   quantite: number
+  sort?: number | null
 }
 
 export interface TarifAnnexe {
@@ -120,6 +136,21 @@ export interface Realisation {
   publie: boolean
 }
 
+export interface SiteSettings {
+  id: number
+  hero_video: string | null
+  hero_video_poster: string | null
+}
+
+export interface LogoPartenaire {
+  id: number
+  nom: string
+  logo: string | null
+  url: string | null
+  sort: number | null
+  status: string
+}
+
 interface Schema {
   equipements: Equipement[]
   packs: Pack[]
@@ -131,6 +162,8 @@ interface Schema {
   messages_contact: MessageContact[]
   realisations: Realisation[]
   realisations_files: RealisationFile[]
+  site_settings: SiteSettings
+  logos_partenaires: LogoPartenaire[]
 }
 
 // ---------------------------------------------------------------------------
@@ -164,4 +197,10 @@ export function getImageUrl(imageId: string | null | undefined, params?: Record<
     Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value))
   }
   return url.toString()
+}
+
+/** URL brute d'un asset Directus (vidéo, fichier quelconque) */
+export function getAssetUrl(assetId: string | null | undefined): string | null {
+  if (!assetId) return null
+  return `${directusUrl}/assets/${assetId}`
 }

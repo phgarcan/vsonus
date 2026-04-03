@@ -3,7 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { MessageCircle, X, Send, User } from 'lucide-react'
-import { useChatStore } from '@/lib/store'
+import { getConsent as getConsentPrefs } from '@/components/ui/CookieBanner'
+import { useChatStore, useChatHydrated } from '@/lib/store'
 import type { ChatMessage } from '@/lib/store'
 
 function MaxAvatar({ size = 36 }: { size?: number }) {
@@ -284,10 +285,12 @@ export default function ChatBot() {
   const pathname = usePathname()
   const isMonCompte = pathname.startsWith('/mon-compte')
 
+  const hydrated = useChatHydrated()
   const { chatMessages, chatOpen, messageCount, addChatMessage, setChatOpen, setMessageCount, clearChat } = useChatStore()
   const open = chatOpen
   const messages = chatMessages
   const [cookieBannerVisible, setCookieBannerVisible] = useState(false)
+  const [functionalConsent, setFunctionalConsent] = useState<boolean | null>(null)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [showTyping, setShowTyping] = useState(false)
@@ -302,33 +305,44 @@ export default function ChatBot() {
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const initRef = useRef(false)
 
-  // Détection bannière cookies pour ajuster la position du bouton
+  // Détection bannière cookies + consentement fonctionnel
   useEffect(() => {
-    const hasCookie = document.cookie.includes('vsonus_cookies_ok=1')
-    setCookieBannerVisible(!hasCookie)
-    const handler = () => setCookieBannerVisible(false)
-    window.addEventListener('cookieAccepted', handler)
-    return () => window.removeEventListener('cookieAccepted', handler)
+    const consent = getConsentPrefs()
+    setCookieBannerVisible(!consent)
+    setFunctionalConsent(consent?.functional ?? null)
+
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail
+      setCookieBannerVisible(false)
+      setFunctionalConsent(detail?.functional ?? false)
+    }
+    window.addEventListener('consentUpdated', handler)
+    return () => window.removeEventListener('consentUpdated', handler)
   }, [])
 
-  // Init : welcome message + Google provenance (runs once)
+  // Init : welcome message + Google provenance
+  // Attend que le store soit réhydraté depuis sessionStorage pour éviter les doublons
   useEffect(() => {
-    if (initRef.current) return
+    if (!hydrated || initRef.current) return
     initRef.current = true
 
     const source = detectGoogleSource()
+    const alreadyGreeted = sessionStorage.getItem('max_greeted')
     const alreadyShown = sessionStorage.getItem('vsonus_chat_notif_shown')
 
-    // If conversation already has messages, restore suggestions but don't re-add welcome
-    if (chatMessages.length > 0) {
-      // Restore contextual suggestions if from Google Ads
+    // Conversation existante ou déjà accueilli → restaurer les suggestions contextuelles uniquement
+    // Lire directement depuis le store pour éviter la race condition avec la réhydratation
+    const currentMessages = useChatStore.getState().chatMessages
+    if (alreadyGreeted || currentMessages.length > 0) {
       if (source?.type === 'ads_with_term') {
         setSuggestions(buildUtmSuggestions(source.term, source.category))
       }
+      // Marquer comme accueilli au cas où l'historique existe mais pas le flag
+      if (!alreadyGreeted) sessionStorage.setItem('max_greeted', '1')
       return
     }
 
-    // Empty conversation — set welcome message
+    // Première visite de la session → message de bienvenue
     if (source?.type === 'ads_with_term') {
       const contextualMessage = buildUtmMessage(source.term, source.category)
       addChatMessage({ role: 'assistant', content: contextualMessage })
@@ -338,8 +352,9 @@ export default function ChatBot() {
     } else {
       addChatMessage({ role: 'assistant', content: WELCOME_MESSAGE })
     }
+    sessionStorage.setItem('max_greeted', '1')
 
-    // Show notification bubble after 5s (only once per session)
+    // Bulle de notification après 5s (une seule fois par session)
     if (!alreadyShown) {
       const notifMessage = source?.type === 'ads_with_term'
         ? (CATEGORY_CONFIG[source.category].notification ?? "Hey ! Moi c'est Max 👋 Besoin d'un coup de main ?")
@@ -354,7 +369,7 @@ export default function ChatBot() {
       return () => clearTimeout(timer)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [hydrated])
 
   // Stop pulse + increment openCount for fade-in effect
   useEffect(() => {
@@ -458,13 +473,24 @@ export default function ChatBot() {
 
       {/* Floating button */}
       {!open && (
-        <button
-          onClick={() => setChatOpen(true)}
-          className={`fixed right-6 z-50 w-14 h-14 rounded-full bg-vsonus-red text-white flex items-center justify-center shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''} ${cookieBannerVisible ? 'bottom-40 sm:bottom-4' : 'bottom-6'}`}
-          aria-label="Ouvrir le chat"
-        >
-          <MessageCircle size={24} />
-        </button>
+        functionalConsent === false ? (
+          <button
+            onClick={() => window.dispatchEvent(new Event('openCookieSettings'))}
+            className={`fixed right-6 z-50 w-14 h-14 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center transition-all duration-200 group ${cookieBannerVisible ? 'bottom-40 sm:bottom-4' : 'bottom-6'}`}
+            aria-label="Activez les cookies fonctionnels pour utiliser l'assistant Max"
+            title="Activez les cookies fonctionnels pour utiliser l'assistant Max"
+          >
+            <MessageCircle size={24} />
+          </button>
+        ) : (
+          <button
+            onClick={() => setChatOpen(true)}
+            className={`fixed right-6 z-50 w-14 h-14 rounded-full bg-vsonus-red text-white flex items-center justify-center shadow-glow-red hover:shadow-glow-red-hover transition-all duration-200 hover:scale-105 ${showPulse ? 'animate-pulse-once' : ''} ${cookieBannerVisible ? 'bottom-40 sm:bottom-4' : 'bottom-6'}`}
+            aria-label="Ouvrir le chat"
+          >
+            <MessageCircle size={24} />
+          </button>
+        )
       )}
 
       {/* Chat window */}

@@ -3,8 +3,11 @@
 import { createItem, updateItem } from '@directus/sdk'
 import { getServerDirectus } from '@/lib/directus'
 import { sendEmail, emailLayout, lignesTable } from '@/lib/email'
+import { getSession } from '@/lib/auth'
+import { formatDateEU } from '@/lib/utils'
 import { getLocationCoefficient, getCoefficientLabel } from '@/lib/pricing'
 import type { CartItem } from '@/lib/store'
+import type { Pack, Equipement } from '@/lib/directus'
 
 const CLIENT_ROLE_ID = '3a7b1e18-e5c6-4e31-8992-862377d0b98b'
 
@@ -43,6 +46,7 @@ export interface ReservationInput {
   nom_entreprise?: string
   numero_ide?: string
   honeypot?: string // anti-bot
+  livraisonChoix?: Record<string, 'retrait' | 'livraison'>
 }
 
 export type ReservationResult =
@@ -56,7 +60,7 @@ export type ReservationResult =
 export async function soumettreReservation(
   input: ReservationInput
 ): Promise<ReservationResult> {
-  const { clientData, cartItems, startDate, endDate, nbJours, totalHT, besoinMontage, besoinLivraison, createAccount, est_entreprise, nom_entreprise, numero_ide } = input
+  const { clientData, cartItems, startDate, endDate, nbJours, totalHT, besoinMontage, besoinLivraison, createAccount, est_entreprise, nom_entreprise, numero_ide, livraisonChoix } = input
 
   // Honeypot — si rempli, c'est un bot : rejeter silencieusement
   if (input.honeypot) {
@@ -120,6 +124,43 @@ export async function soumettreReservation(
       }))
     ))
 
+    // 2b. Créer les lignes de frais (livraison, fourgon) — facturés 1×
+    const fraisLignes: Array<{ label: string; prix_total: number }> = []
+    for (const item of cartItems) {
+      if (item.type === 'pack') {
+        const pack = item.item as Pack
+        const mode = pack.mode_livraison ?? 'obligatoire'
+        const inclureLivraison =
+          mode === 'obligatoire' ||
+          (mode === 'optionnel' && livraisonChoix?.[pack.id] === 'livraison')
+        if (inclureLivraison) {
+          if ((pack.prix_livraison ?? 0) > 0) {
+            fraisLignes.push({ label: `Livraison / Installation — ${pack.nom}`, prix_total: pack.prix_livraison! })
+          }
+          if ((pack.prix_fourgon ?? 0) > 0) {
+            fraisLignes.push({ label: `Location fourgon — ${pack.nom}`, prix_total: pack.prix_fourgon! })
+          }
+        }
+      } else if (item.type === 'equipement') {
+        const eq = item.item as Equipement
+        if (eq.categorie === 'eclairage' && eq.prix_livraison != null && livraisonChoix?.[`equip-${eq.id}`] === 'livraison') {
+          fraisLignes.push({ label: `Livraison — ${eq.nom}`, prix_total: eq.prix_livraison })
+        }
+      }
+    }
+    if (fraisLignes.length > 0) {
+      await Promise.all(fraisLignes.map((frais) =>
+        client.request(createItem('reservation_lignes', {
+          reservation_id: reservationId,
+          type: 'frais_annexe',
+          label: frais.label,
+          quantite: 1,
+          prix_unitaire: frais.prix_total,
+          prix_total: frais.prix_total,
+        }))
+      ))
+    }
+
     // 3. Emails — non bloquants
     const lignesEmail = lignes.map(({ item, prix_total }) => ({
       label: item.item.nom,
@@ -130,8 +171,13 @@ export async function soumettreReservation(
     sendEmails({ clientData, startDate, endDate, nbJours, coefficient, totalHT, besoinMontage, besoinLivraison, lignes: lignesEmail, reservationId, est_entreprise, nom_entreprise, numero_ide })
       .catch(err => console.error('[email] Erreur envoi emails réservation:', err))
 
-    // 4. Create or link user account if requested (non-blocking)
-    if (createAccount) {
+    // 4. Lier la réservation au compte utilisateur
+    const currentSession = await getSession()
+    if (currentSession?.id) {
+      // Utilisateur connecté : lier directement la réservation
+      await client.request(updateItem('reservations', reservationId, { user: currentSession.id }))
+    } else if (createAccount) {
+      // Pas connecté mais demande de création de compte (non-bloquant)
       linkOrCreateUser(client, clientData, reservationId)
         .catch(err => console.error('[user] Erreur création compte client:', err))
     }
@@ -217,7 +263,7 @@ async function sendEmails(data: {
       </tr>` : ''}
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;">Dates</td>
-        <td style="padding:6px 0;font-size:13px;color:#fff;">${startDate} → ${endDate} <span style="color:#888;">(${nbJours} jour${nbJours > 1 ? 's' : ''}</span>${coefficient !== 1 ? ` <span style="color:#EC1C24;font-weight:700;">${getCoefficientLabel(nbJours)}</span>` : ''}<span style="color:#888;">)</span></td>
+        <td style="padding:6px 0;font-size:13px;color:#fff;">${formatDateEU(startDate)} → ${formatDateEU(endDate)} <span style="color:#888;">(${nbJours} jour${nbJours > 1 ? 's' : ''}</span>${coefficient !== 1 ? ` <span style="color:#EC1C24;font-weight:700;">${getCoefficientLabel(nbJours)}</span>` : ''}<span style="color:#888;">)</span></td>
       </tr>
       ${clientData.notes ? `<tr>
         <td style="padding:6px 0;font-size:13px;color:#888;vertical-align:top;">Notes</td>
@@ -261,7 +307,7 @@ async function sendEmails(data: {
       ${entrepriseHtml}
       <tr>
         <td style="padding:5px 0;font-size:13px;color:#888;width:100px;">Dates</td>
-        <td style="padding:5px 0;font-size:13px;color:#fff;">${startDate} → ${endDate} (${nbJours} jour${nbJours > 1 ? 's' : ''}${coefficient !== 1 ? ` <span style="color:#EC1C24;font-weight:700;">${getCoefficientLabel(nbJours)}</span>` : ''})</td>
+        <td style="padding:5px 0;font-size:13px;color:#fff;">${formatDateEU(startDate)} → ${formatDateEU(endDate)} (${nbJours} jour${nbJours > 1 ? 's' : ''}${coefficient !== 1 ? ` <span style="color:#EC1C24;font-weight:700;">${getCoefficientLabel(nbJours)}</span>` : ''})</td>
       </tr>
       <tr>
         <td style="padding:5px 0;font-size:13px;color:#888;vertical-align:top;">Lieu événement</td>
@@ -391,7 +437,24 @@ async function linkOrCreateUser(
       const created = await createRes.json()
       userId = created.data.id
 
+      // Générer un token pour le lien de définition du mot de passe (72h)
+      const resetToken = crypto.randomUUID()
+      const resetExpires = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
+
+      await fetch(`${DIRECTUS_URL}/users/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.DIRECTUS_SERVER_TOKEN}`,
+        },
+        body: JSON.stringify({
+          reset_token: resetToken,
+          reset_token_expires: resetExpires,
+        }),
+      })
+
       // Send welcome email with password reset link
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dev.vsonus.ch'
       sendEmail({
         to: clientData.email,
         subject: 'V-Sonus — Votre espace client est prêt',
@@ -405,13 +468,13 @@ async function linkOrCreateUser(
             Vous pourrez y suivre vos réservations et gérer votre profil.
           </p>
           <p style="margin:0 0 24px;">
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dev.vsonus.ch'}/mon-compte/definir-mot-de-passe"
+            <a href="${siteUrl}/mon-compte/definir-mot-de-passe?token=${resetToken}"
                style="display:inline-block;background:#EC1C24;color:#fff;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;padding:12px 24px;text-decoration:none;">
               Définir mon mot de passe →
             </a>
           </p>
           <p style="font-size:12px;color:#666;">
-            Connectez-vous ensuite sur <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dev.vsonus.ch'}/mon-compte/connexion" style="color:#EC1C24;">vsonus.ch/mon-compte</a>
+            Connectez-vous ensuite sur <a href="${siteUrl}/mon-compte/connexion" style="color:#EC1C24;">vsonus.ch/mon-compte</a>
           </p>
         `),
       }).catch((err: unknown) => console.error('[email] Welcome email error:', err))

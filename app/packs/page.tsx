@@ -6,13 +6,13 @@ import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 
 export const metadata: Metadata = {
   title: 'Packs Location Sono, Lumière, Scène',
-  description: 'Packs tout-en-un pour vos événements : sonorisation L-Acoustics, éclairage, DJ, concerts, scènes et mapping dès 120 CHF en Suisse Romande.',
+  description: 'Packs clé en main pour vos événements : sonorisation L-Acoustics, éclairage, DJ, concerts, scènes et mapping dès 120 CHF en Suisse Romande.',
   openGraph: {
     title: 'Packs Location Sono, Lumière, Scène | V-Sonus',
-    description: 'Packs tout-en-un pour vos événements en Suisse Romande dès 120 CHF.',
-    url: 'https://vsonus.ch/prestations',
+    description: 'Packs clé en main pour vos événements en Suisse Romande dès 120 CHF.',
+    url: 'https://vsonus.ch/packs',
   },
-  alternates: { canonical: 'https://vsonus.ch/prestations' },
+  alternates: { canonical: 'https://vsonus.ch/packs' },
 }
 
 export default function PrestationsPage() {
@@ -43,7 +43,7 @@ export default function PrestationsPage() {
             {PRESTATIONS.map(({ slug, titre, intro, image }, i) => (
               <AnimateOnScroll key={slug} delay={i * 80}>
                 <Link
-                  href={`/prestations/${slug}`}
+                  href={`/packs/${slug}`}
                   className="group relative block overflow-hidden aspect-[4/3] bg-vsonus-dark"
                 >
                   {/* Image de fond */}

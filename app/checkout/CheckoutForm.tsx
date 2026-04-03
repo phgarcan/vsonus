@@ -9,9 +9,10 @@ import { CgvModal } from '@/components/ui/CgvModal'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 import { CompanySearch } from '@/components/ui/CompanySearch'
 import { soumettreReservation } from '@/app/actions/reservation'
-import { getCoefficientLabel } from '@/lib/pricing'
-import { formatSwissPhone } from '@/lib/utils'
-import type { TarifAnnexe } from '@/lib/directus'
+import { getCoefficientLabel, FALLBACK_TRANSPORT_PRIX, FALLBACK_MONTAGE_PRIX } from '@/lib/pricing'
+import { formatSwissPhone, formatDateEU } from '@/lib/utils'
+import { equipementHasLivraisonOption } from '@/lib/directus'
+import type { TarifAnnexe, Pack, Equipement } from '@/lib/directus'
 
 interface CheckoutFormProps {
   tarifsAnnexes: TarifAnnexe[]
@@ -33,9 +34,12 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
     getSousTotalBrut,
     getSousTotal,
     getCoefficient,
+    getFraisLivraison,
+    getFraisDetail,
     requiresTechnicien,
     requiresTransport,
     clearCart,
+    livraisonChoix,
   } = useStore()
 
   const nbJours       = getNbJours()
@@ -44,17 +48,19 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
   const coefficient   = getCoefficient()
   const besoinTech    = requiresTechnicien()
   const besoinTransport = requiresTransport()
+  const fraisLivraison = getFraisLivraison()
+  const fraisDetail = getFraisDetail()
 
   const isSurDemande = coefficient === null && !!startDate && !!endDate
 
   const fraisTransport = tarifsAnnexes.find((t) => t.type === 'transport')
   const fraisMontage   = tarifsAnnexes.find((t) => t.type === 'montage')
 
-  const totalFraisAnnexes =
-    (besoinTransport && fraisTransport ? fraisTransport.prix : 0) +
-    (besoinTech && fraisMontage ? fraisMontage.prix : 0)
+  const fraisAnnexesEquip =
+    (besoinTransport ? (fraisTransport?.prix ?? FALLBACK_TRANSPORT_PRIX) : 0) +
+    (besoinTech ? (fraisMontage?.prix ?? FALLBACK_MONTAGE_PRIX) : 0)
 
-  const totalHT = sousTotal + totalFraisAnnexes
+  const totalHT = sousTotal + fraisLivraison + fraisAnnexesEquip
 
   const [cgvAccepted, setCgvAccepted] = useState(false)
   const [cgvOpen, setCgvOpen] = useState(false)
@@ -110,6 +116,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
         nom_entreprise: isEntreprise ? entreprise.nom_entreprise : undefined,
         numero_ide: isEntreprise ? entreprise.numero_ide : undefined,
         honeypot,
+        livraisonChoix,
       })
 
       if (result.success) {
@@ -451,9 +458,9 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
 
         {startDate && endDate && (
           <div className="text-sm text-gray-400">
-            <span className="font-semibold text-white">{startDate}</span>
+            <span className="font-semibold text-white">{formatDateEU(startDate)}</span>
             {' → '}
-            <span className="font-semibold text-white">{endDate}</span>
+            <span className="font-semibold text-white">{formatDateEU(endDate)}</span>
             <span className="ml-2 text-xs">
               ({nbJours} jour{nbJours > 1 ? 's' : ''}
               {coefficient !== null && coefficient !== 1 && (
@@ -467,16 +474,70 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
         <ul className="space-y-2 divide-y divide-gray-800">
           {cart.map((item) => {
             const prixUnitaire = item.type === 'equipement' ? item.item.prix_journalier : item.item.prix_base
+            const isPack = item.type === 'pack'
+            const pack = isPack ? (item.item as Pack) : null
+            const modeLivraison = pack?.mode_livraison ?? 'obligatoire'
+            const choix = pack ? (livraisonChoix[pack.id] ?? 'retrait') : null
+
             return (
-              <li key={`${item.type}-${item.item.id}`} className="flex justify-between pt-2 text-sm">
-                <span className="text-gray-300">
-                  {item.item.nom}
-                  <span className="text-gray-600 ml-1">×{item.quantite}</span>
-                </span>
-                <span className="text-white font-semibold">
-                  {(prixUnitaire * item.quantite).toFixed(2)}{' '}
-                  <span className="text-gray-600 text-xs">CHF/j</span>
-                </span>
+              <li key={`${item.type}-${item.item.id}`} className="pt-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-300">
+                    {item.item.nom}
+                    <span className="text-gray-600 ml-1">×{item.quantite}</span>
+                  </span>
+                  <span className="text-white font-semibold">
+                    {(prixUnitaire * item.quantite).toFixed(2)}{' '}
+                    <span className="text-gray-600 text-xs">CHF/j</span>
+                  </span>
+                </div>
+                {isPack && pack && modeLivraison === 'obligatoire' && (
+                  <div className="mt-1 space-y-0.5 text-xs text-gray-500">
+                    {(pack.prix_livraison ?? 0) > 0 && (
+                      <div className="flex justify-between">
+                        <span>Livraison / Installation (1×)</span>
+                        <span>{pack.prix_livraison} CHF</span>
+                      </div>
+                    )}
+                    {(pack.prix_fourgon ?? 0) > 0 && (
+                      <div className="flex justify-between">
+                        <span>Location fourgon (1×)</span>
+                        <span>{pack.prix_fourgon} CHF</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isPack && pack && modeLivraison === 'optionnel' && choix === 'livraison' && (
+                  <div className="mt-1 space-y-0.5 text-xs text-gray-500">
+                    {(pack.prix_livraison ?? 0) > 0 && (
+                      <div className="flex justify-between">
+                        <span>Livraison / Installation (1×)</span>
+                        <span>{pack.prix_livraison} CHF</span>
+                      </div>
+                    )}
+                    {(pack.prix_fourgon ?? 0) > 0 && (
+                      <div className="flex justify-between">
+                        <span>Location fourgon (1×)</span>
+                        <span>{pack.prix_fourgon} CHF</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isPack && pack && modeLivraison === 'optionnel' && choix === 'retrait' && (
+                  <p className="mt-1 text-xs text-gray-600">Retrait sur place</p>
+                )}
+                {/* Affichage choix livraison équipements éclairage */}
+                {!isPack && equipementHasLivraisonOption(item.item as Equipement) && (() => {
+                  const eqChoix = livraisonChoix[`equip-${item.item.id}`] ?? 'retrait'
+                  return eqChoix === 'livraison' ? (
+                    <div className="mt-1 text-xs text-gray-500 flex justify-between">
+                      <span>Livraison (1×)</span>
+                      <span className="text-gray-400">{(item.item as Equipement).prix_livraison} CHF</span>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-600">Retrait sur place</p>
+                  )
+                })()}
               </li>
             )
           })}
@@ -485,7 +546,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
         {/* Détail calcul avec coefficient */}
         <div className="border-t border-gray-800 pt-3 space-y-1.5 text-sm">
           <div className="flex justify-between text-gray-400">
-            <span>Sous-total (1 j)</span>
+            <span>Location matériel (1 j)</span>
             <span>{sousTotalBrut.toFixed(2)} CHF</span>
           </div>
           {coefficient !== null && coefficient !== 1 && (
@@ -497,16 +558,22 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
               <span className="text-white font-semibold">{sousTotal.toFixed(2)} CHF</span>
             </div>
           )}
-          {besoinTransport && fraisTransport && (
+          {fraisDetail.livraison > 0 && (
             <div className="flex justify-between text-gray-400">
-              <span>{fraisTransport.label}</span>
-              <span className="text-white">{fraisTransport.prix.toFixed(2)} CHF</span>
+              <span>Livraison et installation (1×)</span>
+              <span className="text-white">{fraisDetail.livraison.toFixed(2)} CHF</span>
             </div>
           )}
-          {besoinTech && fraisMontage && (
+          {fraisDetail.fourgon > 0 && (
             <div className="flex justify-between text-gray-400">
-              <span>{fraisMontage.label}</span>
-              <span className="text-white">{fraisMontage.prix.toFixed(2)} CHF</span>
+              <span>Location fourgon et essence (1×)</span>
+              <span className="text-white">{fraisDetail.fourgon.toFixed(2)} CHF</span>
+            </div>
+          )}
+          {fraisAnnexesEquip > 0 && (
+            <div className="flex justify-between text-gray-400">
+              <span>Frais annexes équipements</span>
+              <span className="text-white">{fraisAnnexesEquip.toFixed(2)} CHF</span>
             </div>
           )}
         </div>

@@ -25,6 +25,8 @@ export function HeroBlock({ data }: { data: HeroBlockData }) {
           muted
           loop
           playsInline
+          preload="metadata"
+          poster={bgUrl || undefined}
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src={data.video_fond} />

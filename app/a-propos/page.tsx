@@ -1,9 +1,13 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { readItems } from '@directus/sdk'
 import { Sliders, Zap, Shield, Users, CheckCircle2, Quote } from 'lucide-react'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { BrandCarousel } from '@/components/ui/BrandCarousel'
+import type { BrandItem } from '@/components/ui/BrandCarousel'
+import { directus, getAssetUrl } from '@/lib/directus'
+import type { LogoPartenaire } from '@/lib/directus'
 
 export const metadata: Metadata = {
   title: 'À propos de V-Sonus – Location Événementielle Vaud',
@@ -45,7 +49,25 @@ const POINTS_CLES = [
   'Un partenaire qui vous écoute avant de proposer',
 ]
 
-export default function AProposPage() {
+export default async function AProposPage() {
+  // Récupération des logos partenaires depuis Directus
+  const logosRaw = await directus.request(
+    readItems('logos_partenaires', {
+      filter: { status: { _eq: 'published' } },
+      sort: ['sort'],
+      limit: 50,
+      fields: ['id', 'nom', 'logo', 'url', 'sort'],
+    })
+  ).catch(() => [] as LogoPartenaire[])
+
+  const brandItems: BrandItem[] = (logosRaw as LogoPartenaire[])
+    .filter((l) => l.logo)
+    .map((l) => ({
+      name: l.nom,
+      src: getAssetUrl(l.logo)!,
+      url: l.url,
+    }))
+
   return (
     <main>
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
@@ -165,7 +187,7 @@ export default function AProposPage() {
               Nos partenaires techniques
             </p>
           </AnimateOnScroll>
-          <BrandCarousel variant="dark" />
+          <BrandCarousel variant="dark" brands={brandItems} />
         </div>
       </section>
 

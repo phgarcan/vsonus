@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CookieSettingsButton } from '@/components/ui/CookieSettingsButton'
 
 function IconInstagram() {
   return (
@@ -22,7 +23,7 @@ const linkCls = 'underline decoration-gray-600 hover:text-white hover:decoration
 
 const NAV_LINKS = [
   { href: '/', label: 'Accueil' },
-  { href: '/prestations', label: 'Packs' },
+  { href: '/packs', label: 'Packs' },
   { href: '/gestion-evenementielle', label: 'Événementiel' },
   { href: '/catalogue', label: 'Catalogue' },
   { href: '/galerie', label: 'Réalisations' },
@@ -203,6 +204,9 @@ export function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <CookieSettingsButton className="text-sm text-gray-500 underline decoration-gray-700 hover:text-gray-300 hover:decoration-vsonus-red transition-colors duration-200" />
+            </li>
           </ul>
           <p className="mt-4 text-xs text-gray-600">
             © {new Date().getFullYear()} V-Sonus. Tous droits réservés.
@@ -223,6 +227,10 @@ export function Footer() {
                 </Link>
               </span>
             ))}
+            <span className="flex items-center gap-4">
+              <span className="text-gray-800">·</span>
+              <CookieSettingsButton className="underline decoration-gray-700 hover:text-gray-400 hover:decoration-vsonus-red transition-colors duration-200" />
+            </span>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { sendEmail, emailLayout } from '@/lib/email'
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'http://localhost:8055'
 
@@ -11,6 +12,7 @@ export interface SessionUser {
   last_name: string | null
   email: string
   phone: string | null
+  location: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -115,7 +117,7 @@ export async function getSession(): Promise<SessionUser | null> {
   }
 
   // Fetch user profile
-  const res = await fetch(`${DIRECTUS_URL}/users/me?fields=id,first_name,last_name,email,phone`, {
+  const res = await fetch(`${DIRECTUS_URL}/users/me?fields=id,first_name,last_name,email,phone,location`, {
     headers: { Authorization: `Bearer ${token}` },
   })
 
@@ -153,9 +155,15 @@ export async function requestPasswordReset(email: string): Promise<{ success: tr
 // Update profile
 // ---------------------------------------------------------------------------
 
-export async function updateProfile(data: { first_name?: string; last_name?: string; phone?: string }): Promise<{ success: boolean; error?: string }> {
+export async function updateProfile(data: { first_name?: string; last_name?: string; phone?: string; location?: string }): Promise<{ success: boolean; error?: string }> {
   const token = await getAccessToken()
   if (!token) return { success: false, error: 'Non connecté.' }
+
+  // Récupérer les données actuelles avant modification
+  const currentRes = await fetch(`${DIRECTUS_URL}/users/me?fields=id,email,first_name,last_name,phone,location`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const currentData = currentRes.ok ? (await currentRes.json()).data : null
 
   const res = await fetch(`${DIRECTUS_URL}/users/me`, {
     method: 'PATCH',
@@ -167,6 +175,36 @@ export async function updateProfile(data: { first_name?: string; last_name?: str
   })
 
   if (!res.ok) return { success: false, error: 'Erreur lors de la mise à jour.' }
+
+  // Notification admin des changements (non-bloquant)
+  if (currentData) {
+    const changes: string[] = []
+    if (data.first_name !== undefined && data.first_name !== (currentData.first_name ?? ''))
+      changes.push(`Prénom : ${currentData.first_name || '(vide)'} → ${data.first_name || '(vide)'}`)
+    if (data.last_name !== undefined && data.last_name !== (currentData.last_name ?? ''))
+      changes.push(`Nom : ${currentData.last_name || '(vide)'} → ${data.last_name || '(vide)'}`)
+    if (data.phone !== undefined && data.phone !== (currentData.phone ?? ''))
+      changes.push(`Tél : ${currentData.phone || '(vide)'} → ${data.phone || '(vide)'}`)
+    if (data.location !== undefined && data.location !== (currentData.location ?? ''))
+      changes.push(`Adresse : ${currentData.location || '(vide)'} → ${data.location || '(vide)'}`)
+
+    if (changes.length > 0) {
+      sendEmail({
+        to: 'info@vsonus.ch',
+        subject: `V-Sonus — Profil modifié : ${currentData.email}`,
+        html: emailLayout('Modification de profil', `
+          <h2 style="margin:0 0 8px;font-size:20px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:0.1em;">
+            Profil client modifié
+          </h2>
+          <p style="margin:0 0 16px;font-size:14px;color:#aaa;">
+            Le client <strong style="color:#fff;">${currentData.email}</strong> a mis à jour son profil :
+          </p>
+          ${changes.map(c => `<p style="margin:4px 0;font-size:13px;color:#ccc;">• ${c}</p>`).join('')}
+        `),
+      }).catch((err: unknown) => console.error('[email] Erreur notification admin profil:', err))
+    }
+  }
+
   return { success: true }
 }
 

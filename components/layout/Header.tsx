@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ListOrdered, Phone, Mail, MapPin, ChevronDown, Disc3, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
+import { Menu, X, ShoppingCart, Phone, Mail, MapPin, ChevronDown, Disc3, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { AccountLink } from '@/components/portal/AccountLink'
@@ -12,12 +12,12 @@ import { useStore } from '@/lib/store'
 // ─── Données de navigation ────────────────────────────────────────────────────
 
 const PACKS_ITEMS: { icon: LucideIcon; label: string; href: string }[] = [
-  { icon: Disc3,      label: 'Packs DJ & Soirées',    href: '/prestations/dj' },
-  { icon: Mic2,       label: 'Packs Concerts',         href: '/prestations/concerts' },
-  { icon: Volume2,    label: 'Packs Sonorisation',     href: '/prestations/sonorisation-l-acoustics' },
-  { icon: Lightbulb,  label: 'Packs Éclairage',        href: '/prestations/eclairage' },
-  { icon: Landmark,   label: 'Packs Scènes',           href: '/prestations/scenes' },
-  { icon: MonitorPlay,label: 'Pack Mapping',            href: '/prestations/mapping' },
+  { icon: Disc3,      label: 'Packs DJ & Soirées',    href: '/packs/dj' },
+  { icon: Mic2,       label: 'Packs Concerts',         href: '/packs/concerts' },
+  { icon: Volume2,    label: 'Packs Sonorisation',     href: '/packs/sonorisation-l-acoustics' },
+  { icon: Lightbulb,  label: 'Packs Éclairage',        href: '/packs/eclairage' },
+  { icon: Landmark,   label: 'Packs Scènes',           href: '/packs/scenes' },
+  { icon: MonitorPlay,label: 'Pack Mapping',            href: '/packs/mapping' },
 ]
 
 const MOBILE_MATERIEL = [
@@ -39,7 +39,7 @@ const DIRECT_LINKS: { icon: LucideIcon; label: string; href: string }[] = [
 function useActiveNav() {
   const pathname = usePathname()
   return (key: 'packs' | 'location' | 'evenementiel' | 'realisations' | 'a-propos' | 'contact') => {
-    if (key === 'packs')         return pathname.startsWith('/prestations')
+    if (key === 'packs')         return pathname.startsWith('/packs')
     if (key === 'location')      return pathname.startsWith('/catalogue')
     if (key === 'evenementiel')  return pathname === '/gestion-evenementielle'
     if (key === 'realisations')  return pathname === '/galerie'
@@ -122,7 +122,7 @@ export function Header() {
                     ))}
                     <div className="h-px bg-vsonus-red/40 mx-4 my-1" />
                     <Link
-                      href="/prestations"
+                      href="/packs"
                       className="flex items-center justify-between px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-vsonus-red hover:text-white transition-colors min-h-[44px]"
                       onClick={() => setPacksOpen(false)}
                     >
@@ -175,7 +175,7 @@ export function Header() {
               className="relative flex items-center gap-2 bg-vsonus-dark border border-gray-700 px-3 sm:px-4 py-2 text-sm font-bold uppercase tracking-widest hover:border-vsonus-red hover:shadow-glow-red transition-all duration-200"
               aria-label="Ouvrir ma liste"
             >
-              <ListOrdered className="w-5 h-5" strokeWidth={2} />
+              <ShoppingCart className="w-5 h-5" strokeWidth={2} />
               <span className="hidden sm:inline">Ma liste</span>
               {mounted && cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-vsonus-red text-white text-xs font-bold w-5 h-5 flex items-center justify-center">
@@ -218,7 +218,7 @@ export function Header() {
                 className="relative flex items-center gap-2 bg-transparent border border-gray-800 px-3 py-2 text-sm font-bold uppercase tracking-widest hover:border-vsonus-red transition-all duration-200"
                 aria-label="Ouvrir ma liste"
               >
-                <ListOrdered className="w-5 h-5" strokeWidth={2} />
+                <ShoppingCart className="w-5 h-5" strokeWidth={2} />
                 {mounted && cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-vsonus-red text-white text-xs font-bold w-5 h-5 flex items-center justify-center">
                     {cartCount}
@@ -260,7 +260,7 @@ export function Header() {
                     </Link>
                   ))}
                   <Link
-                    href="/prestations"
+                    href="/packs"
                     onClick={closeAll}
                     className="flex items-center gap-2 px-10 py-3.5 text-vsonus-red text-sm font-bold uppercase tracking-widest hover:text-white transition-colors min-h-[44px]"
                   >

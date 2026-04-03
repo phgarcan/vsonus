@@ -97,6 +97,7 @@ async function main() {
   await addField('equipements', { field: 'stock_total',          type: 'integer', meta: { required: true, width: 'half' },                        schema: { is_nullable: false, default_value: 1 } })
   await addField('equipements', { field: 'technicien_obligatoire', type: 'boolean', meta: { width: 'half', note: 'L-Acoustics / Levage' },        schema: { default_value: false } })
   await addField('equipements', { field: 'transport_obligatoire',  type: 'boolean', meta: { width: 'half' },                                      schema: { default_value: false } })
+  await addField('equipements', { field: 'prix_livraison',       type: 'float',   meta: { width: 'half', note: 'Frais livraison éclairage (facturés 1×, null = pas de livraison)' }, schema: { is_nullable: true, default_value: null } })
   await addField('equipements', { field: 'image',                type: 'uuid',    meta: { width: 'full', interface: 'file-image', special: ['file'] }, schema: {} })
   await addField('equipements', { field: 'status',               type: 'string',  meta: { width: 'half', interface: 'select-dropdown', options: { choices: [
     { text: 'Publié',   value: 'published' },
@@ -116,6 +117,13 @@ async function main() {
     { text: 'Mapping',      value: 'mapping' },
   ] } }, schema: {} })
   await addField('packs', { field: 'prix_base',       type: 'float',  meta: { required: true, width: 'half' }, schema: { is_nullable: false, default_value: 0 } })
+  await addField('packs', { field: 'prix_livraison',  type: 'float',  meta: { width: 'half', note: 'Livraison, installation, montage et démontage (facturés 1×)' }, schema: { is_nullable: true, default_value: null } })
+  await addField('packs', { field: 'prix_fourgon',    type: 'float',  meta: { width: 'half', note: 'Frais location fourgon + essence (facturés 1×)' }, schema: { is_nullable: true, default_value: null } })
+  await addField('packs', { field: 'mode_livraison',  type: 'string', meta: { width: 'half', interface: 'select-dropdown', options: { choices: [
+    { text: 'Obligatoire',        value: 'obligatoire' },
+    { text: 'Optionnel',          value: 'optionnel' },
+    { text: 'Retrait uniquement', value: 'retrait_uniquement' },
+  ] } }, schema: { default_value: 'obligatoire' } })
   await addField('packs', { field: 'description',     type: 'text',   meta: { width: 'full', interface: 'input-multiline' }, schema: {} })
   await addField('packs', { field: 'image_principale', type: 'uuid',  meta: { width: 'full', interface: 'file-image', special: ['file'] }, schema: {} })
   await addField('packs', { field: 'status',          type: 'string', meta: { width: 'half', interface: 'select-dropdown', options: { choices: [
@@ -285,8 +293,8 @@ async function seedData() {
   // Pack de démo
   await safeCreate('Pack soirée démo', async () => {
     await client.request(createItems('packs', [
-      { nom: 'Pack Soirée Privée', categorie: 'sonorisation', prix_base: 450, description: 'Sonorisation complète pour 100 personnes : 4× enceintes, 2× subs, console, micro', status: 'published' },
-      { nom: 'Pack Festival Lumière', categorie: 'eclairage', prix_base: 600, description: '12× moving heads + 24× barres LED + contrôleur DMX, idéal scènes 6-10m', status: 'published' },
+      { nom: 'Pack Soirée Privée', categorie: 'sonorisation', prix_base: 450, prix_livraison: 200, prix_fourgon: 200, mode_livraison: 'obligatoire', description: 'Sonorisation complète pour 100 personnes : 4× enceintes, 2× subs, console, micro', status: 'published' },
+      { nom: 'Pack Festival Lumière', categorie: 'eclairage', prix_base: 600, prix_livraison: 150, prix_fourgon: null, mode_livraison: 'optionnel', description: '12× moving heads + 24× barres LED + contrôleur DMX, idéal scènes 6-10m', status: 'published' },
     ]))
   })
 }

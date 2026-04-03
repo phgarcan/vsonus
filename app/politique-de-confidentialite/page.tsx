@@ -115,11 +115,31 @@ export default function PolitiqueConfidentialitePage() {
 
         <section>
           <h2 className="text-base font-bold text-white uppercase tracking-widest mb-3">8. Cookies</h2>
-          <p>
-            Ce site utilise uniquement des <span className="text-white font-semibold">cookies techniques nécessaires</span> au
-            fonctionnement du site (liste de matériel, préférences de session).
-            Aucun cookie publicitaire, aucun tracker tiers ni aucune technologie de profilage
-            n&apos;est utilisé.
+          <p className="mb-3">
+            Ce site utilise des cookies répartis en quatre catégories. Vous pouvez gérer vos préférences
+            à tout moment via le lien «&nbsp;Gérer mes cookies&nbsp;» en pied de page.
+          </p>
+          <ul className="space-y-3 text-sm">
+            <li>
+              <span className="text-white font-semibold">Nécessaires</span> (toujours actifs) — Session,
+              panier, préférences de consentement. Indispensables au fonctionnement du site.
+            </li>
+            <li>
+              <span className="text-white font-semibold">Fonctionnels</span> — Assistant virtuel Max
+              (chatbot). Permettent d&apos;interagir avec notre assistant en ligne.
+            </li>
+            <li>
+              <span className="text-white font-semibold">Analytiques</span> — Google Analytics, Hotjar.
+              Nous aident à comprendre comment vous utilisez le site afin d&apos;améliorer votre expérience.
+            </li>
+            <li>
+              <span className="text-white font-semibold">Marketing</span> — Google Ads. Permettent de
+              mesurer l&apos;efficacité de nos campagnes publicitaires.
+            </li>
+          </ul>
+          <p className="mt-3">
+            Le consentement est stocké dans un cookie 1<sup>ère</sup> partie (<span className="text-white font-semibold">vsonus_consent</span>)
+            pour une durée de 12 mois.
           </p>
         </section>
 

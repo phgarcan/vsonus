@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getSession, getAccessToken, logout } from '@/lib/auth'
+import { formatDateEU } from '@/lib/utils'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { LogoutButton } from '@/components/portal/LogoutButton'
 
@@ -39,7 +40,7 @@ export default async function MonComptePage() {
 
   if (token) {
     const res = await fetch(
-      `${DIRECTUS_URL}/items/reservations?fields=id,statut,date_debut,date_fin,total_ht,date_created,nom_client&sort=-date_created&limit=50`,
+      `${DIRECTUS_URL}/items/reservations?fields=id,statut,date_debut,date_fin,total_ht,date_created,nom_client&filter[user][_eq]=${session.id}&sort=-date_created&limit=50`,
       { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }
     )
     if (res.ok) {
@@ -48,7 +49,7 @@ export default async function MonComptePage() {
     }
   }
 
-  const prenom = session.first_name || session.email.split('@')[0]
+  const prenom = session.first_name || ''
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
@@ -57,7 +58,7 @@ export default async function MonComptePage() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-vsonus-red mb-2">Espace client</p>
             <h1 className="text-3xl md:text-4xl font-black uppercase tracking-widest text-white">
-              Bonjour {prenom}
+              {prenom ? `Salut ${prenom}` : 'Bienvenue'}
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -109,13 +110,13 @@ export default async function MonComptePage() {
                         <span className="text-xs text-gray-600">#{r.id.slice(0, 8)}</span>
                       </div>
                       <p className="text-white font-bold text-sm group-hover:text-vsonus-red transition-colors">
-                        {r.date_debut} → {r.date_fin}
+                        {formatDateEU(r.date_debut)} → {formatDateEU(r.date_fin)}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-vsonus-red font-black text-lg">{r.total_ht.toFixed(2)} CHF</p>
                       <p className="text-xs text-gray-600">
-                        Demande du {new Date(r.date_created).toLocaleDateString('fr-CH')}
+                        Demande du {formatDateEU(r.date_created)}
                       </p>
                     </div>
                   </div>
