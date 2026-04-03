@@ -91,7 +91,7 @@ export default async function PackDetailPage({
 
   const filteredSuggestions = (suggestions as Pack[]).filter((s) => s.id !== pack.id).slice(0, 3)
 
-  const imageUrl = getImageUrl(pack.image_principale, { width: '900', height: '600', fit: 'contain' })
+  const imageUrl = getImageUrl(pack.image_principale, { width: '900', fit: 'contain' })
   const catLabel = CAT_LABEL[pack.categorie ?? ''] ?? pack.categorie ?? ''
   const { intro, items: materiel } = parseMateriel(pack.description)
 
@@ -202,7 +202,7 @@ export default async function PackDetailPage({
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {filteredSuggestions.map((s) => {
-              const sImg = getImageUrl(s.image_principale, { width: '300', height: '200', fit: 'contain' })
+              const sImg = getImageUrl(s.image_principale, { width: '300', fit: 'contain' })
               return (
                 <Link
                   key={s.id}

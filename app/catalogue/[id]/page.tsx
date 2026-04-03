@@ -68,7 +68,7 @@ export default async function ProduitPage({
 
   const filteredSuggestions = (suggestions as Equipement[]).filter((s) => s.id !== equipement.id).slice(0, 3)
 
-  const imageUrl = getImageUrl(equipement.image, { width: '900', height: '600', fit: 'contain' })
+  const imageUrl = getImageUrl(equipement.image, { width: '900', fit: 'contain' })
   const catLabel: Record<string, string> = {
     sonorisation: 'Sonorisation',
     eclairage: 'Éclairage',
@@ -194,7 +194,7 @@ export default async function ProduitPage({
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {filteredSuggestions.map((s) => {
-              const sImg = getImageUrl(s.image, { width: '300', height: '200', fit: 'contain' })
+              const sImg = getImageUrl(s.image, { width: '300', fit: 'contain' })
               return (
                 <Link
                   key={s.id}

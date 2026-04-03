@@ -118,7 +118,7 @@ export default async function CataloguePage({
 // ---------------------------------------------------------------------------
 
 function EquipementCard({ equipement }: { equipement: Equipement }) {
-  const imageUrl = getImageUrl(equipement.image, { width: '400', height: '300', fit: 'contain' })
+  const imageUrl = getImageUrl(equipement.image, { width: '400', fit: 'contain' })
 
   return (
     <article className="bg-vsonus-dark border border-gray-800 flex flex-col hover:border-vsonus-red hover:scale-[1.02] hover:shadow-card-hover transition-all duration-300 group">
@@ -168,7 +168,7 @@ function EquipementCard({ equipement }: { equipement: Equipement }) {
 }
 
 function PackCard({ pack }: { pack: Pack }) {
-  const imageUrl = getImageUrl(pack.image_principale, { width: '400', height: '300', fit: 'contain' })
+  const imageUrl = getImageUrl(pack.image_principale, { width: '400', fit: 'contain' })
 
   return (
     <article className="bg-vsonus-dark border-2 border-vsonus-red flex flex-col hover:shadow-glow-red hover:scale-[1.02] transition-all duration-300 group">

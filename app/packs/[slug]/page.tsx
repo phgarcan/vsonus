@@ -188,7 +188,7 @@ export default async function PrestationDetailPage({ params }: Props) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {packs.map((pack, i) => {
-                const imgUrl = getImageUrl(pack.image_principale, { width: '600', height: '400', fit: 'contain', quality: '85' })
+                const imgUrl = getImageUrl(pack.image_principale, { width: '600', fit: 'contain', quality: '85' })
                 return (
                   <AnimateOnScroll key={pack.id} delay={i * 100}>
                     <article className="bg-vsonus-black border border-gray-800 flex flex-col hover:border-vsonus-red transition-colors duration-300 group">
