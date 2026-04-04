@@ -20,6 +20,13 @@ export interface Equipement {
   /** Frais de livraison éclairage (facturés 1×, null = pas de livraison proposée) */
   prix_livraison?: number | null
   sort?: number | null
+  /** Photos supplémentaires (junction M2M via equipements_images) */
+  images?: EquipementImage[]
+}
+
+export interface EquipementImage {
+  id: number
+  directus_files_id: string
 }
 
 /** Vérifie si un équipement propose l'option retrait/livraison (éclairage avec prix_livraison renseigné) */

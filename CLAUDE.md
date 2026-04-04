@@ -134,7 +134,8 @@ vsonus-2026/
 
 | Collection | Champs principaux |
 |---|---|
-| `equipements` | id, nom, prix_journalier, stock_total, technicien_obligatoire, transport_obligatoire, prix_livraison (nullable), image, categorie, marque, description, sort |
+| `equipements` | id, nom, prix_journalier, stock_total, technicien_obligatoire, transport_obligatoire, prix_livraison (nullable), image, categorie, marque, description, sort, images (M2M → equipements_images) |
+| `equipements_images` | id, equipements_id (FK), directus_files_id (FK → directus_files), sort |
 | `packs` | id, nom, categorie, prix_base, prix_livraison (nullable), prix_fourgon (nullable), mode_livraison (enum: obligatoire/optionnel/retrait_uniquement), image_principale, description, capacite (nullable), sort, prix_promo (nullable), promo_label (nullable), promo_date_fin (nullable) |
 | `pack_equipements` | id, pack_id, equipement_id (FK), quantite, sort |
 | `tarifs_annexes` | id, label, type, prix, unite, description |

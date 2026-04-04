@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Equipement } from '@/lib/directus'
 import { AddToCartSection } from './AddToCartSection'
+import { ProductGallery } from './ProductGallery'
 
 export const revalidate = 300
 
@@ -49,7 +50,7 @@ export default async function ProduitPage({
   try {
     equipement = await client.request(
       readItem('equipements', id, {
-        fields: ['id', 'nom', 'marque', 'categorie', 'description', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image', 'prix_livraison'],
+        fields: ['id', 'nom', 'marque', 'categorie', 'description', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image', 'prix_livraison', 'images.id', 'images.directus_files_id'],
       })
     ) as Equipement
   } catch {
@@ -69,6 +70,10 @@ export default async function ProduitPage({
   const filteredSuggestions = (suggestions as Equipement[]).filter((s) => s.id !== equipement.id).slice(0, 3)
 
   const imageUrl = getImageUrl(equipement.image, { width: '900', fit: 'contain' })
+  const extraImages = (equipement.images ?? []).map((img) => ({
+    full: getImageUrl(img.directus_files_id, { width: '900', fit: 'contain' })!,
+    thumb: getImageUrl(img.directus_files_id, { width: '80', height: '80', fit: 'cover' })!,
+  })).filter((img) => img.full && img.thumb)
   const catLabel: Record<string, string> = {
     sonorisation: 'Sonorisation',
     eclairage: 'Éclairage',
@@ -102,20 +107,11 @@ export default async function ProduitPage({
 
         {/* Colonne image */}
         <div className="space-y-4">
-          <div className="relative w-full aspect-[3/2] bg-white border border-gray-800 overflow-hidden">
-            {imageUrl ? (
-              <Image
-                src={imageUrl}
-                alt={equipement.nom}
-                fill
-                className="object-contain p-4"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                priority
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center"><Music className="w-12 h-12 text-gray-700" strokeWidth={1} /></div>
-            )}
-          </div>
+          <ProductGallery
+            mainImageUrl={imageUrl}
+            extraImages={extraImages}
+            alt={equipement.nom}
+          />
         </div>
 
         {/* Colonne infos */}
