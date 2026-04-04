@@ -37,6 +37,12 @@ const COLUMNS = [
       { label: 'Laser',                                   href: '/catalogue?categorie=laser#materiel-unitaire' },
     ],
   },
+  {
+    heading: 'Nettoyage',
+    items: [
+      { label: 'Produits de nettoyage',                  href: '/catalogue?categorie=nettoyage#materiel-unitaire' },
+    ],
+  },
 ]
 
 interface MegaMenuProps {
@@ -49,7 +55,7 @@ export function MegaMenu({ onClose }: MegaMenuProps) {
       className="absolute top-full left-0 w-full bg-vsonus-dark border-t-2 border-vsonus-red z-40"
       onMouseLeave={onClose}
     >
-      <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-5 gap-8">
         {COLUMNS.map((col) => (
           <div key={col.heading}>
             <Link

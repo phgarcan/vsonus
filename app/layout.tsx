@@ -11,8 +11,9 @@ import { ScrollToTop } from '@/components/layout/ScrollToTop'
 import { AccountDeletedBanner } from '@/components/layout/AccountDeletedBanner'
 import ChatBot from '@/components/ui/ChatBot'
 import { getServerDirectus } from '@/lib/directus'
-import type { TarifAnnexe } from '@/lib/directus'
-import { readItems } from '@directus/sdk'
+import type { TarifAnnexe, SiteSettings } from '@/lib/directus'
+import { readItems, readSingleton } from '@directus/sdk'
+import { PromoBanner } from '@/components/layout/PromoBanner'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -82,13 +83,20 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const tarifs = await getServerDirectus()
-    .request(readItems('tarifs_annexes', { limit: 20 }))
-    .catch(() => [] as TarifAnnexe[])
+  const client = getServerDirectus()
+
+  const [tarifs, siteSettings] = await Promise.all([
+    client.request(readItems('tarifs_annexes', { limit: 20 })).catch(() => [] as TarifAnnexe[]),
+    client.request(readSingleton('site_settings', {
+      fields: ['promo_active', 'promo_texte', 'promo_lien', 'promo_cta'],
+    })).catch(() => null as SiteSettings | null),
+  ])
 
   return (
     <html lang="fr" className={montserrat.variable}>
       <head>
+        <link rel="dns-prefetch" href="https://directus-production-daaa.up.railway.app" />
+        <link rel="preconnect" href="https://directus-production-daaa.up.railway.app" crossOrigin="anonymous" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -99,6 +107,12 @@ export default async function RootLayout({
         <TarifsProvider tarifs={tarifs as TarifAnnexe[]} />
         <Suspense><AccountDeletedBanner /></Suspense>
         <Header />
+        <PromoBanner
+          active={siteSettings?.promo_active ?? false}
+          texte={siteSettings?.promo_texte ?? null}
+          lien={siteSettings?.promo_lien ?? null}
+          cta={siteSettings?.promo_cta ?? null}
+        />
         <main className="overflow-x-hidden">{children}</main>
         <Footer />
         <CookieBanner />

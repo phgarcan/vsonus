@@ -91,6 +91,11 @@ async function main() {
     { text: 'Éclairage',    value: 'eclairage' },
     { text: 'Scènes',       value: 'scenes' },
     { text: 'Mapping',      value: 'mapping' },
+    { text: 'DJ',           value: 'dj' },
+    { text: 'Câblage',      value: 'cablage' },
+    { text: 'Levage',       value: 'levage' },
+    { text: 'Accessoires',  value: 'accessoires' },
+    { text: 'Nettoyage',    value: 'nettoyage' },
   ] } }, schema: {} })
   await addField('equipements', { field: 'description',          type: 'text',    meta: { width: 'full', interface: 'input-multiline' },           schema: {} })
   await addField('equipements', { field: 'prix_journalier',      type: 'float',   meta: { required: true, width: 'half' },                        schema: { is_nullable: false, default_value: 0 } })
@@ -115,6 +120,9 @@ async function main() {
     { text: 'Éclairage',    value: 'eclairage' },
     { text: 'Scènes',       value: 'scenes' },
     { text: 'Mapping',      value: 'mapping' },
+    { text: 'DJ',           value: 'dj' },
+    { text: 'Concerts',     value: 'concerts' },
+    { text: 'Nettoyage',    value: 'nettoyage' },
   ] } }, schema: {} })
   await addField('packs', { field: 'prix_base',       type: 'float',  meta: { required: true, width: 'half' }, schema: { is_nullable: false, default_value: 0 } })
   await addField('packs', { field: 'prix_livraison',  type: 'float',  meta: { width: 'half', note: 'Livraison, installation, montage et démontage (facturés 1×)' }, schema: { is_nullable: true, default_value: null } })
@@ -125,6 +133,13 @@ async function main() {
     { text: 'Retrait uniquement', value: 'retrait_uniquement' },
   ] } }, schema: { default_value: 'obligatoire' } })
   await addField('packs', { field: 'description',     type: 'text',   meta: { width: 'full', interface: 'input-multiline' }, schema: {} })
+  await addField('packs', { field: 'capacite',        type: 'string', meta: { width: 'half', interface: 'input', options: { placeholder: 'ex: 100-200 personnes' }, note: 'Capacité du pack. Laisser vide si non applicable.' }, schema: { is_nullable: true, default_value: null } })
+
+  // --- Groupe Promotion ---
+  await addField('packs', { field: 'promotion_group', type: 'alias', meta: { interface: 'group-detail', special: ['alias', 'no-data', 'group'], options: { start: 'closed' }, width: 'full', note: 'Promotion temporaire sur ce pack' }, schema: null })
+  await addField('packs', { field: 'prix_promo',      type: 'float',    meta: { width: 'half', group: 'promotion_group', note: 'Prix promotionnel (remplace prix_base si rempli)' }, schema: { is_nullable: true, default_value: null } })
+  await addField('packs', { field: 'promo_label',     type: 'string',   meta: { width: 'half', group: 'promotion_group', note: 'Ex: "Promo été -20%"' }, schema: { is_nullable: true, default_value: null } })
+  await addField('packs', { field: 'promo_date_fin',  type: 'timestamp', meta: { width: 'half', group: 'promotion_group', interface: 'datetime', note: 'Date d\'expiration (promo disparaît après)' }, schema: { is_nullable: true, default_value: null } })
   await addField('packs', { field: 'image_principale', type: 'uuid',  meta: { width: 'full', interface: 'file-image', special: ['file'] }, schema: {} })
   await addField('packs', { field: 'status',          type: 'string', meta: { width: 'half', interface: 'select-dropdown', options: { choices: [
     { text: 'Publié',    value: 'published' },

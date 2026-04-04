@@ -40,9 +40,38 @@ export interface Pack {
   mode_livraison?: 'obligatoire' | 'optionnel' | 'retrait_uniquement'
   image_principale: string | null
   description?: string
+  /** Capacité du pack (ex: "100-200 personnes"), null si non applicable */
+  capacite?: string | null
+  /** Prix promotionnel (remplace prix_base si rempli et promo active) */
+  prix_promo?: number | null
+  /** Label promo affiché sur la carte, ex: "Promo été -20%" */
+  promo_label?: string | null
+  /** Date d'expiration de la promo (ISO datetime, null = pas d'expiration) */
+  promo_date_fin?: string | null
   pack_equipements?: PackEquipement[]
   sort?: number | null
 }
+
+/** Vérifie si la promo d'un pack est active (prix_promo rempli + non expiré) */
+export function isPromoActive(pack: Pack): boolean {
+  if (pack.prix_promo == null) return false
+  if (pack.promo_date_fin == null) return true
+  return new Date(pack.promo_date_fin) > new Date()
+}
+
+/** Retourne la capacité du pack : champ dédié si rempli, sinon extraction depuis la description */
+export function getPackCapacite(pack: Pack): string | null {
+  if (pack.capacite) return pack.capacite
+  if (!pack.description) return null
+  const match = pack.description.match(/Capacité\s*:\s*(\d+(?:\s*[-–àa]\s*\d+)?\s*personnes)/i)
+  return match ? match[1].trim() : null
+}
+
+/** Retourne le prix effectif du pack (prix_promo si promo active, sinon prix_base) */
+export function getPackPrixEffectif(pack: Pack): number {
+  return isPromoActive(pack) ? pack.prix_promo! : pack.prix_base
+}
+
 
 export interface PackEquipement {
   id: string
@@ -140,6 +169,14 @@ export interface SiteSettings {
   id: number
   hero_video: string | null
   hero_video_poster: string | null
+  /** Bandeau promo — actif/inactif */
+  promo_active?: boolean
+  /** Texte du bandeau promo */
+  promo_texte?: string | null
+  /** URL du CTA (ex: "/catalogue") */
+  promo_lien?: string | null
+  /** Texte du bouton CTA (ex: "Voir les offres →") */
+  promo_cta?: string | null
 }
 
 export interface LogoPartenaire {

@@ -8,6 +8,7 @@ import { formatDateEU } from '@/lib/utils'
 import { getLocationCoefficient, getCoefficientLabel } from '@/lib/pricing'
 import type { CartItem } from '@/lib/store'
 import type { Pack, Equipement } from '@/lib/directus'
+import { getPackPrixEffectif } from '@/lib/directus'
 
 const CLIENT_ROLE_ID = '3a7b1e18-e5c6-4e31-8992-862377d0b98b'
 
@@ -107,7 +108,7 @@ export async function soumettreReservation(
     // 2. Créer les lignes (coefficient de durée appliqué)
     const coefficient = getLocationCoefficient(nbJours) ?? 1
     const lignes = cartItems.map((item) => {
-      const prix_unitaire = item.type === 'equipement' ? item.item.prix_journalier : item.item.prix_base
+      const prix_unitaire = item.type === 'equipement' ? item.item.prix_journalier : getPackPrixEffectif(item.item as Pack)
       const prix_total = prix_unitaire * coefficient * item.quantite
       return { item, prix_unitaire, prix_total }
     })

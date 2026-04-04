@@ -13,6 +13,7 @@ import { getCoefficientLabel, FALLBACK_TRANSPORT_PRIX, FALLBACK_MONTAGE_PRIX } f
 import { formatSwissPhone, formatDateEU } from '@/lib/utils'
 import { equipementHasLivraisonOption } from '@/lib/directus'
 import type { TarifAnnexe, Pack, Equipement } from '@/lib/directus'
+import { getPackPrixEffectif } from '@/lib/directus'
 
 interface CheckoutFormProps {
   tarifsAnnexes: TarifAnnexe[]
@@ -473,7 +474,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
 
         <ul className="space-y-2 divide-y divide-gray-800">
           {cart.map((item) => {
-            const prixUnitaire = item.type === 'equipement' ? item.item.prix_journalier : item.item.prix_base
+            const prixUnitaire = item.type === 'equipement' ? item.item.prix_journalier : getPackPrixEffectif(item.item as Pack)
             const isPack = item.type === 'pack'
             const pack = isPack ? (item.item as Pack) : null
             const modeLivraison = pack?.mode_livraison ?? 'obligatoire'

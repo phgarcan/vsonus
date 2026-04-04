@@ -163,7 +163,7 @@ export default async function ProduitPage({
 
           {/* Avertissement règles métier */}
           {equipement.technicien_obligatoire && (
-            <div className="border-l-4 border-vsonus-red bg-vsonus-dark px-4 py-3 text-sm text-gray-400">
+            <div className="border-l-4 border-vsonus-red bg-vsonus-dark px-4 py-3 text-sm text-gray-300">
               Ce matériel nécessite une livraison et une installation par un technicien V-Sonus certifié.
               Le retrait sur place n'est pas disponible. Des frais de transport et montage seront ajoutés au devis.
             </div>
@@ -210,7 +210,7 @@ export default async function ProduitPage({
                     )}
                   </div>
                   <div className="p-3">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">{s.marque}</p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider">{s.marque}</p>
                     <p className="text-sm font-bold text-white mt-0.5 line-clamp-2">{s.nom}</p>
                     <p className="text-vsonus-red font-black text-sm mt-2">{s.prix_journalier.toFixed(2)} CHF/j</p>
                   </div>

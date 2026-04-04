@@ -8,7 +8,7 @@ import { Trash2, Music, Truck } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
 import { DatePicker } from '@/components/ui/DatePicker'
-import { getImageUrl } from '@/lib/directus'
+import { getImageUrl, getPackPrixEffectif, isPromoActive } from '@/lib/directus'
 import { getCoefficientLabel } from '@/lib/pricing'
 import { FALLBACK_TRANSPORT_PRIX, FALLBACK_MONTAGE_PRIX } from '@/lib/pricing'
 import { equipementHasLivraisonOption } from '@/lib/directus'
@@ -52,6 +52,15 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const fraisLivraison = getFraisLivraison()
   const fraisDetail = getFraisDetail()
   const hasPacks = cart.some((i) => i.type === 'pack')
+  // Nombre de packs avec fourgon actif (pour le message info)
+  const packsWithFourgon = cart.filter((i) => {
+    if (i.type !== 'pack') return false
+    const p = i.item as Pack
+    const mode = p.mode_livraison ?? 'obligatoire'
+    if (mode === 'retrait_uniquement' || (p.prix_fourgon ?? 0) === 0) return false
+    if (mode === 'obligatoire') return true
+    return (livraisonChoix[p.id] ?? 'retrait') === 'livraison'
+  }).length
 
   const tarifTransport = tarifsAnnexes.find((t) => t.type === 'transport')
   const tarifMontage   = tarifsAnnexes.find((t) => t.type === 'montage')
@@ -124,7 +133,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Music className="w-12 h-12 text-gray-700 mb-4" strokeWidth={1} />
-              <p className="text-gray-500 text-sm">Votre liste est vide.</p>
+              <p className="text-gray-400 text-sm">Votre liste est vide.</p>
               <Link href="/catalogue" onClick={onClose} className="mt-4 text-vsonus-red text-sm hover:underline">
                 Parcourir le catalogue →
               </Link>
@@ -141,7 +150,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   const imgUrl = imgId
                     ? getImageUrl(imgId, { width: '80', height: '80', fit: 'cover' })
                     : null
-                  const prixUnitaire = isPack ? item.item.prix_base : (item.item as Equipement).prix_journalier
+                  const prixUnitaire = isPack ? getPackPrixEffectif(item.item as Pack) : (item.item as Equipement).prix_journalier
+                  const packPromoActive = isPack && isPromoActive(item.item as Pack)
 
                   const pack = isPack ? (item.item as Pack) : null
                   const modeLivraison = pack?.mode_livraison ?? 'obligatoire'
@@ -162,8 +172,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                         {/* Infos */}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-white truncate">{item.item.nom}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            {prixUnitaire} CHF / jour
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {packPromoActive && (
+                              <span className="line-through mr-1">{(item.item as Pack).prix_base} CHF</span>
+                            )}
+                            <span className={packPromoActive ? 'text-vsonus-red font-bold' : ''}>{prixUnitaire} CHF / jour</span>
                           </p>
 
                           {/* Quantité + supprimer */}
@@ -171,11 +184,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                             <button
                               onClick={() => updateQuantite(item.item.id, item.type, item.quantite - 1)}
                               className="w-6 h-6 bg-gray-800 text-white flex items-center justify-center hover:bg-vsonus-red text-sm font-bold transition-colors"
+                              aria-label="Diminuer la quantité"
                             >−</button>
                             <span className="text-sm text-white w-4 text-center">{item.quantite}</span>
                             <button
                               onClick={() => updateQuantite(item.item.id, item.type, item.quantite + 1)}
                               className="w-6 h-6 bg-gray-800 text-white flex items-center justify-center hover:bg-vsonus-red text-sm font-bold transition-colors"
+                              aria-label="Augmenter la quantité"
                             >+</button>
                             <button
                               onClick={() => removeFromCart(item.item.id, item.type)}
@@ -196,15 +211,15 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                       {isPack && pack && modeLivraison === 'obligatoire' && (
                         <div className="mt-2 ml-19 space-y-0.5">
                           {(pack.prix_livraison ?? 0) > 0 && (
-                            <p className="text-xs text-gray-500 flex justify-between">
+                            <p className="text-xs text-gray-400 flex justify-between">
                               <span><Truck className="w-3 h-3 inline mr-1" />Livraison / Installation (1×)</span>
-                              <span className="text-gray-400">{pack.prix_livraison} CHF</span>
+                              <span className="text-gray-300">{pack.prix_livraison} CHF</span>
                             </p>
                           )}
                           {(pack.prix_fourgon ?? 0) > 0 && (
-                            <p className="text-xs text-gray-500 flex justify-between">
+                            <p className="text-xs text-gray-400 flex justify-between">
                               <span>Location fourgon (1×)</span>
-                              <span className="text-gray-400">{pack.prix_fourgon} CHF</span>
+                              <span className="text-gray-300">{pack.prix_fourgon} CHF</span>
                             </p>
                           )}
                         </div>
@@ -237,9 +252,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                             </button>
                           </div>
                           {choixLivraison === 'livraison' && (pack.prix_fourgon ?? 0) > 0 && (
-                            <p className="text-xs text-gray-500 mt-1 flex justify-between">
+                            <p className="text-xs text-gray-400 mt-1 flex justify-between">
                               <span>Location fourgon (1×)</span>
-                              <span className="text-gray-400">{pack.prix_fourgon} CHF</span>
+                              <span className="text-gray-300">{pack.prix_fourgon} CHF</span>
                             </p>
                           )}
                         </div>
@@ -288,7 +303,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 <DatePicker label="Début" value={startDate} min={today} onChange={handleStartDate} />
 
                 {startDate && endDate && (
-                  <p className="text-xs text-center text-gray-500 py-0.5">
+                  <p className="text-xs text-center text-gray-400 py-0.5">
                     ↕{' '}
                     <span className="text-white font-bold">{nbJours} jour{nbJours > 1 ? 's' : ''}</span>
                     {coefficient !== null && nbJours > 1 && (
@@ -339,13 +354,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   <p className="text-xs font-bold uppercase tracking-widest text-vsonus-red">Frais obligatoires (équipements)</p>
                   {needsTrans && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">{tarifTransport?.label ?? 'Transport – Fourgon'}</span>
+                      <span className="text-gray-300">{tarifTransport?.label ?? 'Transport – Fourgon'}</span>
                       <span className="text-white font-semibold">{(tarifTransport?.prix ?? FALLBACK_TRANSPORT_PRIX)} CHF</span>
                     </div>
                   )}
                   {needsTech && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">{tarifMontage?.label ?? 'Montage / Démontage'}</span>
+                      <span className="text-gray-300">{tarifMontage?.label ?? 'Montage / Démontage'}</span>
                       <span className="text-white font-semibold">{(tarifMontage?.prix ?? FALLBACK_MONTAGE_PRIX)} CHF</span>
                     </div>
                   )}
@@ -356,12 +371,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               {/* Détail tarifaire */}
               {!isSurDemande && (
                 <div className="space-y-1.5 border-t border-gray-800 pt-3">
-                  <div className="flex justify-between text-sm text-gray-400">
+                  <div className="flex justify-between text-sm text-gray-300">
                     <span>Location matériel (1 j)</span>
                     <span>{sousTotalBrut.toFixed(2)} CHF</span>
                   </div>
                   {coefficient !== null && coefficient !== 1 && (
-                    <div className="flex justify-between text-sm text-gray-400">
+                    <div className="flex justify-between text-sm text-gray-300">
                       <span>
                         Coefficient {nbJours} jour{nbJours > 1 ? 's' : ''}
                         <span className="text-vsonus-red font-bold ml-1">{getCoefficientLabel(nbJours)}</span>
@@ -370,19 +385,24 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     </div>
                   )}
                   {fraisDetail.livraison > 0 && (
-                    <div className="flex justify-between text-sm text-gray-400">
+                    <div className="flex justify-between text-sm text-gray-300">
                       <span>Livraison et installation (1×)</span>
                       <span>{fraisDetail.livraison.toFixed(2)} CHF</span>
                     </div>
                   )}
                   {fraisDetail.fourgon > 0 && (
-                    <div className="flex justify-between text-sm text-gray-400">
-                      <span>Location fourgon et essence (1×)</span>
-                      <span>{fraisDetail.fourgon.toFixed(2)} CHF</span>
-                    </div>
+                    <>
+                      <div className="flex justify-between text-sm text-gray-300">
+                        <span>Location fourgon et essence (1×)</span>
+                        <span>{fraisDetail.fourgon.toFixed(2)} CHF</span>
+                      </div>
+                      {packsWithFourgon > 1 && (
+                        <p className="text-xs text-gray-400 italic">Un seul fourgon pour l&apos;ensemble de vos packs</p>
+                      )}
+                    </>
                   )}
                   {fraisAnnexesEquip > 0 && (
-                    <div className="flex justify-between text-sm text-gray-400">
+                    <div className="flex justify-between text-sm text-gray-300">
                       <span>Frais annexes équipements</span>
                       <span>{fraisAnnexesEquip.toFixed(2)} CHF</span>
                     </div>

@@ -78,17 +78,17 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-vsonus-black border-b border-vsonus-dark">
+      <header className="sticky top-0 z-50 bg-vsonus-black border-b border-vsonus-dark" role="banner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
 
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
+          <Link href="/" className="flex-shrink-0" aria-label="V-Sonus — Accueil">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-vsonus.svg" alt="V-Sonus" className="h-11 w-auto" />
+            <img src="/logo-vsonus.svg" alt="V-Sonus" className="h-11 w-auto" fetchPriority="high" />
           </Link>
 
           {/* ── Navigation desktop (lg+) ─────────────────────────────────── */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-6">
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-6" role="navigation" aria-label="Navigation principale">
 
             {/* PACKS — petit dropdown hover */}
             <div

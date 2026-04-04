@@ -40,7 +40,7 @@ const LEGAL_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="bg-vsonus-dark border-t-2 border-vsonus-red">
+    <footer className="bg-vsonus-dark border-t-2 border-vsonus-red" role="contentinfo">
 
       {/* ── Desktop (md+) : grille 4 colonnes ─────────────────────────── */}
       <div className="hidden md:grid max-w-7xl mx-auto px-6 py-14 grid-cols-2 lg:grid-cols-4 gap-10">
@@ -49,7 +49,7 @@ export function Footer() {
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-vsonus.svg" alt="V-Sonus" className="h-12 w-auto" />
-          <p className="mt-4 text-sm text-gray-400 leading-relaxed">
+          <p className="mt-4 text-sm text-gray-300 leading-relaxed">
             Location de matériel événementiel professionnel en Suisse Romande.
           </p>
           <p className="mt-2 text-xs text-gray-600">
@@ -98,6 +98,7 @@ export function Footer() {
               href="https://www.instagram.com/vsoonus/"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Suivez-nous sur Instagram"
               className="flex items-center gap-3 text-sm text-gray-400 hover:text-white transition-all duration-200 group"
             >
               <span className="w-9 h-9 border border-gray-700 flex items-center justify-center group-hover:border-vsonus-red group-hover:text-vsonus-red transition-all duration-200 flex-shrink-0">
@@ -109,6 +110,7 @@ export function Footer() {
               href="https://www.facebook.com/VSonus.Event/"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Suivez-nous sur Facebook"
               className="flex items-center gap-3 text-sm text-gray-400 hover:text-white transition-all duration-200 group"
             >
               <span className="w-9 h-9 border border-gray-700 flex items-center justify-center group-hover:border-vsonus-red group-hover:text-vsonus-red transition-all duration-200 flex-shrink-0">
@@ -127,7 +129,7 @@ export function Footer() {
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-vsonus.svg" alt="V-Sonus" className="h-10 w-auto" />
-          <p className="mt-3 text-sm text-gray-400 leading-relaxed">
+          <p className="mt-3 text-sm text-gray-300 leading-relaxed">
             Location de matériel événementiel professionnel en Suisse Romande.
           </p>
         </div>
@@ -173,6 +175,7 @@ export function Footer() {
               href="https://www.instagram.com/vsoonus/"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Suivez-nous sur Instagram"
               className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group"
             >
               <span className="w-9 h-9 border border-gray-700 flex items-center justify-center group-hover:border-vsonus-red group-hover:text-vsonus-red transition-all duration-200">
@@ -184,6 +187,7 @@ export function Footer() {
               href="https://www.facebook.com/VSonus.Event/"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Suivez-nous sur Facebook"
               className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group"
             >
               <span className="w-9 h-9 border border-gray-700 flex items-center justify-center group-hover:border-vsonus-red group-hover:text-vsonus-red transition-all duration-200">

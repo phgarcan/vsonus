@@ -45,6 +45,8 @@ export function HeroVideo({ videoUrl, posterUrl }: HeroVideoProps) {
       playsInline
       preload="metadata"
       aria-hidden
+      // @ts-expect-error — fetchpriority n'est pas encore dans les types React
+      fetchpriority="high"
       poster={posterUrl ?? undefined}
       onLoadedMetadata={handleLoadedMetadata}
       onTimeUpdate={handleTimeUpdate}

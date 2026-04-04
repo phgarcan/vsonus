@@ -4,6 +4,7 @@ import React from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Equipement, Pack, TarifAnnexe } from './directus'
+import { getPackPrixEffectif } from './directus'
 import { getLocationCoefficient } from './pricing'
 
 // ---------------------------------------------------------------------------
@@ -217,7 +218,7 @@ export const useStore = create<StoreState>()(
        */
       getSousTotalBrut: () => {
         return get().cart.reduce((acc, item) => {
-          const prix = item.type === 'equipement' ? item.item.prix_journalier : item.item.prix_base
+          const prix = item.type === 'equipement' ? item.item.prix_journalier : getPackPrixEffectif(item.item as Pack)
           return acc + prix * item.quantite
         }, 0)
       },
@@ -235,44 +236,21 @@ export const useStore = create<StoreState>()(
 
       /**
        * Total des frais de livraison + fourgon (facturés 1× hors coefficient).
-       * Inclut les packs (selon mode_livraison) et les équipements éclairage (selon choix utilisateur).
+       * Livraison : additive (chaque pack a sa propre livraison/installation).
+       * Fourgon : 1× maximum — on facture le prix le plus élevé parmi tous les packs.
        */
       getFraisLivraison: () => {
-        const { cart, livraisonChoix } = get()
-        let total = 0
-        for (const item of cart) {
-          if (item.type === 'pack') {
-            const pack = item.item as Pack
-            const mode = pack.mode_livraison ?? 'obligatoire'
-            if (mode === 'retrait_uniquement') continue
-            if (mode === 'obligatoire') {
-              total += (pack.prix_livraison ?? 0) + (pack.prix_fourgon ?? 0)
-            } else if (mode === 'optionnel') {
-              const choix = livraisonChoix[pack.id] ?? 'retrait'
-              if (choix === 'livraison') {
-                total += (pack.prix_livraison ?? 0) + (pack.prix_fourgon ?? 0)
-              }
-            }
-          } else if (item.type === 'equipement') {
-            const eq = item.item as Equipement
-            if (eq.categorie !== 'eclairage' || eq.prix_livraison == null) continue
-            const choix = livraisonChoix[`equip-${eq.id}`] ?? 'retrait'
-            if (choix === 'livraison') {
-              total += eq.prix_livraison
-            }
-          }
-        }
-        return total
+        const { livraison, fourgon } = get().getFraisDetail()
+        return livraison + fourgon
       },
 
       /**
-       * Détail des frais : livraison seule et fourgon seul.
-       * Même logique que getFraisLivraison mais ventilé.
+       * Détail des frais : livraison (somme) et fourgon (max, facturé 1× quel que soit le nb de packs).
        */
       getFraisDetail: () => {
         const { cart, livraisonChoix } = get()
         let livraison = 0
-        let fourgon = 0
+        let fourgonMax = 0
         for (const item of cart) {
           if (item.type === 'pack') {
             const pack = item.item as Pack
@@ -280,12 +258,12 @@ export const useStore = create<StoreState>()(
             if (mode === 'retrait_uniquement') continue
             if (mode === 'obligatoire') {
               livraison += pack.prix_livraison ?? 0
-              fourgon += pack.prix_fourgon ?? 0
+              fourgonMax = Math.max(fourgonMax, pack.prix_fourgon ?? 0)
             } else if (mode === 'optionnel') {
               const choix = livraisonChoix[pack.id] ?? 'retrait'
               if (choix === 'livraison') {
                 livraison += pack.prix_livraison ?? 0
-                fourgon += pack.prix_fourgon ?? 0
+                fourgonMax = Math.max(fourgonMax, pack.prix_fourgon ?? 0)
               }
             }
           } else if (item.type === 'equipement') {
@@ -297,7 +275,7 @@ export const useStore = create<StoreState>()(
             }
           }
         }
-        return { livraison, fourgon }
+        return { livraison, fourgon: fourgonMax }
       },
 
       /** Coefficient de durée pour les dates actuelles (null = 6+ jours = sur demande) */

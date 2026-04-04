@@ -6,6 +6,8 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Equipement, Pack } from '@/lib/directus'
+import { isPromoActive, getPackCapacite } from '@/lib/directus'
+import { Users } from 'lucide-react'
 import { AddToCartButton } from '@/components/catalogue/AddToCartButton'
 import { CatalogueFilters } from '@/components/catalogue/CatalogueFilters'
 import { ScrollToHash } from '@/components/catalogue/ScrollToHash'
@@ -57,7 +59,7 @@ export default async function CataloguePage({
       readItems('packs', {
         ...(categorie ? { filter: { categorie: { _eq: categorie } } } : {}),
         limit: 50,
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort'],
+        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort', 'prix_promo', 'promo_label', 'promo_date_fin', 'capacite'],
         sort: ['sort'],
       })
     ).catch(() => [] as Pack[]),
@@ -68,7 +70,7 @@ export default async function CataloguePage({
       <h1 className="text-4xl font-black uppercase tracking-widest text-white mb-2">
         Catalogue
       </h1>
-      <p className="text-gray-400 mb-8">
+      <p className="text-gray-300 mb-8">
         Location de matériel événementiel professionnel · Suisse Romande
       </p>
 
@@ -87,8 +89,8 @@ export default async function CataloguePage({
             Packs clé en main
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {packs.map((pack) => (
-              <PackCard key={pack.id} pack={pack} />
+            {packs.map((pack, i) => (
+              <PackCard key={pack.id} pack={pack} priority={i < 2} />
             ))}
           </div>
         </section>
@@ -103,8 +105,8 @@ export default async function CataloguePage({
           <p className="text-gray-500 py-12 text-center">Aucun matériel trouvé pour cette sélection.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {equipements.map((eq) => (
-              <EquipementCard key={eq.id} equipement={eq} />
+            {equipements.map((eq, i) => (
+              <EquipementCard key={eq.id} equipement={eq} priority={i < 2} />
             ))}
           </div>
         )}
@@ -117,7 +119,7 @@ export default async function CataloguePage({
 // Sous-composants de carte (Server Components)
 // ---------------------------------------------------------------------------
 
-function EquipementCard({ equipement }: { equipement: Equipement }) {
+function EquipementCard({ equipement, priority = false }: { equipement: Equipement; priority?: boolean }) {
   const imageUrl = getImageUrl(equipement.image, { width: '400', fit: 'contain' })
 
   return (
@@ -129,6 +131,7 @@ function EquipementCard({ equipement }: { equipement: Equipement }) {
               src={imageUrl}
               alt={equipement.nom}
               fill
+              priority={priority}
               className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
@@ -148,7 +151,7 @@ function EquipementCard({ equipement }: { equipement: Equipement }) {
             <p className="text-xs text-gray-500 mt-0.5 uppercase tracking-wider">{equipement.marque}</p>
           )}
           {equipement.description && (
-            <p className="text-xs text-gray-400 mt-2 line-clamp-2">{equipement.description}</p>
+            <p className="text-xs text-gray-300 mt-2 line-clamp-2">{equipement.description}</p>
           )}
           <div className="flex items-center justify-between mt-3">
             <div>
@@ -167,7 +170,7 @@ function EquipementCard({ equipement }: { equipement: Equipement }) {
   )
 }
 
-function PackCard({ pack }: { pack: Pack }) {
+function PackCard({ pack, priority = false }: { pack: Pack; priority?: boolean }) {
   const imageUrl = getImageUrl(pack.image_principale, { width: '400', fit: 'contain' })
 
   return (
@@ -179,6 +182,7 @@ function PackCard({ pack }: { pack: Pack }) {
               src={imageUrl}
               alt={pack.nom}
               fill
+              priority={priority}
               className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
@@ -188,15 +192,32 @@ function PackCard({ pack }: { pack: Pack }) {
           <span className="absolute top-2 left-2 bg-vsonus-red text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
             Pack
           </span>
+          {isPromoActive(pack) && (
+            <span className="absolute top-2 right-2 bg-vsonus-red text-white text-xs font-bold px-2 py-1 uppercase tracking-wider animate-pulse">
+              {pack.promo_label || 'PROMO'}
+            </span>
+          )}
         </div>
 
         <div className="p-4 pb-2 flex-1">
           <h3 className="font-bold text-white text-sm leading-tight group-hover:text-vsonus-red transition-colors">{pack.nom}</h3>
+          {getPackCapacite(pack) && (
+            <p className="text-xs text-gray-300 mt-1 font-medium flex items-center gap-1">
+              <Users className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />{getPackCapacite(pack)}
+            </p>
+          )}
           {pack.description && (
-            <p className="text-xs text-gray-400 mt-2 line-clamp-2">{pack.description}</p>
+            <p className="text-xs text-gray-300 mt-1 line-clamp-2">{pack.description}</p>
           )}
           <div className="mt-3">
-            <span className="text-vsonus-red font-black text-lg">{pack.prix_base.toFixed(2)}</span>
+            {isPromoActive(pack) ? (
+              <>
+                <span className="text-gray-500 text-sm line-through mr-2">{pack.prix_base.toFixed(2)}</span>
+                <span className="text-vsonus-red font-black text-lg">{pack.prix_promo!.toFixed(2)}</span>
+              </>
+            ) : (
+              <span className="text-vsonus-red font-black text-lg">{pack.prix_base.toFixed(2)}</span>
+            )}
             <span className="text-gray-500 text-xs ml-1">CHF / événement</span>
           </div>
         </div>

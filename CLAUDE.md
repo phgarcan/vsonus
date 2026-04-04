@@ -135,13 +135,14 @@ vsonus-2026/
 | Collection | Champs principaux |
 |---|---|
 | `equipements` | id, nom, prix_journalier, stock_total, technicien_obligatoire, transport_obligatoire, prix_livraison (nullable), image, categorie, marque, description, sort |
-| `packs` | id, nom, categorie, prix_base, prix_livraison (nullable), prix_fourgon (nullable), mode_livraison (enum: obligatoire/optionnel/retrait_uniquement), image_principale, description, sort |
+| `packs` | id, nom, categorie, prix_base, prix_livraison (nullable), prix_fourgon (nullable), mode_livraison (enum: obligatoire/optionnel/retrait_uniquement), image_principale, description, capacite (nullable), sort, prix_promo (nullable), promo_label (nullable), promo_date_fin (nullable) |
 | `pack_equipements` | id, pack_id, equipement_id (FK), quantite, sort |
 | `tarifs_annexes` | id, label, type, prix, unite, description |
 | `logos_partenaires` | id, nom, logo (file), url (nullable), sort, status |
 | `reservations` | id, statut, nom_client, email_client, tel_client, adresse_evenement, date_debut, date_fin, total_ht, besoin_montage, besoin_livraison, notes |
 | `reservation_lignes` | id, reservation_id (FK), type, reference_id, label, quantite, prix_unitaire, prix_total |
 | `pages` | id, slug, title, meta_description, content (blocs M2A), status |
+| `site_settings` | id, hero_video (nullable), hero_video_poster (nullable), promo_active (boolean), promo_texte (nullable), promo_lien (nullable), promo_cta (nullable) |
 
 **⚠️ `galerie_photos`** — collection NON créée. La page `/galerie` gère l'erreur via `.catch()`.
 

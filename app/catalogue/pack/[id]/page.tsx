@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { CheckCircle2 } from 'lucide-react'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Pack } from '@/lib/directus'
+import { isPromoActive } from '@/lib/directus'
 import { AddToCartPackSection } from './AddToCartPackSection'
 
 export const revalidate = 300
@@ -72,7 +73,7 @@ export default async function PackDetailPage({
   try {
     pack = await client.request(
       readItem('packs', id, {
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description'],
+        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'prix_promo', 'promo_label', 'promo_date_fin', 'capacite'],
       })
     ) as Pack
   } catch {
@@ -84,7 +85,7 @@ export default async function PackDetailPage({
     readItems('packs', {
       ...(pack.categorie ? { filter: { categorie: { _eq: pack.categorie } } } : {}),
       limit: 4,
-      fields: ['id', 'nom', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'categorie', 'sort'],
+      fields: ['id', 'nom', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'categorie', 'sort', 'prix_promo', 'promo_label', 'promo_date_fin', 'capacite'],
       sort: ['sort'],
     })
   ).catch(() => [] as Pack[])
@@ -152,9 +153,23 @@ export default async function PackDetailPage({
             </h1>
           </div>
 
+          {/* Badge promo */}
+          {isPromoActive(pack) && (
+            <div className="inline-block bg-vsonus-red text-white text-xs font-bold px-3 py-1 uppercase tracking-wider animate-pulse">
+              {pack.promo_label || 'PROMO'}
+            </div>
+          )}
+
           {/* Prix */}
           <div className="border-t border-b border-gray-800 py-4 flex items-baseline gap-2">
-            <span className="text-4xl font-black text-vsonus-red">{pack.prix_base.toFixed(2)}</span>
+            {isPromoActive(pack) ? (
+              <>
+                <span className="text-xl text-gray-500 line-through">{pack.prix_base.toFixed(2)}</span>
+                <span className="text-4xl font-black text-vsonus-red">{pack.prix_promo!.toFixed(2)}</span>
+              </>
+            ) : (
+              <span className="text-4xl font-black text-vsonus-red">{pack.prix_base.toFixed(2)}</span>
+            )}
             <span className="text-gray-500 text-sm uppercase tracking-widest">CHF / événement</span>
           </div>
 
@@ -162,7 +177,7 @@ export default async function PackDetailPage({
           {intro && (
             <div className="space-y-1">
               {intro.split('\n').map((line, i) => (
-                <p key={i} className="text-sm text-gray-400 leading-relaxed">{line}</p>
+                <p key={i} className="text-sm text-gray-300 leading-relaxed">{line}</p>
               ))}
             </div>
           )}
@@ -220,7 +235,14 @@ export default async function PackDetailPage({
                   <div className="p-3">
                     <p className="text-xs text-vsonus-red font-bold uppercase tracking-wider">Pack</p>
                     <p className="text-sm font-bold text-white mt-0.5 line-clamp-2 group-hover:text-vsonus-red transition-colors">{s.nom}</p>
-                    <p className="text-vsonus-red font-black text-sm mt-2">{s.prix_base.toFixed(2)} CHF</p>
+                    {isPromoActive(s) ? (
+                      <p className="mt-2">
+                        <span className="text-gray-500 text-xs line-through mr-1">{s.prix_base.toFixed(2)}</span>
+                        <span className="text-vsonus-red font-black text-sm">{s.prix_promo!.toFixed(2)} CHF</span>
+                      </p>
+                    ) : (
+                      <p className="text-vsonus-red font-black text-sm mt-2">{s.prix_base.toFixed(2)} CHF</p>
+                    )}
                   </div>
                 </Link>
               )

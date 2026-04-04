@@ -270,10 +270,10 @@ export default function ProfilPage() {
       {/* Modal de confirmation suppression */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4">
-          <div className="bg-vsonus-dark border border-gray-700 max-w-md w-full p-6 space-y-5">
+          <div className="bg-vsonus-dark border border-gray-700 max-w-md w-full p-6 space-y-5" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-vsonus-red flex-shrink-0" />
-              <h3 className="text-lg font-black uppercase tracking-widest text-white">Confirmer la suppression</h3>
+              <AlertTriangle className="w-5 h-5 text-vsonus-red flex-shrink-0" aria-hidden="true" />
+              <h3 id="delete-modal-title" className="text-lg font-black uppercase tracking-widest text-white">Confirmer la suppression</h3>
             </div>
 
             <p className="text-sm text-gray-400 leading-relaxed">
@@ -290,7 +290,7 @@ export default function ProfilPage() {
               />
             </div>
 
-            {deleteMsg && <p className="text-sm text-red-500">{deleteMsg}</p>}
+            {deleteMsg && <p className="text-sm text-red-500" aria-live="polite">{deleteMsg}</p>}
 
             <div className="flex gap-3 pt-2">
               <button

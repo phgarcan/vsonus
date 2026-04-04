@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { readItems } from '@directus/sdk'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Users } from 'lucide-react'
 import { PRESTATIONS, SERVICES_COMMUNS } from '../data'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Pack } from '@/lib/directus'
+import { isPromoActive, getPackCapacite } from '@/lib/directus'
 import { AddToCartButton } from '@/components/catalogue/AddToCartButton'
 
 export const revalidate = 3600
@@ -91,7 +92,7 @@ export default async function PrestationDetailPage({ params }: Props) {
       readItems('packs', {
         filter: { categorie: { _eq: categorieSlug } },
         limit: 10,
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort'],
+        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort', 'prix_promo', 'promo_label', 'promo_date_fin', 'capacite'],
         sort: ['sort'],
       })
     )
@@ -148,7 +149,7 @@ export default async function PrestationDetailPage({ params }: Props) {
             <h2 className="text-2xl md:text-3xl font-black uppercase tracking-widest text-white leading-tight mb-6">
               {intro}
             </h2>
-            <p className="text-gray-400 leading-relaxed">{descriptionComplete}</p>
+            <p className="text-gray-300 leading-relaxed">{descriptionComplete}</p>
           </AnimateOnScroll>
 
           {/* Services communs */}
@@ -164,7 +165,7 @@ export default async function PrestationDetailPage({ params }: Props) {
                     <p className="text-sm font-bold uppercase tracking-widest text-white mb-1">
                       {label}
                     </p>
-                    <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+                    <p className="text-xs text-gray-400 leading-relaxed">{desc}</p>
                   </div>
                 </div>
               </AnimateOnScroll>
@@ -209,21 +210,36 @@ export default async function PrestationDetailPage({ params }: Props) {
                           <span className="absolute top-3 left-3 bg-vsonus-red text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
                             Pack
                           </span>
+                          {isPromoActive(pack) && (
+                            <span className="absolute top-3 right-3 bg-vsonus-red text-white text-xs font-bold px-2 py-1 uppercase tracking-wider animate-pulse">
+                              {pack.promo_label || 'PROMO'}
+                            </span>
+                          )}
                         </div>
 
                         <div className="p-5 pb-3">
                           <h3 className="font-bold text-white text-sm leading-tight group-hover:text-vsonus-red transition-colors">
                             {pack.nom}
                           </h3>
+                          {getPackCapacite(pack) && (
+                            <p className="text-xs text-gray-300 mt-1 font-medium flex items-center gap-1">
+                              <Users className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />{getPackCapacite(pack)}
+                            </p>
+                          )}
                           {pack.description && (
-                            <p className="text-xs text-gray-500 mt-2 line-clamp-2 leading-relaxed">
+                            <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
                               {pack.description}
                             </p>
                           )}
                           <div className="mt-3">
-                            <span className="text-vsonus-red font-black text-lg">
-                              {pack.prix_base.toFixed(2)}
-                            </span>
+                            {isPromoActive(pack) ? (
+                              <>
+                                <span className="text-gray-500 text-sm line-through mr-2">{pack.prix_base.toFixed(2)}</span>
+                                <span className="text-vsonus-red font-black text-lg">{pack.prix_promo!.toFixed(2)}</span>
+                              </>
+                            ) : (
+                              <span className="text-vsonus-red font-black text-lg">{pack.prix_base.toFixed(2)}</span>
+                            )}
                             <span className="text-gray-500 text-xs ml-1">CHF / événement</span>
                           </div>
                         </div>
@@ -264,7 +280,7 @@ export default async function PrestationDetailPage({ params }: Props) {
             <h2 className="text-3xl md:text-4xl font-black uppercase tracking-widest text-white mb-4">
               Contactez-nous
             </h2>
-            <p className="text-gray-400 mb-10">
+            <p className="text-gray-300 mb-10">
               Nous construisons des offres sur-mesure adaptées à la taille et aux besoins de votre
               événement.
             </p>
