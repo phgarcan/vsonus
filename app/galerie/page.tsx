@@ -45,7 +45,7 @@ export default async function GaleriePage({
       readItems('realisations', {
         filter: {
           publie: { _eq: true },
-          ...(categorie ? { categorie: { _eq: categorie } } : {}),
+          ...(categorie ? { categorie: { _contains: categorie } } : {}),
         },
         sort: ['-date_evenement'],
         limit: 50,

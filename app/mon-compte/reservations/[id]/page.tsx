@@ -75,13 +75,14 @@ export default async function ReservationDetailPage({
   const token = await getAccessToken()
   if (!token) redirect('/mon-compte/connexion')
 
-  // Fetch reservation
+  // Fetch reservation (filtré par user pour empêcher l'accès aux réservations d'autres utilisateurs)
   const resReservation = await fetch(
-    `${DIRECTUS_URL}/items/reservations/${id}`,
+    `${DIRECTUS_URL}/items/reservations/${id}?filter[user][_eq]=${session.id}`,
     { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }
   )
   if (!resReservation.ok) notFound()
   const reservation: Reservation = (await resReservation.json()).data
+  if (!reservation) notFound()
 
   // Fetch lines
   const resLignes = await fetch(

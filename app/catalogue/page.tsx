@@ -6,13 +6,25 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Equipement, Pack } from '@/lib/directus'
-import { isPromoActive, getPackCapacite } from '@/lib/directus'
+import { isPromoActive, getPackCapacite, getPackPrixEffectif } from '@/lib/directus'
 import { Users } from 'lucide-react'
 import { AddToCartButton } from '@/components/catalogue/AddToCartButton'
 import { CatalogueFilters } from '@/components/catalogue/CatalogueFilters'
 import { ScrollToHash } from '@/components/catalogue/ScrollToHash'
 
 export const revalidate = 300
+
+/** Extrait la ligne "type d'événement" d'une description pack, sans le détail matériel */
+function truncatePackDescription(desc: string): string {
+  let text = desc.replace(/^Adapté pour\s*:\s*/i, '')
+  // Couper au premier séparateur de liste matériel
+  const sepIndex = Math.min(
+    ...['\n', '•', '·'].map((s) => { const i = text.indexOf(s); return i === -1 ? Infinity : i })
+  )
+  if (sepIndex !== Infinity) text = text.slice(0, sepIndex).trim()
+  if (text.length > 80) text = text.slice(0, 80).trim() + '…'
+  return text
+}
 
 export const metadata: Metadata = {
   title: 'Catalogue Location Matériel Événementiel',
@@ -31,6 +43,7 @@ export const dynamic = 'force-dynamic'
 
 interface SearchParams {
   categorie?: string
+  sous_categorie?: string
   q?: string
 }
 
@@ -40,29 +53,38 @@ export default async function CataloguePage({
   searchParams: Promise<SearchParams>
 }) {
   const params = await searchParams
-  const { categorie, q } = params
+  const { categorie, sous_categorie, q } = params
 
   const client = getServerDirectus()
+
+  // Construction des filtres conditionnels
+  const equipFilter: Record<string, unknown> = {}
+  if (categorie) equipFilter.categorie = { _eq: categorie }
+  if (sous_categorie) equipFilter.sous_categorie = { _eq: sous_categorie }
+
+  const packFilter: Record<string, unknown> = {}
+  if (categorie) packFilter.categorie = { _eq: categorie }
+  if (sous_categorie) packFilter.sous_categorie = { _eq: sous_categorie }
 
   // Fetch équipements depuis Directus (Server Component = SSR/ISR)
   const [equipements, packs] = await Promise.all([
     client.request(
       readItems('equipements', {
-        ...(categorie ? { filter: { categorie: { _eq: categorie } } } : {}),
+        ...(Object.keys(equipFilter).length ? { filter: equipFilter } : {}),
         ...(q ? { search: q } : {}),
         limit: 100,
-        fields: ['id', 'nom', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image', 'categorie', 'marque', 'description', 'prix_livraison', 'sort'],
+        fields: ['id', 'nom', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image', 'categorie', 'sous_categorie', 'marque', 'description', 'prix_livraison', 'sort'],
         sort: ['sort'],
       })
-    ).catch(() => [] as Equipement[]),
+    ).catch((err) => { console.error('[catalogue] Erreur equipements:', err?.errors ?? err?.message); return [] as Equipement[] }),
     client.request(
       readItems('packs', {
-        ...(categorie ? { filter: { categorie: { _eq: categorie } } } : {}),
+        ...(Object.keys(packFilter).length ? { filter: packFilter } : {}),
         limit: 50,
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort', 'prix_promo', 'promo_label', 'promo_date_fin', 'capacite'],
+        fields: ['id', 'nom', 'categorie', 'sous_categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite'],
         sort: ['sort'],
       })
-    ).catch(() => [] as Pack[]),
+    ).catch((err) => { console.error('[catalogue] Erreur packs:', err?.errors ?? err?.message); return [] as Pack[] }),
   ])
 
   return (
@@ -176,14 +198,14 @@ function PackCard({ pack, priority = false }: { pack: Pack; priority?: boolean }
   return (
     <article className="bg-vsonus-dark border-2 border-vsonus-red flex flex-col hover:shadow-glow-red hover:scale-[1.02] transition-all duration-300 group">
       <Link href={`/catalogue/pack/${pack.id}`} className="block">
-        <div className="relative w-full h-48 bg-white overflow-hidden">
+        <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
           {imageUrl ? (
             <Image
               src={imageUrl}
               alt={pack.nom}
               fill
               priority={priority}
-              className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+              className="object-contain group-hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
           ) : (
@@ -207,13 +229,13 @@ function PackCard({ pack, priority = false }: { pack: Pack; priority?: boolean }
             </p>
           )}
           {pack.description && (
-            <p className="text-xs text-gray-300 mt-1 line-clamp-2">{pack.description}</p>
+            <p className="text-xs text-gray-300 mt-1 line-clamp-2">{truncatePackDescription(pack.description)}</p>
           )}
           <div className="mt-3">
             {isPromoActive(pack) ? (
               <>
                 <span className="text-gray-500 text-sm line-through mr-2">{pack.prix_base.toFixed(2)}</span>
-                <span className="text-vsonus-red font-black text-lg">{pack.prix_promo!.toFixed(2)}</span>
+                <span className="text-vsonus-red font-black text-lg">{getPackPrixEffectif(pack).toFixed(2)}</span>
               </>
             ) : (
               <span className="text-vsonus-red font-black text-lg">{pack.prix_base.toFixed(2)}</span>

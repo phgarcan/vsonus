@@ -217,8 +217,19 @@ export async function changePassword(currentPassword: string, newPassword: strin
   const token = cookieStore.get('vsonus_access_token')?.value
   if (!token) return { success: false, error: 'Non connecté.' }
 
-  // Directus doesn't have a direct "change password" endpoint for users/me
-  // We need to use PATCH /users/me with the password field
+  // Vérifier le mot de passe actuel en tentant un login Directus
+  const session = await getSession()
+  if (!session?.email) return { success: false, error: 'Session invalide.' }
+
+  const verifyRes = await fetch(`${DIRECTUS_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: session.email, password: currentPassword }),
+  })
+
+  if (!verifyRes.ok) return { success: false, error: 'Mot de passe actuel incorrect.' }
+
+  // Mot de passe vérifié — appliquer le changement
   const res = await fetch(`${DIRECTUS_URL}/users/me`, {
     method: 'PATCH',
     headers: {

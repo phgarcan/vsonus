@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Trash2, Music, Truck } from 'lucide-react'
+import { Trash2, Music, Truck, MapPin } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/Button'
 import { DatePicker } from '@/components/ui/DatePicker'
@@ -258,6 +258,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                             </p>
                           )}
                         </div>
+                      )}
+
+                      {/* Indication retrait sur place pour équipements standard */}
+                      {!isPack && !equipementHasLivraisonOption(item.item as Equipement) && !(item.item as Equipement).transport_obligatoire && (
+                        <p className="mt-2 ml-19 text-xs text-gray-500 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />Retrait sur place
+                        </p>
                       )}
 
                       {/* Retrait/livraison pour équipements éclairage */}

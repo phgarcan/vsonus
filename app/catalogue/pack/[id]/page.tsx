@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { CheckCircle2 } from 'lucide-react'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Pack } from '@/lib/directus'
-import { isPromoActive } from '@/lib/directus'
+import { isPromoActive, getPackPrixEffectif } from '@/lib/directus'
 import { AddToCartPackSection } from './AddToCartPackSection'
 
 export const revalidate = 300
@@ -73,7 +73,7 @@ export default async function PackDetailPage({
   try {
     pack = await client.request(
       readItem('packs', id, {
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'prix_promo', 'promo_label', 'promo_date_fin', 'capacite'],
+        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite'],
       })
     ) as Pack
   } catch {
@@ -85,7 +85,7 @@ export default async function PackDetailPage({
     readItems('packs', {
       ...(pack.categorie ? { filter: { categorie: { _eq: pack.categorie } } } : {}),
       limit: 4,
-      fields: ['id', 'nom', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'categorie', 'sort', 'prix_promo', 'promo_label', 'promo_date_fin', 'capacite'],
+      fields: ['id', 'nom', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'categorie', 'sort', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite'],
       sort: ['sort'],
     })
   ).catch(() => [] as Pack[])
@@ -126,7 +126,7 @@ export default async function PackDetailPage({
               src={imageUrl}
               alt={pack.nom}
               fill
-              className="object-contain p-4"
+              className="object-contain"
               sizes="(max-width: 1024px) 100vw, 50vw"
               priority
             />
@@ -165,7 +165,7 @@ export default async function PackDetailPage({
             {isPromoActive(pack) ? (
               <>
                 <span className="text-xl text-gray-500 line-through">{pack.prix_base.toFixed(2)}</span>
-                <span className="text-4xl font-black text-vsonus-red">{pack.prix_promo!.toFixed(2)}</span>
+                <span className="text-4xl font-black text-vsonus-red">{getPackPrixEffectif(pack).toFixed(2)}</span>
               </>
             ) : (
               <span className="text-4xl font-black text-vsonus-red">{pack.prix_base.toFixed(2)}</span>
@@ -224,9 +224,9 @@ export default async function PackDetailPage({
                   href={`/catalogue/pack/${s.id}`}
                   className="bg-vsonus-dark border border-vsonus-red hover:shadow-glow-red transition-shadow duration-200 flex flex-col group"
                 >
-                  <div className="relative h-36 bg-white overflow-hidden">
+                  <div className="relative aspect-[4/3] bg-white overflow-hidden">
                     {sImg ? (
-                      <Image src={sImg} alt={s.nom} fill className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                      <Image src={sImg} alt={s.nom} fill className="object-contain group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 640px) 100vw, 33vw" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl">★</div>
@@ -238,7 +238,7 @@ export default async function PackDetailPage({
                     {isPromoActive(s) ? (
                       <p className="mt-2">
                         <span className="text-gray-500 text-xs line-through mr-1">{s.prix_base.toFixed(2)}</span>
-                        <span className="text-vsonus-red font-black text-sm">{s.prix_promo!.toFixed(2)} CHF</span>
+                        <span className="text-vsonus-red font-black text-sm">{getPackPrixEffectif(s).toFixed(2)} CHF</span>
                       </p>
                     ) : (
                       <p className="text-vsonus-red font-black text-sm mt-2">{s.prix_base.toFixed(2)} CHF</p>

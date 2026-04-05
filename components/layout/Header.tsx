@@ -23,8 +23,8 @@ const PACKS_ITEMS: { icon: LucideIcon; label: string; href: string }[] = [
 const MOBILE_MATERIEL = [
   { label: 'Sonorisation',       href: '/catalogue?categorie=sonorisation' },
   { label: 'Éclairage',          href: '/catalogue?categorie=eclairage' },
+  { label: 'Mapping / Laser',    href: '/catalogue?categorie=mapping' },
   { label: 'Scènes & Structures', href: '/catalogue?categorie=scenes' },
-  { label: 'Vidéo & Mapping',    href: '/catalogue?categorie=mapping' },
 ]
 
 const DIRECT_LINKS: { icon: LucideIcon; label: string; href: string }[] = [

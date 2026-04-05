@@ -65,11 +65,15 @@ export function RealisationCard({ realisation, coverUrl, imageUrls }: Props) {
               Voir les photos
             </span>
           </div>
-          {/* Category badge */}
+          {/* Category badge(s) */}
           {realisation.categorie && (
-            <span className="absolute top-3 left-3 bg-vsonus-red text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
-              {CAT_LABELS[realisation.categorie] ?? realisation.categorie}
-            </span>
+            <div className="absolute top-3 left-3 flex flex-wrap gap-1">
+              {(Array.isArray(realisation.categorie) ? realisation.categorie : [realisation.categorie]).map((cat) => (
+                <span key={cat} className="bg-vsonus-red text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
+                  {CAT_LABELS[cat] ?? cat}
+                </span>
+              ))}
+            </div>
           )}
           {/* Extra images count */}
           {extraCount > 0 && (

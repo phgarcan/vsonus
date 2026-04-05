@@ -9,6 +9,7 @@ import { CgvModal } from '@/components/ui/CgvModal'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 import { CompanySearch } from '@/components/ui/CompanySearch'
 import { soumettreReservation } from '@/app/actions/reservation'
+import { MapPin } from 'lucide-react'
 import { getCoefficientLabel, FALLBACK_TRANSPORT_PRIX, FALLBACK_MONTAGE_PRIX } from '@/lib/pricing'
 import { formatSwissPhone, formatDateEU } from '@/lib/utils'
 import { equipementHasLivraisonOption } from '@/lib/directus'
@@ -546,12 +547,12 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
 
         {/* Détail calcul avec coefficient */}
         <div className="border-t border-gray-800 pt-3 space-y-1.5 text-sm">
-          <div className="flex justify-between text-gray-400">
+          <div className="flex justify-between text-gray-300">
             <span>Location matériel (1 j)</span>
             <span>{sousTotalBrut.toFixed(2)} CHF</span>
           </div>
           {coefficient !== null && coefficient !== 1 && (
-            <div className="flex justify-between text-gray-400">
+            <div className="flex justify-between text-gray-300">
               <span>
                 Coefficient {nbJours}j{' '}
                 <span className="text-vsonus-red font-bold">{getCoefficientLabel(nbJours)}</span>
@@ -560,31 +561,39 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
             </div>
           )}
           {fraisDetail.livraison > 0 && (
-            <div className="flex justify-between text-gray-400">
+            <div className="flex justify-between text-gray-300">
               <span>Livraison et installation (1×)</span>
               <span className="text-white">{fraisDetail.livraison.toFixed(2)} CHF</span>
             </div>
           )}
           {fraisDetail.fourgon > 0 && (
-            <div className="flex justify-between text-gray-400">
+            <div className="flex justify-between text-gray-300">
               <span>Location fourgon et essence (1×)</span>
               <span className="text-white">{fraisDetail.fourgon.toFixed(2)} CHF</span>
             </div>
           )}
           {fraisAnnexesEquip > 0 && (
-            <div className="flex justify-between text-gray-400">
+            <div className="flex justify-between text-gray-300">
               <span>Frais annexes équipements</span>
               <span className="text-white">{fraisAnnexesEquip.toFixed(2)} CHF</span>
             </div>
           )}
         </div>
 
+        {/* Indication retrait sur place pour matériel unitaire */}
+        {cart.some((i) => i.type === 'equipement' && !(i.item as Equipement).transport_obligatoire) && (
+          <div className="flex items-center gap-2 border border-gray-800 bg-vsonus-dark p-3">
+            <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <p className="text-xs text-gray-400">Le matériel unitaire est à retirer sur place.</p>
+          </div>
+        )}
+
         <div className="border-t-2 border-vsonus-red pt-3 flex justify-between font-black text-white text-lg">
           <span>TOTAL HT</span>
           <span className="text-vsonus-red">{totalHT.toFixed(2)} CHF</span>
         </div>
 
-        <p className="text-xs text-gray-600 leading-relaxed">
+        <p className="text-xs text-gray-400 leading-relaxed">
           Cette demande de devis ne constitue pas une réservation ferme. Un technicien V-Sonus vous contactera pour confirmer la disponibilité et établir un devis officiel.
         </p>
       </aside>

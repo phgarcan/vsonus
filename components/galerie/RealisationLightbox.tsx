@@ -159,7 +159,9 @@ export function RealisationLightbox({ realisation, onClose }: Props) {
             <div className="flex items-center gap-3">
               {realisation.categorie && (
                 <span className="text-xs font-bold uppercase tracking-widest text-vsonus-red">
-                  {CAT_LABELS[realisation.categorie] ?? realisation.categorie}
+                  {(Array.isArray(realisation.categorie) ? realisation.categorie : [realisation.categorie])
+                    .map((cat) => CAT_LABELS[cat] ?? cat)
+                    .join(' / ')}
                 </span>
               )}
               {allImages.length > 1 && (

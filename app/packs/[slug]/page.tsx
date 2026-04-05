@@ -8,10 +8,21 @@ import { PRESTATIONS, SERVICES_COMMUNS } from '../data'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { getServerDirectus, getImageUrl } from '@/lib/directus'
 import type { Pack } from '@/lib/directus'
-import { isPromoActive, getPackCapacite } from '@/lib/directus'
+import { isPromoActive, getPackCapacite, getPackPrixEffectif } from '@/lib/directus'
 import { AddToCartButton } from '@/components/catalogue/AddToCartButton'
 
 export const revalidate = 3600
+
+/** Extrait la ligne "type d'événement" d'une description pack, sans le détail matériel */
+function truncatePackDescription(desc: string): string {
+  let text = desc.replace(/^Adapté pour\s*:\s*/i, '')
+  const sepIndex = Math.min(
+    ...['\n', '•', '·'].map((s) => { const i = text.indexOf(s); return i === -1 ? Infinity : i })
+  )
+  if (sepIndex !== Infinity) text = text.slice(0, sepIndex).trim()
+  if (text.length > 80) text = text.slice(0, 80).trim() + '…'
+  return text
+}
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -92,7 +103,7 @@ export default async function PrestationDetailPage({ params }: Props) {
       readItems('packs', {
         filter: { categorie: { _eq: categorieSlug } },
         limit: 10,
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort', 'prix_promo', 'promo_label', 'promo_date_fin', 'capacite'],
+        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite'],
         sort: ['sort'],
       })
     )
@@ -195,13 +206,13 @@ export default async function PrestationDetailPage({ params }: Props) {
                     <article className="bg-vsonus-black border border-gray-800 flex flex-col hover:border-vsonus-red transition-colors duration-300 group">
                       <Link href={`/catalogue/pack/${pack.id}`} className="block">
                         {/* Image */}
-                        <div className="relative w-full h-44 bg-white overflow-hidden">
+                        <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
                           {imgUrl ? (
                             <Image
                               src={imgUrl}
                               alt={pack.nom}
                               fill
-                              className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+                              className="object-contain group-hover:scale-105 transition-transform duration-500"
                               sizes="(max-width: 768px) 100vw, 33vw"
                             />
                           ) : (
@@ -228,14 +239,14 @@ export default async function PrestationDetailPage({ params }: Props) {
                           )}
                           {pack.description && (
                             <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
-                              {pack.description}
+                              {truncatePackDescription(pack.description)}
                             </p>
                           )}
                           <div className="mt-3">
                             {isPromoActive(pack) ? (
                               <>
                                 <span className="text-gray-500 text-sm line-through mr-2">{pack.prix_base.toFixed(2)}</span>
-                                <span className="text-vsonus-red font-black text-lg">{pack.prix_promo!.toFixed(2)}</span>
+                                <span className="text-vsonus-red font-black text-lg">{getPackPrixEffectif(pack).toFixed(2)}</span>
                               </>
                             ) : (
                               <span className="text-vsonus-red font-black text-lg">{pack.prix_base.toFixed(2)}</span>

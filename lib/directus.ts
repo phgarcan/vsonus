@@ -15,6 +15,7 @@ export interface Equipement {
   transport_obligatoire: boolean
   image: string | null
   categorie?: string
+  sous_categorie?: string
   marque?: string
   description?: string
   /** Frais de livraison éclairage (facturés 1×, null = pas de livraison proposée) */
@@ -38,6 +39,7 @@ export interface Pack {
   id: string
   nom: string
   categorie: 'sonorisation' | 'eclairage' | 'scene' | 'mapping' | string
+  sous_categorie?: string
   prix_base: number
   /** Frais de livraison et installation (facturés 1×, null = pas de livraison) */
   prix_livraison?: number | null
@@ -49,19 +51,19 @@ export interface Pack {
   description?: string
   /** Capacité du pack (ex: "100-200 personnes"), null si non applicable */
   capacite?: string | null
-  /** Prix promotionnel (remplace prix_base si rempli et promo active) */
-  prix_promo?: number | null
   /** Label promo affiché sur la carte, ex: "Promo été -20%" */
   promo_label?: string | null
   /** Date d'expiration de la promo (ISO datetime, null = pas d'expiration) */
   promo_date_fin?: string | null
+  /** Pourcentage de réduction (0-100). Calcule automatiquement le prix promo. */
+  promo_pourcentage?: number | null
   pack_equipements?: PackEquipement[]
   sort?: number | null
 }
 
-/** Vérifie si la promo d'un pack est active (prix_promo rempli + non expiré) */
+/** Vérifie si la promo d'un pack est active (promo_pourcentage > 0 + non expiré) */
 export function isPromoActive(pack: Pack): boolean {
-  if (pack.prix_promo == null) return false
+  if (pack.promo_pourcentage == null || pack.promo_pourcentage <= 0) return false
   if (pack.promo_date_fin == null) return true
   return new Date(pack.promo_date_fin) > new Date()
 }
@@ -74,9 +76,10 @@ export function getPackCapacite(pack: Pack): string | null {
   return match ? match[1].trim() : null
 }
 
-/** Retourne le prix effectif du pack (prix_promo si promo active, sinon prix_base) */
+/** Retourne le prix effectif du pack (calcul depuis promo_pourcentage si actif, sinon prix_base) */
 export function getPackPrixEffectif(pack: Pack): number {
-  return isPromoActive(pack) ? pack.prix_promo! : pack.prix_base
+  if (!isPromoActive(pack)) return pack.prix_base
+  return Math.round(pack.prix_base * (1 - pack.promo_pourcentage! / 100))
 }
 
 
@@ -164,7 +167,8 @@ export interface Realisation {
   id: number
   titre: string
   description?: string
-  categorie?: string
+  /** Catégorie(s) : peut être un string simple (legacy) ou un tableau JSON (multi-catégories) */
+  categorie?: string | string[]
   date_evenement?: string
   lieu?: string
   image_principale?: string | null

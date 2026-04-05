@@ -5,42 +5,47 @@ import Link from 'next/link'
 const COLUMNS = [
   {
     heading: 'Sonorisation',
+    slug: 'sonorisation',
     items: [
-      { label: 'Enceintes L-Acoustics et RCF',          href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
-      { label: 'Régie, table de mixage, contrôleur DJ', href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
-      { label: 'Micro, Pieds, DI',                      href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
-      { label: 'Câblage',                               href: '/catalogue?categorie=sonorisation#materiel-unitaire' },
+      { label: 'Enceintes L-Acoustics et RCF',          href: '/catalogue?categorie=sonorisation&sous_categorie=enceintes#materiel-unitaire' },
+      { label: 'Régie, table de mixage, contrôleur DJ', href: '/catalogue?categorie=sonorisation&sous_categorie=regie#materiel-unitaire' },
+      { label: 'Micro, DI',                             href: '/catalogue?categorie=sonorisation&sous_categorie=micro#materiel-unitaire' },
     ],
   },
   {
     heading: 'Éclairage',
+    slug: 'eclairage',
     items: [
-      { label: 'Lyres (Moving Head) LED IP65',          href: '/catalogue?categorie=eclairage#materiel-unitaire' },
-      { label: 'Projecteur & Barre LED / UV IP65',      href: '/catalogue?categorie=eclairage#materiel-unitaire' },
-      { label: 'Câblage',                               href: '/catalogue?categorie=eclairage#materiel-unitaire' },
+      { label: 'Lyres (Moving Head) LED IP65',          href: '/catalogue?categorie=eclairage&sous_categorie=lyres#materiel-unitaire' },
+      { label: 'Projecteur & Barre LED / UV IP65',      href: '/catalogue?categorie=eclairage&sous_categorie=projecteurs#materiel-unitaire' },
+      { label: 'Câblage DMX',                           href: '/catalogue?categorie=eclairage&sous_categorie=cablage-dmx#materiel-unitaire' },
+      { label: 'Barre tout-en-un',                      href: '/catalogue?categorie=eclairage&sous_categorie=barre-tout-en-un#materiel-unitaire' },
     ],
   },
   {
-    heading: 'Scènes & Structures',
+    heading: 'Mapping / Laser',
+    slug: 'mapping',
     items: [
-      { label: 'Structures alu (Truss)',                 href: '/catalogue?categorie=scenes#materiel-unitaire' },
-      { label: 'Praticables',                            href: '/catalogue?categorie=scenes#materiel-unitaire' },
-      { label: 'Levage (Pieds et Palan)',                href: '/catalogue?categorie=scenes#materiel-unitaire' },
-      { label: 'Pavillons pliable & Tables',             href: '/catalogue?categorie=scenes#materiel-unitaire' },
-    ],
-  },
-  {
-    heading: 'Vidéo & Mapping',
-    items: [
-      { label: 'Vidéoprojecteurs',                       href: '/catalogue?categorie=mapping#materiel-unitaire' },
+      { label: 'Vidéoprojecteurs',                       href: '/catalogue?categorie=mapping&sous_categorie=videoprojecteurs#materiel-unitaire' },
       { label: 'Câblage & Accessoires',                  href: '/catalogue?categorie=cablage#materiel-unitaire' },
       { label: 'Laser',                                   href: '/catalogue?categorie=laser#materiel-unitaire' },
     ],
   },
   {
-    heading: 'Nettoyage',
+    heading: 'Scènes & Structures',
+    slug: 'scenes',
     items: [
-      { label: 'Produits de nettoyage',                  href: '/catalogue?categorie=nettoyage#materiel-unitaire' },
+      { label: 'Structures alu (Truss)',                 href: '/catalogue?categorie=scenes&sous_categorie=structures#materiel-unitaire' },
+      { label: 'Praticables',                            href: '/catalogue?categorie=scenes&sous_categorie=praticables#materiel-unitaire' },
+      { label: 'Levage (Pieds et Palan)',                href: '/catalogue?categorie=scenes&sous_categorie=levage#materiel-unitaire' },
+      { label: 'Pavillons pliable & Tables',             href: '/catalogue?categorie=scenes&sous_categorie=pavillons-tables#materiel-unitaire' },
+    ],
+  },
+  {
+    heading: 'Nettoyage',
+    slug: 'nettoyage',
+    items: [
+      { label: 'Autolaveuse & Machine à laver les verres', href: '/catalogue?categorie=nettoyage&sous_categorie=autolaveuse#materiel-unitaire' },
     ],
   },
 ]
@@ -59,7 +64,7 @@ export function MegaMenu({ onClose }: MegaMenuProps) {
         {COLUMNS.map((col) => (
           <div key={col.heading}>
             <Link
-              href={`/catalogue?categorie=${col.heading.toLowerCase().replace(/\s.*/, '')}#materiel-unitaire`}
+              href={`/catalogue?categorie=${col.slug}#materiel-unitaire`}
               onClick={onClose}
               className="block text-vsonus-red font-bold uppercase tracking-widest text-xs mb-4 border-b border-vsonus-red pb-2 hover:text-white transition-colors"
             >
