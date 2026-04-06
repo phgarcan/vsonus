@@ -6,7 +6,7 @@ import { readItems } from '@directus/sdk'
 import { CheckCircle2, Users } from 'lucide-react'
 import { PRESTATIONS, SERVICES_COMMUNS } from '../data'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
-import { getServerDirectus, getImageUrl } from '@/lib/directus'
+import { getServerDirectus, getImageUrl, getPackUrl } from '@/lib/directus'
 import type { Pack } from '@/lib/directus'
 import { isPromoActive, getPackCapacite, getPackPrixEffectif } from '@/lib/directus'
 import { AddToCartButton } from '@/components/catalogue/AddToCartButton'
@@ -103,7 +103,7 @@ export default async function PrestationDetailPage({ params }: Props) {
       readItems('packs', {
         filter: { categorie: { _eq: categorieSlug } },
         limit: 10,
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite'],
+        fields: ['id', 'slug', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'sort', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite', 'marque'],
         sort: ['sort'],
       })
     )
@@ -204,7 +204,7 @@ export default async function PrestationDetailPage({ params }: Props) {
                 return (
                   <AnimateOnScroll key={pack.id} delay={i * 100}>
                     <article className="bg-vsonus-black border border-gray-800 flex flex-col hover:border-vsonus-red transition-colors duration-300 group">
-                      <Link href={`/catalogue/pack/${pack.id}`} className="block">
+                      <Link href={getPackUrl(pack)} className="block">
                         {/* Image */}
                         <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
                           {imgUrl ? (
@@ -229,9 +229,16 @@ export default async function PrestationDetailPage({ params }: Props) {
                         </div>
 
                         <div className="p-5 pb-3">
-                          <h3 className="font-bold text-white text-sm leading-tight group-hover:text-vsonus-red transition-colors">
-                            {pack.nom}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-white text-sm leading-tight group-hover:text-vsonus-red transition-colors">
+                              {pack.nom}
+                            </h3>
+                            {pack.marque && (
+                              <span className="text-[10px] text-gray-400 border border-gray-600 px-1.5 py-0.5 uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+                                {pack.marque}
+                              </span>
+                            )}
+                          </div>
                           {getPackCapacite(pack) && (
                             <p className="text-xs text-gray-300 mt-1 font-medium flex items-center gap-1">
                               <Users className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />{getPackCapacite(pack)}

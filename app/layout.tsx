@@ -88,7 +88,7 @@ export default async function RootLayout({
   const [tarifs, siteSettings] = await Promise.all([
     client.request(readItems('tarifs_annexes', { limit: 20 })).catch(() => [] as TarifAnnexe[]),
     client.request(readSingleton('site_settings', {
-      fields: ['promo_active', 'promo_texte', 'promo_lien', 'promo_cta'],
+      fields: ['promo_active', 'promo_texte', 'promo_lien', 'promo_cta', 'menu_image_sonorisation', 'menu_image_eclairage', 'menu_image_mapping', 'menu_image_scenes', 'menu_image_nettoyage'],
     })).catch(() => null as SiteSettings | null),
   ])
 
@@ -106,7 +106,13 @@ export default async function RootLayout({
         <ScrollToTop />
         <TarifsProvider tarifs={tarifs as TarifAnnexe[]} />
         <Suspense><AccountDeletedBanner /></Suspense>
-        <Header />
+        <Header menuImages={{
+          sonorisation: siteSettings?.menu_image_sonorisation ?? null,
+          eclairage: siteSettings?.menu_image_eclairage ?? null,
+          mapping: siteSettings?.menu_image_mapping ?? null,
+          scenes: siteSettings?.menu_image_scenes ?? null,
+          nettoyage: siteSettings?.menu_image_nettoyage ?? null,
+        }} />
         <PromoBanner
           active={siteSettings?.promo_active ?? false}
           texte={siteSettings?.promo_texte ?? null}

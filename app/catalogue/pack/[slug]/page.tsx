@@ -1,10 +1,11 @@
-import { readItem, readItems } from '@directus/sdk'
+import { readItems } from '@directus/sdk'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { CheckCircle2 } from 'lucide-react'
-import { getServerDirectus, getImageUrl } from '@/lib/directus'
+import { getServerDirectus, getImageUrl, CAT_LABELS, getPackUrl } from '@/lib/directus'
+import { JsonLdBreadcrumb } from '@/components/seo/JsonLdBreadcrumb'
 import type { Pack } from '@/lib/directus'
 import { isPromoActive, getPackPrixEffectif } from '@/lib/directus'
 import { AddToCartPackSection } from './AddToCartPackSection'
@@ -15,14 +16,7 @@ export const revalidate = 300
 // Helpers
 // ---------------------------------------------------------------------------
 
-const CAT_LABEL: Record<string, string> = {
-  sonorisation: 'Sonorisation',
-  eclairage:    'Éclairage',
-  scenes:       'Scènes & Structures',
-  mapping:      'Mapping & Vidéo',
-  dj:           'DJ',
-  concerts:     'Concerts',
-}
+const CAT_LABEL = CAT_LABELS
 
 /** Parse the "• item" list from the description stored in Directus */
 function parseMateriel(description: string | undefined): { intro: string; items: string[] } {
@@ -40,13 +34,19 @@ function parseMateriel(description: string | undefined): { intro: string; items:
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }): Promise<Metadata> {
-  const { id } = await params
+  const { slug } = await params
   try {
-    const pack = await getServerDirectus().request(
-      readItem('packs', id, { fields: ['nom', 'description', 'categorie'] })
-    ) as Pack
+    const results = await getServerDirectus().request(
+      readItems('packs', {
+        filter: { slug: { _eq: slug } },
+        limit: 1,
+        fields: ['nom', 'description', 'categorie'],
+      })
+    )
+    const pack = results?.[0] as Pack | undefined
+    if (!pack) return { title: 'Pack – V-Sonus' }
     const catLabel = CAT_LABEL[pack.categorie ?? ''] ?? pack.categorie ?? ''
     return {
       title: `${pack.nom} – V-Sonus`,
@@ -64,28 +64,27 @@ export async function generateMetadata({
 export default async function PackDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }) {
-  const { id } = await params
+  const { slug } = await params
   const client = getServerDirectus()
 
-  let pack: Pack
-  try {
-    pack = await client.request(
-      readItem('packs', id, {
-        fields: ['id', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite'],
-      })
-    ) as Pack
-  } catch {
-    notFound()
-  }
+  const packResults = await client.request(
+    readItems('packs', {
+      filter: { slug: { _eq: slug } },
+      limit: 1,
+      fields: ['id', 'slug', 'nom', 'categorie', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'description', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite', 'marque'],
+    })
+  ).catch(() => [] as Pack[])
+  const pack = (packResults as Pack[])?.[0]
+  if (!pack) notFound()
 
   // Suggestions : autres packs de la même catégorie
   const suggestions = await client.request(
     readItems('packs', {
       ...(pack.categorie ? { filter: { categorie: { _eq: pack.categorie } } } : {}),
       limit: 4,
-      fields: ['id', 'nom', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'categorie', 'sort', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite'],
+      fields: ['id', 'slug', 'nom', 'prix_base', 'prix_livraison', 'prix_fourgon', 'mode_livraison', 'image_principale', 'categorie', 'sort', 'promo_pourcentage', 'promo_label', 'promo_date_fin', 'capacite', 'marque'],
       sort: ['sort'],
     })
   ).catch(() => [] as Pack[])
@@ -98,6 +97,11 @@ export default async function PackDetailPage({
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
+      <JsonLdBreadcrumb items={[
+        { name: 'Accueil', href: '/' },
+        { name: 'Catalogue', href: '/catalogue' },
+        { name: pack.nom, href: `/catalogue/pack/${pack.slug}` },
+      ]} />
 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-gray-600 mb-8 uppercase tracking-widest flex-wrap">
@@ -221,7 +225,7 @@ export default async function PackDetailPage({
               return (
                 <Link
                   key={s.id}
-                  href={`/catalogue/pack/${s.id}`}
+                  href={getPackUrl(s)}
                   className="bg-vsonus-dark border border-vsonus-red hover:shadow-glow-red transition-shadow duration-200 flex flex-col group"
                 >
                   <div className="relative aspect-[4/3] bg-white overflow-hidden">

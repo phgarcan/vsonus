@@ -17,8 +17,8 @@ const authAttempts = new Map<string, { count: number; resetAt: number }>()
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // --- Rate limiting sur /api/auth/* ---
-  if (pathname.startsWith('/api/auth/')) {
+  // --- Rate limiting sur /api/auth/* (sauf /check qui est un simple cookie read) ---
+  if (pathname.startsWith('/api/auth/') && pathname !== '/api/auth/check') {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
     const key = `${ip}:${pathname}`
     const now = Date.now()

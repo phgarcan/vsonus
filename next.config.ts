@@ -35,6 +35,17 @@ const nextConfig: NextConfig = {
         destination: '/packs/:slug',
         permanent: true,
       },
+      // Anciennes URLs numériques → redirect vers catalogue
+      {
+        source: '/catalogue/:id(\\d+)',
+        destination: '/catalogue',
+        permanent: false,
+      },
+      {
+        source: '/catalogue/pack/:id(\\d+)',
+        destination: '/catalogue',
+        permanent: false,
+      },
     ]
   },
   async headers() {

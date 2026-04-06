@@ -268,7 +268,7 @@ export const useStore = create<StoreState>()(
             }
           } else if (item.type === 'equipement') {
             const eq = item.item as Equipement
-            if (eq.categorie !== 'eclairage' || eq.prix_livraison == null) continue
+            if (!(eq.categorie ?? []).includes('eclairage') || eq.prix_livraison == null) continue
             const choix = livraisonChoix[`equip-${eq.id}`] ?? 'retrait'
             if (choix === 'livraison') {
               livraison += eq.prix_livraison

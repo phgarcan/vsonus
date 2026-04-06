@@ -144,7 +144,7 @@ export async function soumettreReservation(
         }
       } else if (item.type === 'equipement') {
         const eq = item.item as Equipement
-        if (eq.categorie === 'eclairage' && eq.prix_livraison != null && livraisonChoix?.[`equip-${eq.id}`] === 'livraison') {
+        if ((eq.categorie ?? []).includes('eclairage') && eq.prix_livraison != null && livraisonChoix?.[`equip-${eq.id}`] === 'livraison') {
           fraisLignes.push({ label: `Livraison — ${eq.nom}`, prix_total: eq.prix_livraison })
         }
       }

@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ShoppingCart, Phone, Mail, MapPin, ChevronDown, Disc3, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, type LucideIcon } from 'lucide-react'
+import { Menu, X, ShoppingCart, Phone, Mail, MapPin, ChevronDown, Disc3, Mic2, Volume2, Lightbulb, Landmark, MonitorPlay, Wrench, Camera, Info, Send, Search, type LucideIcon } from 'lucide-react'
+import { getImageUrl } from '@/lib/directus'
+import { SearchModal } from '@/components/catalogue/SearchModal'
 import { MegaMenu } from './MegaMenu'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { AccountLink } from '@/components/portal/AccountLink'
@@ -14,17 +16,18 @@ import { useStore } from '@/lib/store'
 const PACKS_ITEMS: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: Disc3,      label: 'Packs DJ & Soirées',    href: '/packs/dj' },
   { icon: Mic2,       label: 'Packs Concerts',         href: '/packs/concerts' },
-  { icon: Volume2,    label: 'Packs Sonorisation',     href: '/packs/sonorisation-l-acoustics' },
+  { icon: Volume2,    label: 'Packs Sonorisation',     href: '/packs/sonorisation' },
   { icon: Lightbulb,  label: 'Packs Éclairage',        href: '/packs/eclairage' },
   { icon: Landmark,   label: 'Packs Scènes',           href: '/packs/scenes' },
   { icon: MonitorPlay,label: 'Pack Mapping',            href: '/packs/mapping' },
 ]
 
 const MOBILE_MATERIEL = [
-  { label: 'Sonorisation',       href: '/catalogue?categorie=sonorisation' },
-  { label: 'Éclairage',          href: '/catalogue?categorie=eclairage' },
-  { label: 'Mapping / Laser',    href: '/catalogue?categorie=mapping' },
-  { label: 'Scènes & Structures', href: '/catalogue?categorie=scenes' },
+  { label: 'Sonorisation',       href: '/catalogue/sonorisation',  slug: 'sonorisation' },
+  { label: 'Éclairage',          href: '/catalogue/eclairage',     slug: 'eclairage' },
+  { label: 'Mapping / Laser',    href: '/catalogue/mapping',       slug: 'mapping' },
+  { label: 'Scènes & Structures', href: '/catalogue/scenes',       slug: 'scenes' },
+  { label: 'Nettoyage',          href: '/catalogue/nettoyage',     slug: 'nettoyage' },
 ]
 
 const DIRECT_LINKS: { icon: LucideIcon; label: string; href: string }[] = [
@@ -49,12 +52,15 @@ function useActiveNav() {
   }
 }
 
-export function Header() {
+export type MenuImages = Record<string, string | null>
+
+export function Header({ menuImages = {} }: { menuImages?: MenuImages }) {
   const [packsOpen, setPacksOpen]           = useState(false)
   const [megaOpen, setMegaOpen]             = useState(false)
   const [mobileOpen, setMobileOpen]         = useState(false)
   const [mobilePacksOpen, setMobilePacksOpen]       = useState(false)
   const [mobileMaterielOpen, setMobileMaterielOpen] = useState(false)
+  const [searchOpen, setSearchOpen]         = useState(false)
   const [mounted, setMounted]               = useState(false)
   const isActive = useActiveNav()
 
@@ -63,7 +69,23 @@ export function Header() {
   const setDrawerOpen  = useStore((s) => s.setCartDrawerOpen)
   const cartCount      = cart.reduce((acc, i) => acc + i.quantite, 0)
 
-  useEffect(() => { setMounted(true) }, [])
+  const [isMac, setIsMac] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+    setIsMac(/(Mac|iPhone|iPod|iPad)/i.test(navigator.platform))
+  }, [])
+
+  // Raccourci Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen((v) => !v)
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [])
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
@@ -164,8 +186,27 @@ export function Header() {
             </Link>
           </nav>
 
+          {/* Recherche desktop */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="hidden lg:flex items-center gap-1.5 px-2 py-1.5 text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 transition-colors"
+          >
+            <Search className="w-4 h-4" />
+            <span className="text-xs hidden xl:inline">Rechercher...</span>
+            <kbd className="px-1.5 py-0.5 text-[10px] text-gray-600 border border-gray-700">{isMac ? '⌘K' : 'Ctrl+K'}</kbd>
+          </button>
+
           {/* ── Actions droite ────────────────────────────────────────────── */}
           <div className="flex items-center gap-3">
+            {/* Icône recherche mobile */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="lg:hidden flex items-center justify-center w-10 h-10 text-gray-400 hover:text-white transition-colors"
+              aria-label="Rechercher"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
             {/* Icône Mon compte */}
             <AccountLink variant="desktop" />
 
@@ -196,7 +237,7 @@ export function Header() {
         </div>
 
         {/* MegaMenu desktop */}
-        {megaOpen && <MegaMenu onClose={() => setMegaOpen(false)} />}
+        {megaOpen && <MegaMenu onClose={() => setMegaOpen(false)} menuImages={menuImages} />}
       </header>
 
       {/* ── Menu mobile plein écran ───────────────────────────────────────────── */}
@@ -237,6 +278,15 @@ export function Header() {
 
           {/* Navigation accordéon */}
           <nav className="flex-1 overflow-y-auto">
+
+            {/* Recherche mobile */}
+            <button
+              onClick={() => { setSearchOpen(true); setMobileOpen(false) }}
+              className="flex items-center gap-3 w-full px-6 py-4 border-b border-gray-900 text-gray-400 hover:text-white transition-colors"
+            >
+              <Search className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm font-bold uppercase tracking-widest">Rechercher...</span>
+            </button>
 
             {/* Nos Packs (accordéon) */}
             <div className="border-b border-gray-900">
@@ -281,16 +331,23 @@ export function Header() {
               </button>
               {mobileMaterielOpen && (
                 <div className="bg-black/40 border-t border-gray-900">
-                  {MOBILE_MATERIEL.map(({ label, href }) => (
-                    <Link
-                      key={label}
-                      href={href}
-                      onClick={closeAll}
-                      className="flex items-center px-10 py-3.5 text-gray-300 hover:text-white transition-colors min-h-[44px]"
-                    >
-                      <span className="text-sm font-bold uppercase tracking-widest">{label}</span>
-                    </Link>
-                  ))}
+                  {MOBILE_MATERIEL.map(({ label, href, slug }) => {
+                    const imgUrl = getImageUrl(menuImages[slug] ?? null, { width: '48', height: '48', fit: 'cover', quality: '75' })
+                    return (
+                      <Link
+                        key={label}
+                        href={href}
+                        onClick={closeAll}
+                        className="flex items-center gap-3 px-10 py-3.5 text-gray-300 hover:text-white transition-colors min-h-[44px]"
+                      >
+                        {imgUrl && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src={imgUrl} alt="" width={48} height={48} className="w-12 h-12 object-cover flex-shrink-0" loading="lazy" />
+                        )}
+                        <span className="text-sm font-bold uppercase tracking-widest">{label}</span>
+                      </Link>
+                    )
+                  })}
                   <Link
                     href="/catalogue"
                     onClick={closeAll}
@@ -363,6 +420,7 @@ export function Header() {
 
       {/* Tiroir liste */}
       <CartDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
     </>
   )
 }

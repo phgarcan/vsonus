@@ -1,10 +1,11 @@
 import { Music } from 'lucide-react'
-import { readItem, readItems } from '@directus/sdk'
-import { notFound } from 'next/navigation'
+import { readItems } from '@directus/sdk'
+import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getServerDirectus, getImageUrl } from '@/lib/directus'
+import { getServerDirectus, getImageUrl, CAT_LABELS, SOUS_CAT_LABELS, getEquipementUrl } from '@/lib/directus'
+import { JsonLdBreadcrumb } from '@/components/seo/JsonLdBreadcrumb'
 import type { Equipement } from '@/lib/directus'
 import { AddToCartSection } from './AddToCartSection'
 import { ProductGallery } from './ProductGallery'
@@ -18,15 +19,22 @@ export const revalidate = 300
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ categorie: string; sous_categorie: string; slug: string }>
 }): Promise<Metadata> {
-  const { id } = await params
+  const { slug } = await params
   try {
-    const eq = await getServerDirectus().request(
-      readItem('equipements', id, { fields: ['nom', 'description', 'marque'] })
-    ) as Equipement
+    const results = await getServerDirectus().request(
+      readItems('equipements', {
+        filter: { slug: { _eq: slug } },
+        limit: 1,
+        fields: ['nom', 'description', 'marque', 'categorie'],
+      })
+    )
+    const eq = results?.[0] as Equipement | undefined
+    if (!eq) return { title: 'Produit – V-Sonus' }
+    const catLabel = CAT_LABELS[eq.categorie?.[0] ?? ''] ?? ''
     return {
-      title: `${eq.nom} – V-Sonus`,
+      title: `${eq.nom} – Location ${catLabel} – V-Sonus`,
       description: eq.description?.slice(0, 160) ?? `Location ${eq.nom} en Suisse Romande.`,
     }
   } catch {
@@ -41,28 +49,35 @@ export async function generateMetadata({
 export default async function ProduitPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ categorie: string; sous_categorie: string; slug: string }>
 }) {
-  const { id } = await params
+  const { categorie, sous_categorie, slug } = await params
   const client = getServerDirectus()
 
-  let equipement: Equipement
-  try {
-    equipement = await client.request(
-      readItem('equipements', id, {
-        fields: ['id', 'nom', 'marque', 'categorie', 'description', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image', 'prix_livraison', 'images.id', 'images.directus_files_id'],
-      })
-    ) as Equipement
-  } catch {
-    notFound()
+  const results = await client.request(
+    readItems('equipements', {
+      filter: { slug: { _eq: slug } },
+      limit: 1,
+      fields: ['id', 'slug', 'nom', 'marque', 'categorie', 'sous_categorie', 'description', 'prix_journalier', 'stock_total', 'technicien_obligatoire', 'transport_obligatoire', 'image', 'prix_livraison', 'images.id', 'images.directus_files_id'],
+    })
+  ).catch(() => [] as Equipement[])
+  const equipement = (results as Equipement[])?.[0]
+  if (!equipement) notFound()
+
+  // Vérifier la cohérence de l'URL — rediriger vers l'URL canonique si nécessaire
+  const primaryCat = equipement.categorie?.[0]
+  if (primaryCat !== categorie || equipement.sous_categorie !== sous_categorie) {
+    redirect(getEquipementUrl(equipement))
   }
 
   // Suggestions : autres produits de la même catégorie
+  const suggestFilter: Record<string, unknown> = {}
+  if (primaryCat) suggestFilter.categorie = { _contains: primaryCat }
   const suggestions = await client.request(
     readItems('equipements', {
-      ...(equipement.categorie ? { filter: { categorie: { _eq: equipement.categorie } } } : {}),
+      ...(Object.keys(suggestFilter).length ? { filter: suggestFilter } : {}),
       limit: 4,
-      fields: ['id', 'nom', 'prix_journalier', 'image', 'marque', 'sort'],
+      fields: ['id', 'slug', 'nom', 'prix_journalier', 'image', 'marque', 'categorie', 'sous_categorie', 'sort'],
       sort: ['sort'],
     })
   ).catch(() => [] as Equipement[])
@@ -74,27 +89,37 @@ export default async function ProduitPage({
     full: getImageUrl(img.directus_files_id, { width: '900', fit: 'contain' })!,
     thumb: getImageUrl(img.directus_files_id, { width: '80', height: '80', fit: 'cover' })!,
   })).filter((img) => img.full && img.thumb)
-  const catLabel: Record<string, string> = {
-    sonorisation: 'Sonorisation',
-    eclairage: 'Éclairage',
-    scenes: 'Scènes & Structures',
-    mapping: 'Mapping & Vidéo',
-    accessoires: 'Accessoires',
-  }
+  const catLabel = CAT_LABELS[primaryCat ?? ''] ?? primaryCat ?? ''
+  const sousCatLabel = SOUS_CAT_LABELS[equipement.sous_categorie ?? ''] ?? equipement.sous_categorie ?? ''
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
+      <JsonLdBreadcrumb items={[
+        { name: 'Accueil', href: '/' },
+        { name: 'Catalogue', href: '/catalogue' },
+        { name: catLabel, href: `/catalogue/${categorie}` },
+        { name: sousCatLabel, href: `/catalogue/${categorie}/${sous_categorie}` },
+        { name: equipement.nom, href: `/catalogue/${categorie}/${sous_categorie}/${slug}` },
+      ]} />
 
       {/* Fil d'ariane */}
-      <nav className="flex items-center gap-2 text-xs text-gray-600 mb-8 uppercase tracking-widest">
+      <nav className="flex items-center gap-2 text-xs text-gray-600 mb-8 uppercase tracking-widest flex-wrap">
         <Link href="/" className="hover:text-white transition-colors">Accueil</Link>
         <span>/</span>
         <Link href="/catalogue" className="hover:text-white transition-colors">Catalogue</Link>
-        {equipement.categorie && (
+        {primaryCat && (
           <>
             <span>/</span>
-            <Link href={`/catalogue?categorie=${equipement.categorie}`} className="hover:text-white transition-colors">
-              {catLabel[equipement.categorie] ?? equipement.categorie}
+            <Link href={`/catalogue/${primaryCat}`} className="hover:text-white transition-colors">
+              {catLabel}
+            </Link>
+          </>
+        )}
+        {equipement.sous_categorie && (
+          <>
+            <span>/</span>
+            <Link href={`/catalogue/${primaryCat}/${equipement.sous_categorie}`} className="hover:text-white transition-colors">
+              {sousCatLabel}
             </Link>
           </>
         )}
@@ -137,11 +162,11 @@ export default async function ProduitPage({
 
           {/* Badges */}
           <div className="flex flex-wrap gap-2">
-            {equipement.categorie && (
-              <span className="bg-vsonus-dark border border-gray-700 text-gray-300 text-xs font-bold uppercase tracking-widest px-3 py-1">
-                {catLabel[equipement.categorie] ?? equipement.categorie}
+            {(equipement.categorie ?? []).map((cat) => (
+              <span key={cat} className="bg-vsonus-dark border border-gray-700 text-gray-300 text-xs font-bold uppercase tracking-widest px-3 py-1">
+                {CAT_LABELS[cat] ?? cat}
               </span>
-            )}
+            ))}
             {equipement.technicien_obligatoire && (
               <span className="bg-vsonus-red text-white text-xs font-bold uppercase tracking-widest px-3 py-1 flex items-center gap-1">
                 ⚠ Technicien obligatoire
@@ -194,7 +219,7 @@ export default async function ProduitPage({
               return (
                 <Link
                   key={s.id}
-                  href={`/catalogue/${s.id}`}
+                  href={getEquipementUrl(s)}
                   className="bg-vsonus-dark border border-gray-800 hover:border-vsonus-red transition-colors duration-200 flex flex-col"
                 >
                   <div className="relative h-36 bg-white overflow-hidden">

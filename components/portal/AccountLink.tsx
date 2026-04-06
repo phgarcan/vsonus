@@ -4,15 +4,34 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { User, UserCheck } from 'lucide-react'
 
+// Cache le résultat en mémoire pour éviter les appels multiples
+let authCache: { loggedIn: boolean; ts: number } | null = null
+const CACHE_TTL = 30_000 // 30 secondes
+
+async function checkAuth(): Promise<boolean> {
+  if (authCache && Date.now() - authCache.ts < CACHE_TTL) {
+    return authCache.loggedIn
+  }
+  try {
+    const r = await fetch('/api/auth/check')
+    if (r.status === 429) {
+      // Rate limited — retourner le cache existant ou false
+      return authCache?.loggedIn ?? false
+    }
+    const d = await r.json()
+    authCache = { loggedIn: d.loggedIn, ts: Date.now() }
+    return d.loggedIn
+  } catch {
+    return authCache?.loggedIn ?? false
+  }
+}
+
 export function AccountLink({ variant = 'desktop' }: { variant?: 'desktop' | 'mobile' }) {
   const [loggedIn, setLoggedIn] = useState(false)
   const [checked, setChecked] = useState(false)
 
   useEffect(() => {
-    fetch('/api/auth/check')
-      .then(r => r.json())
-      .then(d => { setLoggedIn(d.loggedIn); setChecked(true) })
-      .catch(() => setChecked(true))
+    checkAuth().then((v) => { setLoggedIn(v); setChecked(true) })
   }, [])
 
   if (!checked) return null

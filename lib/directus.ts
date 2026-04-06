@@ -6,6 +6,7 @@ import { createDirectus, rest, staticToken } from '@directus/sdk'
 
 export interface Equipement {
   id: string
+  slug: string
   nom: string
   prix_journalier: number
   stock_total: number
@@ -14,7 +15,7 @@ export interface Equipement {
   /** Si true → transport obligatoire */
   transport_obligatoire: boolean
   image: string | null
-  categorie?: string
+  categorie?: string[]
   sous_categorie?: string
   marque?: string
   description?: string
@@ -30,13 +31,71 @@ export interface EquipementImage {
   directus_files_id: string
 }
 
+/** Dictionnaire centralisé des labels de catégories */
+export const CAT_LABELS: Record<string, string> = {
+  sonorisation: 'Sonorisation',
+  eclairage: 'Éclairage',
+  scenes: 'Scènes & Structures',
+  mapping: 'Mapping / Laser',
+  dj: 'DJ',
+  concerts: 'Concerts',
+  cablage: 'Câblage',
+  accessoires: 'Accessoires',
+  nettoyage: 'Nettoyage',
+}
+
+/** Retourne la catégorie principale (premier tag du tableau) */
+export function getPrimaryCategory(categorie?: string[]): string | undefined {
+  return categorie?.[0]
+}
+
+/** Dictionnaire des labels de sous-catégories */
+export const SOUS_CAT_LABELS: Record<string, string> = {
+  enceintes: 'Enceintes',
+  regie: 'Régie & Tables de mixage',
+  micro: 'Micros & DI',
+  lyres: 'Lyres (Moving Head)',
+  projecteurs: 'Projecteurs & Barres LED',
+  'barre-tout-en-un': 'Barres tout-en-un',
+  'cablage-dmx': 'Câblage DMX',
+  structures: 'Structures alu (Truss)',
+  praticables: 'Praticables',
+  levage: 'Levage (Pieds & Palan)',
+  'pavillons-tables': 'Pavillons & Tables',
+  bumpers: 'Bumpers & Accessoires L-Acoustics',
+  'pieds-km': 'Pieds de haut-parleur & micro',
+  speakon: 'Câbles Speakon',
+  xlr: 'Câbles XLR',
+  'rca-jack': 'Câbles RCA & Jack',
+  'cablage-accessoires': 'Câblage & Accessoires',
+  adaptateurs: 'Adaptateurs & Répartiteurs',
+  ethercon: 'Câbles Ethercon',
+  'passe-cable': 'Passes-câbles',
+  videoprojecteurs: 'Vidéoprojecteurs',
+  laser: 'Laser',
+  autolaveuse: 'Autolaveuse & Machine à verres',
+}
+
+/** Génère l'URL hiérarchique d'un équipement */
+export function getEquipementUrl(eq: { categorie?: string[], sous_categorie?: string, slug: string }): string {
+  const cat = eq.categorie?.[0] ?? 'sonorisation'
+  const sousCat = eq.sous_categorie ?? 'autres'
+  return `/catalogue/${cat}/${sousCat}/${eq.slug}`
+}
+
+/** Génère l'URL d'un pack */
+export function getPackUrl(pack: { slug: string }): string {
+  return `/catalogue/pack/${pack.slug}`
+}
+
 /** Vérifie si un équipement propose l'option retrait/livraison (éclairage avec prix_livraison renseigné) */
 export function equipementHasLivraisonOption(eq: Equipement): boolean {
-  return eq.categorie === 'eclairage' && eq.prix_livraison != null
+  return (eq.categorie ?? []).includes('eclairage') && eq.prix_livraison != null
 }
 
 export interface Pack {
   id: string
+  slug: string
   nom: string
   categorie: 'sonorisation' | 'eclairage' | 'scene' | 'mapping' | string
   sous_categorie?: string
@@ -57,6 +116,8 @@ export interface Pack {
   promo_date_fin?: string | null
   /** Pourcentage de réduction (0-100). Calcule automatiquement le prix promo. */
   promo_pourcentage?: number | null
+  /** Marque principale du pack (L-Acoustics, RCF, etc.) */
+  marque?: string | null
   pack_equipements?: PackEquipement[]
   sort?: number | null
 }
@@ -188,6 +249,12 @@ export interface SiteSettings {
   promo_lien?: string | null
   /** Texte du bouton CTA (ex: "Voir les offres →") */
   promo_cta?: string | null
+  /** Images MegaMenu par catégorie */
+  menu_image_sonorisation?: string | null
+  menu_image_eclairage?: string | null
+  menu_image_mapping?: string | null
+  menu_image_scenes?: string | null
+  menu_image_nettoyage?: string | null
 }
 
 export interface LogoPartenaire {

@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Masquer la scrollbar (scroll tactile horizontal) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @layer base {
   * {
     border-radius: 0 !important;
@@ -15,6 +24,24 @@
   body {
     @apply bg-vsonus-black;
   }
+}
+
+/* ── Neutraliser le style autofill navigateur (bordure verte Chrome/Safari) ── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff !important;
+  -webkit-box-shadow: 0 0 0 1000px #231F20 inset !important;
+  box-shadow: 0 0 0 1000px #231F20 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ── Désactiver la bordure verte de validation native HTML5 ─────────────── */
+input:valid,
+input:invalid {
+  border-color: inherit !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* ── Anti-zoom iOS mobile ────────────────────────────────────────────────────
