@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerDirectus } from '@/lib/directus'
+import { getServerDirectus, parseCategorie } from '@/lib/directus'
 import { readItems } from '@directus/sdk'
 
 /** Construit un filtre Directus "chaque mot doit apparaître dans nom OU marque OU description" */
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       slug: eq.slug,
       nom: eq.nom,
       marque: eq.marque,
-      categorie: typeof eq.categorie === 'string' ? JSON.parse(eq.categorie) : (eq.categorie ?? []),
+      categorie: parseCategorie(eq.categorie),
       sous_categorie: eq.sous_categorie,
       prix_journalier: eq.prix_journalier,
       image: eq.image,

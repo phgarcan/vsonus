@@ -4,7 +4,7 @@ import React from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Equipement, Pack, TarifAnnexe } from './directus'
-import { getPackPrixEffectif } from './directus'
+import { getPackPrixEffectif, parseCategorie } from './directus'
 import { getLocationCoefficient } from './pricing'
 
 // ---------------------------------------------------------------------------
@@ -268,7 +268,7 @@ export const useStore = create<StoreState>()(
             }
           } else if (item.type === 'equipement') {
             const eq = item.item as Equipement
-            if (!(eq.categorie ?? []).includes('eclairage') || eq.prix_livraison == null) continue
+            if (!parseCategorie(eq.categorie).includes('eclairage') || eq.prix_livraison == null) continue
             const choix = livraisonChoix[`equip-${eq.id}`] ?? 'retrait'
             if (choix === 'livraison') {
               livraison += eq.prix_livraison

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getServerDirectus, CAT_LABELS } from '@/lib/directus'
+import { getServerDirectus, CAT_LABELS, parseCategorie } from '@/lib/directus'
 import type { Equipement, Pack } from '@/lib/directus'
 import { readItems } from '@directus/sdk'
 import { PRESTATIONS } from './packs/data'
@@ -48,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const sousCatSet = new Set<string>()
   const sousCatPages: MetadataRoute.Sitemap = []
   for (const eq of equipements) {
-    const cat = eq.categorie?.[0]
+    const cat = parseCategorie(eq.categorie)[0]
     const sousCat = eq.sous_categorie
     if (cat && sousCat) {
       const key = `${cat}/${sousCat}`
@@ -65,9 +65,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const productPages: MetadataRoute.Sitemap = equipements
-    .filter((eq) => eq.slug && eq.categorie?.[0] && eq.sous_categorie)
+    .filter((eq) => eq.slug && parseCategorie(eq.categorie)[0] && eq.sous_categorie)
     .map((eq) => ({
-      url: `${SITE_URL}/catalogue/${eq.categorie![0]}/${eq.sous_categorie}/${eq.slug}`,
+      url: `${SITE_URL}/catalogue/${parseCategorie(eq.categorie)[0]}/${eq.sous_categorie}/${eq.slug}`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.6,

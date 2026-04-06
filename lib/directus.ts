@@ -44,9 +44,22 @@ export const CAT_LABELS: Record<string, string> = {
   nettoyage: 'Nettoyage',
 }
 
+/** Parse le champ categorie qui peut être un tableau ou une chaîne JSON brute depuis Directus */
+export function parseCategorie(categorie: unknown): string[] {
+  if (Array.isArray(categorie)) return categorie
+  if (typeof categorie === 'string') {
+    try {
+      const parsed = JSON.parse(categorie)
+      if (Array.isArray(parsed)) return parsed
+    } catch { /* pas du JSON, traiter comme catégorie simple */ }
+    if (categorie) return [categorie]
+  }
+  return []
+}
+
 /** Retourne la catégorie principale (premier tag du tableau) */
-export function getPrimaryCategory(categorie?: string[]): string | undefined {
-  return categorie?.[0]
+export function getPrimaryCategory(categorie?: string[] | string): string | undefined {
+  return parseCategorie(categorie)?.[0]
 }
 
 /** Dictionnaire des labels de sous-catégories */
@@ -70,15 +83,17 @@ export const SOUS_CAT_LABELS: Record<string, string> = {
   'cablage-accessoires': 'Câblage & Accessoires',
   adaptateurs: 'Adaptateurs & Répartiteurs',
   ethercon: 'Câbles Ethercon',
+  ethernet: 'Câbles Ethernet & Vidéo',
   'passe-cable': 'Passes-câbles',
   videoprojecteurs: 'Vidéoprojecteurs',
   laser: 'Laser',
   autolaveuse: 'Autolaveuse & Machine à verres',
+  'accessoires-mapping': 'Accessoires Mapping',
 }
 
 /** Génère l'URL hiérarchique d'un équipement */
-export function getEquipementUrl(eq: { categorie?: string[], sous_categorie?: string, slug: string }): string {
-  const cat = eq.categorie?.[0] ?? 'sonorisation'
+export function getEquipementUrl(eq: { categorie?: string[] | string, sous_categorie?: string, slug: string }): string {
+  const cat = parseCategorie(eq.categorie)[0] ?? 'sonorisation'
   const sousCat = eq.sous_categorie ?? 'autres'
   return `/catalogue/${cat}/${sousCat}/${eq.slug}`
 }
@@ -90,7 +105,7 @@ export function getPackUrl(pack: { slug: string }): string {
 
 /** Vérifie si un équipement propose l'option retrait/livraison (éclairage avec prix_livraison renseigné) */
 export function equipementHasLivraisonOption(eq: Equipement): boolean {
-  return (eq.categorie ?? []).includes('eclairage') && eq.prix_livraison != null
+  return parseCategorie(eq.categorie).includes('eclairage') && eq.prix_livraison != null
 }
 
 export interface Pack {

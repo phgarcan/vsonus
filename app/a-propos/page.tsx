@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { readItems } from '@directus/sdk'
-import { Sliders, Zap, Shield, Users, CheckCircle2, Quote } from 'lucide-react'
+import { Sliders, Zap, Shield, Users, CheckCircle2, Quote, Linkedin } from 'lucide-react'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { BrandCarousel } from '@/components/ui/BrandCarousel'
 import type { BrandItem } from '@/components/ui/BrandCarousel'
@@ -228,6 +228,14 @@ export default async function AProposPage() {
                     Gestion et création d&apos;événements. Installation, configuration et dépannage technique.
                   </p>
                 </div>
+                <a
+                  href="https://www.linkedin.com/in/paul-villommet-3471322a4/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 text-gray-500 hover:text-white transition-colors"
+                >
+                  <Linkedin className="w-5 h-5" />
+                </a>
               </div>
             </div>
           </AnimateOnScroll>

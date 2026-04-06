@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getServerDirectus, getImageUrl, CAT_LABELS, SOUS_CAT_LABELS, getEquipementUrl } from '@/lib/directus'
+import { getServerDirectus, getImageUrl, CAT_LABELS, SOUS_CAT_LABELS, getEquipementUrl, parseCategorie } from '@/lib/directus'
 import { JsonLdBreadcrumb } from '@/components/seo/JsonLdBreadcrumb'
 import type { Equipement } from '@/lib/directus'
 import { AddToCartSection } from './AddToCartSection'
@@ -32,7 +32,7 @@ export async function generateMetadata({
     )
     const eq = results?.[0] as Equipement | undefined
     if (!eq) return { title: 'Produit – V-Sonus' }
-    const catLabel = CAT_LABELS[eq.categorie?.[0] ?? ''] ?? ''
+    const catLabel = CAT_LABELS[parseCategorie(eq.categorie)[0] ?? ''] ?? ''
     return {
       title: `${eq.nom} – Location ${catLabel} – V-Sonus`,
       description: eq.description?.slice(0, 160) ?? `Location ${eq.nom} en Suisse Romande.`,
@@ -65,7 +65,8 @@ export default async function ProduitPage({
   if (!equipement) notFound()
 
   // Vérifier la cohérence de l'URL — rediriger vers l'URL canonique si nécessaire
-  const primaryCat = equipement.categorie?.[0]
+  const cats = parseCategorie(equipement.categorie)
+  const primaryCat = cats[0]
   if (primaryCat !== categorie || equipement.sous_categorie !== sous_categorie) {
     redirect(getEquipementUrl(equipement))
   }
@@ -162,7 +163,7 @@ export default async function ProduitPage({
 
           {/* Badges */}
           <div className="flex flex-wrap gap-2">
-            {(equipement.categorie ?? []).map((cat) => (
+            {cats.map((cat) => (
               <span key={cat} className="bg-vsonus-dark border border-gray-700 text-gray-300 text-xs font-bold uppercase tracking-widest px-3 py-1">
                 {CAT_LABELS[cat] ?? cat}
               </span>

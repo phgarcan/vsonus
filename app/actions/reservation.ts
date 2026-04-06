@@ -1,7 +1,7 @@
 'use server'
 
 import { createItem, updateItem } from '@directus/sdk'
-import { getServerDirectus } from '@/lib/directus'
+import { getServerDirectus, parseCategorie } from '@/lib/directus'
 import { sendEmail, emailLayout, lignesTable } from '@/lib/email'
 import { getSession } from '@/lib/auth'
 import { formatDateEU } from '@/lib/utils'
@@ -144,7 +144,7 @@ export async function soumettreReservation(
         }
       } else if (item.type === 'equipement') {
         const eq = item.item as Equipement
-        if ((eq.categorie ?? []).includes('eclairage') && eq.prix_livraison != null && livraisonChoix?.[`equip-${eq.id}`] === 'livraison') {
+        if (parseCategorie(eq.categorie).includes('eclairage') && eq.prix_livraison != null && livraisonChoix?.[`equip-${eq.id}`] === 'livraison') {
           fraisLignes.push({ label: `Livraison — ${eq.nom}`, prix_total: eq.prix_livraison })
         }
       }
