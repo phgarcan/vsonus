@@ -23,11 +23,11 @@ export function HeroVideo({ videoUrl, posterUrl }: HeroVideoProps) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Fallback : si la vidéo ne charge pas en 5s, afficher le poster
+  // Fallback : si la vidéo ne charge pas en 15s, afficher le poster
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!videoReady) setVideoFailed(true)
-    }, 5000)
+    }, 15000)
     return () => clearTimeout(timer)
   }, [videoReady])
 
@@ -72,7 +72,7 @@ export function HeroVideo({ videoUrl, posterUrl }: HeroVideoProps) {
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           aria-hidden
           poster={fallbackPoster}
           onLoadedMetadata={handleLoadedMetadata}
