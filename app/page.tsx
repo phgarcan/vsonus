@@ -13,10 +13,10 @@ import type { SiteSettings, LogoPartenaire } from '@/lib/directus'
 
 export const metadata: Metadata = {
   title: 'Location Sonorisation & Éclairage Vaud | V-Sonus Événementiel',
-  description: 'Location de matériel événementiel en Suisse Romande : sono L-Acoustics, éclairage, scènes, DJ et mapping. Devis gratuit, basé à Vevey.',
+  description: 'Location de matériel événementiel en Suisse Romande : sonorisation, éclairage, scènes, DJ et mapping. Devis gratuit, basé à Vevey.',
   openGraph: {
     title: 'Location Sonorisation & Éclairage Vaud | V-Sonus Événementiel',
-    description: 'Location de matériel événementiel en Suisse Romande : sono L-Acoustics, éclairage, scènes, DJ et mapping.',
+    description: 'Location de matériel événementiel en Suisse Romande : sonorisation, éclairage, scènes, DJ et mapping.',
     url: 'https://vsonus.ch',
   },
   alternates: { canonical: 'https://vsonus.ch' },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 // ─── Données statiques ────────────────────────────────────────────────────────
 
 const PACKS = [
-  { label: 'Sonorisation L-Acoustics', href: '/catalogue?categorie=sonorisation', img: '/images/packs/photo_2024-12-04-13.01.55.jpeg' },
+  { label: 'Sonorisation', href: '/catalogue?categorie=sonorisation', img: '/images/packs/photo_2024-12-04-13.01.55.jpeg' },
   { label: 'Éclairage',                href: '/catalogue?categorie=eclairage',    img: '/images/packs/DSC01638.jpg' },
   { label: 'DJ',                       href: '/catalogue?categorie=dj',           img: '/images/packs/image-7.jpeg' },
   { label: 'Scènes',                   href: '/catalogue?categorie=scenes',       img: '/images/packs/compressed_DSC09688.jpg' },

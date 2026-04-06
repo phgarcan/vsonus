@@ -16,12 +16,12 @@ export interface Prestation {
 // Contenu extrait de wp-content-export.json > custom_post_types.prestations
 export const PRESTATIONS: Prestation[] = [
   {
-    slug: 'sonorisation-l-acoustics',
-    titre: 'Sonorisation L-Acoustics',
+    slug: 'sonorisation',
+    titre: 'Sonorisation',
     sousTitre: 'Découvrez notre assortiment en sonorisation',
     intro: 'Sonorisation professionnelle pour vos événements',
     descriptionComplete:
-      "Nous proposons des systèmes de sonorisation complets et personnalisés, adaptés à la taille et à la nature de votre événement. Que ce soit pour un événement privé, une conférence, un mariage ou une soirée d'entreprise, notre matériel de sonorisation L-Acoustics professionnel assure une diffusion sonore claire et homogène. L-Acoustics s'appuie sur une démarche scientifique pour révolutionner la conception sonore et anticiper les performances. Des études approfondies dans tous les domaines contribuent à une combinaison unique et étendue d'expertises qui façonnent le futur du son.",
+      "Nous proposons des systèmes de sonorisation complets et personnalisés, adaptés à la taille et à la nature de votre événement. Que ce soit pour un événement privé, une conférence, un mariage ou une soirée d'entreprise, notre matériel de sonorisation professionnel assure une diffusion sonore claire et homogène. Nous travaillons avec les meilleures marques du marché, dont L-Acoustics et RCF, pour garantir une qualité sonore exceptionnelle adaptée à chaque configuration.",
     categorieSlug: 'sonorisation',
     Icon: Volume2,
     packsLabel: 'Packs Sonorisation',

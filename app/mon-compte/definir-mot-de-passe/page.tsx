@@ -1,33 +1,40 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 
+const MIN_LENGTH = 8
+
 export default function DefinirMotDePassePage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  // Afficher les erreurs inline seulement après interaction
+  const [touched, setTouched] = useState(false)
+
+  const tooShort = password.length > 0 && password.length < MIN_LENGTH
+  const missingFormat = password.length >= MIN_LENGTH && (!/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password))
+  const mismatch = confirm.length > 0 && password !== confirm
+  const passwordValid = password.length >= MIN_LENGTH && !missingFormat
+  const canSubmit = passwordValid && password === confirm && !loading
+
+  const handleToggle = () => setShowPassword((v) => !v)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setTouched(true)
     setError('')
 
-    if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères.')
-      return
-    }
-    if (password !== confirm) {
-      setError('Les mots de passe ne correspondent pas.')
-      return
-    }
+    if (password.length < MIN_LENGTH) return
+    if (password !== confirm) return
 
     setLoading(true)
 
@@ -102,9 +109,13 @@ export default function DefinirMotDePassePage() {
               </label>
               <PasswordInput
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setTouched(true) }}
                 required
-                minLength={6}
+                minLength={MIN_LENGTH}
+                visible={showPassword}
+                onToggleVisible={handleToggle}
+                error={touched && tooShort ? `Le mot de passe doit contenir au moins ${MIN_LENGTH} caractères.` : touched && missingFormat ? 'Doit contenir une majuscule, un chiffre et un caractère spécial.' : undefined}
+                success={touched && passwordValid && confirm.length > 0 && password === confirm}
               />
             </div>
 
@@ -114,9 +125,13 @@ export default function DefinirMotDePassePage() {
               </label>
               <PasswordInput
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                onChange={(e) => { setConfirm(e.target.value); setTouched(true) }}
                 required
-                minLength={6}
+                minLength={MIN_LENGTH}
+                visible={showPassword}
+                onToggleVisible={handleToggle}
+                error={touched && mismatch ? 'Les mots de passe ne correspondent pas.' : undefined}
+                success={touched && passwordValid && confirm.length > 0 && password === confirm}
               />
             </div>
 
@@ -128,8 +143,8 @@ export default function DefinirMotDePassePage() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-vsonus-red text-white font-bold uppercase tracking-widest py-3 text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+              disabled={!canSubmit}
+              className="w-full bg-vsonus-red text-white font-bold uppercase tracking-widest py-3 text-sm hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Enregistrement...' : 'Définir mon mot de passe'}
             </button>

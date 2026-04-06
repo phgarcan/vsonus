@@ -24,8 +24,14 @@ export default function ProfilPage() {
   const [currentPw, setCurrentPw] = useState('')
   const [newPw, setNewPw] = useState('')
   const [confirmPw, setConfirmPw] = useState('')
+  const [showPw, setShowPw] = useState(false)
+  const [pwTouched, setPwTouched] = useState(false)
   const [pwMsg, setPwMsg] = useState('')
   const [pwLoading, setPwLoading] = useState(false)
+
+  const pwTooShort = newPw.length > 0 && newPw.length < 8
+  const pwMismatch = confirmPw.length > 0 && newPw !== confirmPw
+  const pwCanSubmit = currentPw.length > 0 && newPw.length >= 8 && newPw === confirmPw && !pwLoading
 
   // État suppression compte
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -64,7 +70,8 @@ export default function ProfilPage() {
     e.preventDefault()
     setPwLoading(true)
     setPwMsg('')
-    if (newPw.length < 6) { setPwMsg('Le mot de passe doit contenir au moins 6 caractères.'); setPwLoading(false); return }
+    setPwTouched(true)
+    if (newPw.length < 8) { setPwMsg('Le mot de passe doit contenir au moins 8 caractères.'); setPwLoading(false); return }
     if (newPw !== confirmPw) { setPwMsg('Les mots de passe ne correspondent pas.'); setPwLoading(false); return }
     const result = await changePassword(currentPw, newPw)
     setPwMsg(result.success ? 'Mot de passe modifié.' : (result.error ?? 'Erreur.'))
@@ -221,29 +228,41 @@ export default function ProfilPage() {
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Mot de passe actuel</label>
-          <PasswordInput value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} required />
+          <PasswordInput value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} required visible={showPw} onToggleVisible={() => setShowPw((v) => !v)} />
         </div>
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Nouveau mot de passe</label>
-          <PasswordInput value={newPw} onChange={(e) => setNewPw(e.target.value)} required minLength={6} />
+          <PasswordInput
+            value={newPw}
+            onChange={(e) => { setNewPw(e.target.value); setPwTouched(true) }}
+            required
+            minLength={8}
+            visible={showPw}
+            onToggleVisible={() => setShowPw((v) => !v)}
+            error={pwTouched && pwTooShort ? 'Le mot de passe doit contenir au moins 8 caractères.' : undefined}
+            success={pwTouched && newPw.length >= 8 && confirmPw.length > 0 && newPw === confirmPw}
+          />
         </div>
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Confirmer le nouveau mot de passe</label>
           <PasswordInput
             value={confirmPw}
-            onChange={(e) => setConfirmPw(e.target.value)}
+            onChange={(e) => { setConfirmPw(e.target.value); setPwTouched(true) }}
             required
-            minLength={6}
-            className={`w-full bg-vsonus-dark border ${confirmPw && confirmPw !== newPw ? 'border-vsonus-red' : 'border-gray-700'} text-white px-4 py-3 text-sm focus:border-vsonus-red focus:outline-none transition-colors pr-11`}
+            minLength={8}
+            visible={showPw}
+            onToggleVisible={() => setShowPw((v) => !v)}
+            error={pwTouched && pwMismatch ? 'Les mots de passe ne correspondent pas.' : undefined}
+            success={pwTouched && confirmPw.length > 0 && newPw === confirmPw}
           />
         </div>
 
-        {pwMsg && <p className={`text-sm ${pwMsg.includes('correspond') || pwMsg.includes('Erreur') ? 'text-red-500' : 'text-green-500'}`}>{pwMsg}</p>}
+        {pwMsg && <p className={`text-sm ${pwMsg.includes('modifié') ? 'text-green-500' : 'text-red-500'}`}>{pwMsg}</p>}
 
-        <button type="submit" disabled={pwLoading}
-          className="border border-gray-700 text-white font-bold uppercase tracking-widest px-8 py-3 text-sm hover:border-vsonus-red transition-colors disabled:opacity-50">
+        <button type="submit" disabled={!pwCanSubmit}
+          className="border border-gray-700 text-white font-bold uppercase tracking-widest px-8 py-3 text-sm hover:border-vsonus-red transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           {pwLoading ? 'Modification...' : 'Changer le mot de passe'}
         </button>
       </form>
