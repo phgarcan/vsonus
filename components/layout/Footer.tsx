@@ -26,7 +26,7 @@ const NAV_LINKS = [
   { href: '/packs', label: 'Packs' },
   { href: '/gestion-evenementielle', label: 'Événementiel' },
   { href: '/catalogue', label: 'Catalogue' },
-  { href: '/galerie', label: 'Réalisations' },
+  { href: '/realisations', label: 'Réalisations' },
   { href: '/a-propos', label: 'À propos' },
   { href: '/contact', label: 'Contact' },
   { href: '/mon-compte', label: 'Mon compte' },

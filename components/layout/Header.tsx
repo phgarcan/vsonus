@@ -32,7 +32,7 @@ const MOBILE_MATERIEL = [
 
 const DIRECT_LINKS: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: Wrench,  label: 'Événementiel', href: '/gestion-evenementielle' },
-  { icon: Camera,  label: 'Réalisations',  href: '/galerie' },
+  { icon: Camera,  label: 'Réalisations',  href: '/realisations' },
   { icon: Info,    label: 'À propos',     href: '/a-propos' },
   { icon: Send,    label: 'Contact',      href: '/contact' },
 ]
@@ -45,7 +45,7 @@ function useActiveNav() {
     if (key === 'packs')         return pathname.startsWith('/packs')
     if (key === 'location')      return pathname.startsWith('/catalogue')
     if (key === 'evenementiel')  return pathname === '/gestion-evenementielle'
-    if (key === 'realisations')  return pathname === '/galerie'
+    if (key === 'realisations')  return pathname === '/realisations'
     if (key === 'a-propos')      return pathname === '/a-propos'
     if (key === 'contact')       return pathname === '/contact'
     return false
@@ -175,7 +175,7 @@ export function Header({ menuImages = {} }: { menuImages?: MenuImages }) {
             <Link href="/gestion-evenementielle" className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('evenementiel') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}>
               Événementiel
             </Link>
-            <Link href="/galerie" className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('realisations') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}>
+            <Link href="/realisations" className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('realisations') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}>
               Réalisations
             </Link>
             <Link href="/a-propos" className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${isActive('a-propos') ? 'text-vsonus-red border-b-2 border-vsonus-red' : 'text-gray-400 hover:text-white'}`}>
@@ -362,7 +362,7 @@ export function Header({ menuImages = {} }: { menuImages?: MenuImages }) {
             {/* Liens directs */}
             {DIRECT_LINKS.map(({ label, href }) => {
               const key = href === '/gestion-evenementielle' ? 'evenementiel'
-                        : href === '/galerie'                ? 'realisations'
+                        : href === '/realisations'           ? 'realisations'
                         : href === '/a-propos'               ? 'a-propos'
                         : 'contact' as Parameters<typeof isActive>[0]
               return (

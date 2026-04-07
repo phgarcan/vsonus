@@ -183,7 +183,7 @@ export default async function GestionEvenementielle() {
                 </svg>
               </Link>
               <Link
-                href="/galerie"
+                href="/realisations"
                 className="inline-flex items-center justify-center gap-2 border-2 border-white text-white font-bold uppercase tracking-widest px-10 py-4 hover:border-vsonus-red hover:text-vsonus-red transition-colors duration-200"
               >
                 Voir nos réalisations
@@ -330,7 +330,7 @@ export default async function GestionEvenementielle() {
                   </h2>
                 </div>
                 <Link
-                  href="/galerie"
+                  href="/realisations"
                   className="flex-shrink-0 inline-flex items-center gap-2 border-2 border-vsonus-red text-vsonus-red font-bold uppercase tracking-widest px-6 py-3 hover:bg-vsonus-red hover:text-white transition-colors duration-200"
                 >
                   Voir tout
@@ -346,7 +346,7 @@ export default async function GestionEvenementielle() {
                 const imgUrl = getImageUrl(real.image_principale, { width: '600', height: '400', fit: 'cover', quality: '85' })
                 return (
                   <AnimateOnScroll key={real.id} delay={i * 80}>
-                    <Link href="/galerie" className="group relative block aspect-[3/4] overflow-hidden bg-vsonus-dark border border-gray-800 hover:border-vsonus-red transition-colors duration-300">
+                    <Link href="/realisations" className="group relative block aspect-[3/4] overflow-hidden bg-vsonus-dark border border-gray-800 hover:border-vsonus-red transition-colors duration-300">
                       {imgUrl ? (
                         <Image
                           src={imgUrl}

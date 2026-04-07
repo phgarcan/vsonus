@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Nos Réalisations Événementielles | V-Sonus',
     description: 'Galerie photo de nos événements : concerts, festivals, sonorisations et éclairages en Suisse Romande.',
-    url: 'https://vsonus.ch/galerie',
+    url: 'https://vsonus.ch/realisations',
   },
-  alternates: { canonical: 'https://vsonus.ch/galerie' },
+  alternates: { canonical: 'https://vsonus.ch/realisations' },
 }
 
 const CATEGORIES = [
@@ -110,7 +110,7 @@ export default async function GaleriePage({
               return (
                 <a
                   key={cat.label}
-                  href={cat.slug ? `/galerie?categorie=${cat.slug}` : '/galerie'}
+                  href={cat.slug ? `/realisations?categorie=${cat.slug}` : '/realisations'}
                   className={[
                     'px-4 py-2 text-xs font-bold uppercase tracking-widest border transition-all duration-150',
                     isActive

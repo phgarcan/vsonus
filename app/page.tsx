@@ -11,6 +11,8 @@ import { Sliders, Zap, Shield, Users } from 'lucide-react'
 import { directus, getAssetUrl, getImageUrl } from '@/lib/directus'
 import type { SiteSettings, LogoPartenaire } from '@/lib/directus'
 
+export const revalidate = 300
+
 export const metadata: Metadata = {
   title: 'Location Sonorisation & Éclairage Vaud | V-Sonus Événementiel',
   description: 'Location de matériel événementiel en Suisse Romande : sonorisation, éclairage, scènes, DJ et mapping. Devis gratuit, basé à Vevey.',
