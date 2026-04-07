@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const FILTER_TABS = [
   { slug: null, label: 'Tous', href: '/catalogue' },
@@ -14,6 +17,12 @@ const FILTER_TABS = [
 ]
 
 export function CategoryFilterBar({ activeCategory }: { activeCategory?: string }) {
+  // Détermine la catégorie active depuis l'URL pour réagir immédiatement à la navigation client
+  const pathname = usePathname()
+  const segments = pathname.split('/')
+  // /catalogue → undefined, /catalogue/eclairage → 'eclairage'
+  const urlCategory = segments[1] === 'catalogue' && segments[2] ? segments[2] : undefined
+  const resolved = activeCategory ?? urlCategory
   return (
     <div className="relative mb-6 md:mb-10">
       <div
@@ -22,7 +31,7 @@ export function CategoryFilterBar({ activeCategory }: { activeCategory?: string 
         aria-label="Filtrer par catégorie"
       >
         {FILTER_TABS.map((tab) => {
-          const isActive = tab.slug === (activeCategory ?? null)
+          const isActive = tab.slug === (resolved ?? null)
           return (
             <Link
               key={tab.href}
