@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// ─── Basic Auth pour le staging ──────────────────────────────────────────────
+// Activé uniquement si STAGING_AUTH est défini (format: "user:password")
+const STAGING_AUTH = process.env.STAGING_AUTH
+
+function isValidBasicAuth(header: string, expected: string): boolean {
+  const [scheme, encoded] = header.split(' ')
+  if (scheme !== 'Basic' || !encoded) return false
+  const decoded = Buffer.from(encoded, 'base64').toString('utf-8')
+  return decoded === expected
+}
+
 // Routes protégées nécessitant une authentification
 const PROTECTED_PATHS = ['/mon-compte']
 // Routes exclues de la protection (connexion, inscription, etc.)
@@ -16,6 +27,17 @@ const authAttempts = new Map<string, { count: number; resetAt: number }>()
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // --- Basic Auth staging (bloque tout sauf les API) ---
+  if (STAGING_AUTH && !pathname.startsWith('/api/')) {
+    const auth = request.headers.get('authorization')
+    if (!auth || !isValidBasicAuth(auth, STAGING_AUTH)) {
+      return new NextResponse('Accès restreint', {
+        status: 401,
+        headers: { 'WWW-Authenticate': 'Basic realm="Staging V-Sonus"' },
+      })
+    }
+  }
 
   // --- Rate limiting sur /api/auth/* (sauf /check qui est un simple cookie read) ---
   if (pathname.startsWith('/api/auth/') && pathname !== '/api/auth/check') {
@@ -65,5 +87,8 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/mon-compte/:path*', '/api/auth/:path*'],
+  matcher: [
+    // Basic Auth staging : toutes les pages (exclut _next/static, _next/image, favicon, assets)
+    '/((?!_next/static|_next/image|favicon.ico|images/|assets/).*)',
+  ],
 }
