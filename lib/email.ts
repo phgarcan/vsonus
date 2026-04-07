@@ -4,7 +4,8 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 const FROM = 'V-Sonus <info@vsonus.ch>'
 
-const LOGO_URL = 'https://dev.vsonus.ch/logo-vsonus-email.png'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vsonus.ch'
+const LOGO_URL = `${SITE_URL}/logo-vsonus-email.png`
 
 // ---------------------------------------------------------------------------
 // Fonction générique

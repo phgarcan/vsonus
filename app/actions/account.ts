@@ -8,7 +8,7 @@ import { getAccessToken } from '@/lib/auth'
 
 const CLIENT_ROLE_ID = '3a7b1e18-e5c6-4e31-8992-862377d0b98b'
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? ''
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dev.vsonus.ch'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vsonus.ch'
 
 interface CreateAccountInput {
   email: string

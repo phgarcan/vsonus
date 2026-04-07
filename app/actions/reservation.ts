@@ -455,7 +455,7 @@ async function linkOrCreateUser(
       })
 
       // Send welcome email with password reset link
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dev.vsonus.ch'
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vsonus.ch'
       sendEmail({
         to: clientData.email,
         subject: 'V-Sonus — Votre espace client est prêt',

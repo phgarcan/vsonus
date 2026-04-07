@@ -4,7 +4,7 @@ import { sendEmail, emailLayout } from '@/lib/email'
 import crypto from 'crypto'
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? ''
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dev.vsonus.ch'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vsonus.ch'
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(req: Request) {
