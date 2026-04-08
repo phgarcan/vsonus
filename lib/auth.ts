@@ -117,14 +117,36 @@ export async function getSession(): Promise<SessionUser | null> {
     })
   }
 
-  // Fetch user profile
-  const res = await fetch(`${DIRECTUS_URL}/users/me?fields=id,first_name,last_name,email,phone,location`, {
+  // Étape 1 : valider l'auth en récupérant l'id du user via son token
+  // (le rôle Client a la permission READ sur /users/me mais limitée à id+email)
+  const meRes = await fetch(`${DIRECTUS_URL}/users/me?fields=id`, {
     headers: { Authorization: `Bearer ${token}` },
   })
+  if (!meRes.ok) return null
+  const meJson = await meRes.json()
+  const userId = meJson?.data?.id
+  if (!userId) return null
 
-  if (!res.ok) return null
+  // Étape 2 : récupérer le profil complet via le server token (les champs
+  // first_name/last_name/phone/location sont restreints en read pour le rôle
+  // Client, on bypass via le server token comme pour les writes).
+  const serverToken = process.env.DIRECTUS_SERVER_TOKEN
+  if (!serverToken) {
+    console.error('[getSession] DIRECTUS_SERVER_TOKEN manquant')
+    return null
+  }
 
-  const { data } = await res.json()
+  const fullRes = await fetch(
+    `${DIRECTUS_URL}/users/${userId}?fields=id,first_name,last_name,email,phone,location`,
+    { headers: { Authorization: `Bearer ${serverToken}` }, cache: 'no-store' }
+  )
+  if (!fullRes.ok) {
+    const errBody = await fullRes.text().catch(() => '')
+    console.error('[getSession] Failed to fetch full user:', fullRes.status, errBody)
+    return null
+  }
+
+  const { data } = await fullRes.json()
   return data as SessionUser
 }
 
