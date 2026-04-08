@@ -37,30 +37,61 @@ export default async function MonComptePage() {
   if (!session) redirect('/mon-compte/connexion')
 
   // Récupération des réservations via REST direct + server token (bypass des
-  // permissions Directus restrictives sur le rôle client). Filtre OR (user OU
-  // email_client) pour matcher aussi les anciennes réservations sans lien user.
+  // permissions Directus restrictives sur le rôle client). On fait DEUX fetch
+  // séparés (user et email) puis on merge — évite les soucis de syntaxe _or
+  // qui peuvent varier selon les versions Directus / encodages d'URL.
   let reservations: Reservation[] = []
+  let debugError: string | null = null
+  const fields = 'id,statut,date_debut,date_fin,total_ht,date_created,nom_client,user,email_client'
+  const headers = { Authorization: `Bearer ${SERVER_TOKEN}` }
+
   try {
-    const filter = encodeURIComponent(JSON.stringify({
-      _or: [
-        { user: { _eq: session.id } },
-        { email_client: { _eq: session.email } },
-      ],
-    }))
-    const url = `${DIRECTUS_URL}/items/reservations?fields=id,statut,date_debut,date_fin,total_ht,date_created,nom_client&filter=${filter}&sort=-date_created&limit=50`
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${SERVER_TOKEN}` },
-      cache: 'no-store',
-    })
-    if (res.ok) {
-      const json = await res.json()
-      reservations = (json.data as Reservation[]) ?? []
+    if (!SERVER_TOKEN) {
+      debugError = 'DIRECTUS_SERVER_TOKEN non défini côté serveur'
     } else {
-      const errBody = await res.text().catch(() => '')
-      console.error('[mon-compte] Reservations fetch failed:', res.status, errBody)
+      // Fetch 1 : par user.id (lien direct sur la réservation)
+      const urlByUser = `${DIRECTUS_URL}/items/reservations?fields=${fields}&filter[user][_eq]=${encodeURIComponent(session.id)}&sort=-date_created&limit=50`
+      const resByUser = await fetch(urlByUser, { headers, cache: 'no-store' })
+
+      // Fetch 2 : par email (fallback pour anciennes réservations sans lien user)
+      const urlByEmail = `${DIRECTUS_URL}/items/reservations?fields=${fields}&filter[email_client][_eq]=${encodeURIComponent(session.email)}&sort=-date_created&limit=50`
+      const resByEmail = await fetch(urlByEmail, { headers, cache: 'no-store' })
+
+      const errors: string[] = []
+      const merged = new Map<string, Reservation>()
+
+      if (resByUser.ok) {
+        const json = await resByUser.json()
+        for (const r of (json.data ?? []) as Reservation[]) merged.set(r.id, r)
+      } else {
+        const body = await resByUser.text().catch(() => '')
+        errors.push(`fetch by user → ${resByUser.status} ${body.slice(0, 200)}`)
+      }
+
+      if (resByEmail.ok) {
+        const json = await resByEmail.json()
+        for (const r of (json.data ?? []) as Reservation[]) merged.set(r.id, r)
+      } else {
+        const body = await resByEmail.text().catch(() => '')
+        errors.push(`fetch by email → ${resByEmail.status} ${body.slice(0, 200)}`)
+      }
+
+      // Tri descendant par date_created
+      reservations = Array.from(merged.values()).sort((a, b) =>
+        (b.date_created ?? '').localeCompare(a.date_created ?? '')
+      )
+
+      if (errors.length > 0 && reservations.length === 0) {
+        debugError = errors.join(' | ')
+      }
     }
   } catch (err) {
+    debugError = err instanceof Error ? err.message : String(err)
     console.error('[mon-compte] Erreur récupération réservations:', err)
+  }
+
+  if (debugError) {
+    console.error('[mon-compte] Debug:', debugError)
   }
 
   const prenom = session.first_name || ''
@@ -97,6 +128,13 @@ export default async function MonComptePage() {
         <AnimateOnScroll delay={200}>
           <div className="bg-vsonus-dark border border-gray-800 p-10 text-center">
             <p className="text-gray-400 mb-6">Vous n&apos;avez pas encore de réservation.</p>
+            {debugError && (
+              <div className="bg-red-950/40 border border-red-900 p-4 mb-6 text-left">
+                <p className="text-xs font-bold uppercase tracking-widest text-red-500 mb-2">Erreur (debug)</p>
+                <pre className="text-xs text-red-300 whitespace-pre-wrap break-all">{debugError}</pre>
+                <p className="text-[10px] text-gray-500 mt-2">User ID: {session.id} · Email: {session.email}</p>
+              </div>
+            )}
             <Link
               href="/catalogue"
               className="inline-block bg-vsonus-red text-white font-bold uppercase tracking-widest px-8 py-3 text-sm hover:bg-red-700 transition-colors"
