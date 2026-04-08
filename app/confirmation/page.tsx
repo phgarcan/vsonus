@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 export default async function ConfirmationPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; email?: string; nom?: string; account?: string }>
+  searchParams: Promise<{ id?: string; email?: string; prenom?: string; nom?: string; account?: string }>
 }) {
-  const { id, email, nom, account } = await searchParams
+  const { id, email, prenom, nom, account } = await searchParams
   const hasAccount = account === '1'
 
   return (
@@ -110,7 +110,12 @@ export default async function ConfirmationPage({
 
       {/* Bouton créer compte si pas déjà fait */}
       {!hasAccount && email && (
-        <CreateAccountSection email={email} nom={nom ?? ''} reservationId={id ?? ''} />
+        <CreateAccountSection
+          email={email}
+          prenom={prenom ?? ''}
+          nom={nom ?? ''}
+          reservationId={id ?? ''}
+        />
       )}
     </div>
   )

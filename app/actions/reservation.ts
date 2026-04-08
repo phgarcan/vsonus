@@ -17,6 +17,7 @@ const CLIENT_ROLE_ID = '3a7b1e18-e5c6-4e31-8992-862377d0b98b'
 // ---------------------------------------------------------------------------
 
 export interface ClientData {
+  prenom: string
   nom: string
   email: string
   tel: string
@@ -68,7 +69,7 @@ export async function soumettreReservation(
     return { success: true, id: 'bot' }
   }
 
-  if (!clientData.nom || !clientData.email || !clientData.tel || !clientData.rue || !clientData.npa || !clientData.ville) {
+  if (!clientData.prenom || !clientData.nom || !clientData.email || !clientData.tel || !clientData.rue || !clientData.npa || !clientData.ville) {
     return { success: false, error: 'Tous les champs obligatoires doivent être remplis.' }
   }
   if (!startDate || !endDate) {
@@ -81,11 +82,20 @@ export async function soumettreReservation(
   try {
     const client = getServerDirectus()
 
-    // 1. Créer la réservation
+    // Récupère la session AVANT la création pour lier directement le user.
+    // Évite l'updateItem séparé ensuite (plus fiable, plus propre).
+    const currentSession = await getSession()
+
+    // Nom complet pour le champ unique nom_client de Directus (rétrocompat
+    // avec l'affichage liste admin existant).
+    const nomComplet = `${clientData.prenom} ${clientData.nom}`.trim()
+
+    // 1. Créer la réservation (avec user lié dès la création si connecté)
     const reservation = await client.request(
       createItem('reservations', {
         statut: 'en_attente_validation',
-        nom_client: clientData.nom,
+        user: currentSession?.id ?? null,
+        nom_client: nomComplet,
         email_client: clientData.email,
         tel_client: clientData.tel,
         adresse_evenement: `${clientData.rue}, ${clientData.npa} ${clientData.ville}, ${clientData.pays}`,
@@ -172,13 +182,9 @@ export async function soumettreReservation(
     sendEmails({ clientData, startDate, endDate, nbJours, coefficient, totalHT, besoinMontage, besoinLivraison, lignes: lignesEmail, reservationId, est_entreprise, nom_entreprise, numero_ide })
       .catch(err => console.error('[email] Erreur envoi emails réservation:', err))
 
-    // 4. Lier la réservation au compte utilisateur
-    const currentSession = await getSession()
-    if (currentSession?.id) {
-      // Utilisateur connecté : lier directement la réservation
-      await client.request(updateItem('reservations', reservationId, { user: currentSession.id }))
-    } else if (createAccount) {
-      // Pas connecté mais demande de création de compte (non-bloquant)
+    // 4. Si pas connecté mais demande de création de compte → créer + linker
+    // (le user.id a déjà été lié à la création si l'utilisateur était connecté)
+    if (!currentSession?.id && createAccount) {
       linkOrCreateUser(client, clientData, reservationId)
         .catch(err => console.error('[user] Erreur création compte client:', err))
     }
@@ -239,7 +245,7 @@ async function sendEmails(data: {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;width:130px;">Nom</td>
-        <td style="padding:6px 0;font-size:13px;color:#fff;font-weight:700;">${clientData.nom}</td>
+        <td style="padding:6px 0;font-size:13px;color:#fff;font-weight:700;">${clientData.prenom} ${clientData.nom}</td>
       </tr>
       ${entrepriseHtml}
       <tr>
@@ -296,7 +302,7 @@ async function sendEmails(data: {
       Demande reçue !
     </h2>
     <p style="margin:0 0 24px;font-size:14px;color:#aaa;line-height:1.6;">
-      Bonjour <strong style="color:#fff;">${clientData.nom}</strong>,<br>
+      Bonjour <strong style="color:#fff;">${clientData.prenom}</strong>,<br>
       Votre demande de devis a bien été enregistrée. Notre équipe reviendra vers vous
       <strong style="color:#fff;">dans les 24 heures</strong>.
     </p>
@@ -373,7 +379,7 @@ async function sendEmails(data: {
   await Promise.all([
     sendEmail({
       to: 'info@vsonus.ch',
-      subject: `Nouvelle demande de réservation — ${clientData.nom}`,
+      subject: `Nouvelle demande de réservation — ${clientData.prenom} ${clientData.nom}`,
       html: emailLayout(`Devis #${reservationId}`, gerantBody),
     }),
     sendEmail({
@@ -408,11 +414,11 @@ async function linkOrCreateUser(
     if (existing.data?.length > 0) {
       userId = existing.data[0].id
     } else {
-      // Create new user with random temporary password
+      // Create new user with random temporary password — utilise prenom/nom
+      // séparés directement (plus de split fragile sur les noms composés)
       const tempPassword = crypto.randomUUID().slice(0, 16) + 'A1!'
-      const nameParts = clientData.nom.split(' ')
-      const firstName = nameParts[0] ?? ''
-      const lastName = nameParts.slice(1).join(' ') || ''
+      const firstName = clientData.prenom
+      const lastName = clientData.nom
 
       const createRes = await fetch(`${DIRECTUS_URL}/users`, {
         method: 'POST',

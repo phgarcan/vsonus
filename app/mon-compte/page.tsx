@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getSession, getAccessToken, logout } from '@/lib/auth'
+import { readItems } from '@directus/sdk'
+import { getSession } from '@/lib/auth'
+import { getServerDirectus } from '@/lib/directus'
 import { formatDateEU } from '@/lib/utils'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { LogoutButton } from '@/components/portal/LogoutButton'
@@ -10,8 +12,6 @@ export const metadata: Metadata = {
   title: 'Mon compte',
   robots: { index: false, follow: false },
 }
-
-const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? ''
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   en_attente_validation: { label: 'En attente', color: 'bg-orange-600' },
@@ -35,18 +35,28 @@ export default async function MonComptePage() {
   const session = await getSession()
   if (!session) redirect('/mon-compte/connexion')
 
-  const token = await getAccessToken()
+  // Récupération des réservations via le server token (bypass des permissions
+  // Directus restrictives sur le rôle client). On filtre par OR (user OU email)
+  // pour matcher aussi les anciennes réservations qui n'ont pas le lien user.
   let reservations: Reservation[] = []
-
-  if (token) {
-    const res = await fetch(
-      `${DIRECTUS_URL}/items/reservations?fields=id,statut,date_debut,date_fin,total_ht,date_created,nom_client&filter[user][_eq]=${session.id}&sort=-date_created&limit=50`,
-      { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }
+  try {
+    const client = getServerDirectus()
+    const result = await client.request(
+      readItems('reservations', {
+        filter: {
+          _or: [
+            { user: { _eq: session.id } },
+            { email_client: { _eq: session.email } },
+          ],
+        } as Record<string, unknown>,
+        fields: ['id', 'statut', 'date_debut', 'date_fin', 'total_ht', 'date_created', 'nom_client'] as never,
+        sort: ['-date_created'] as never,
+        limit: 50,
+      })
     )
-    if (res.ok) {
-      const json = await res.json()
-      reservations = json.data ?? []
-    }
+    reservations = (result as Reservation[]) ?? []
+  } catch (err) {
+    console.error('[mon-compte] Erreur récupération réservations:', err)
   }
 
   const prenom = session.first_name || ''

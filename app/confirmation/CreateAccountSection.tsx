@@ -5,11 +5,12 @@ import { createAccountPostCheckout } from '@/app/actions/account'
 
 interface Props {
   email: string
+  prenom: string
   nom: string
   reservationId: string
 }
 
-export function CreateAccountSection({ email, nom, reservationId }: Props) {
+export function CreateAccountSection({ email, prenom, nom, reservationId }: Props) {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
@@ -17,7 +18,7 @@ export function CreateAccountSection({ email, nom, reservationId }: Props) {
   async function handleCreate() {
     setLoading(true)
     setError('')
-    const result = await createAccountPostCheckout({ email, nom, reservationId })
+    const result = await createAccountPostCheckout({ email, prenom, nom, reservationId })
     if (result.success) {
       setDone(true)
     } else {

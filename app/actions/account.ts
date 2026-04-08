@@ -12,6 +12,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vsonus.ch'
 
 interface CreateAccountInput {
   email: string
+  prenom: string
   nom: string
   reservationId: string
 }
@@ -19,9 +20,9 @@ interface CreateAccountInput {
 export async function createAccountPostCheckout(
   input: CreateAccountInput
 ): Promise<{ success: true } | { success: false; error: string }> {
-  const { email, nom, reservationId } = input
+  const { email, prenom, nom, reservationId } = input
 
-  if (!email || !nom) {
+  if (!email || !prenom || !nom) {
     return { success: false, error: 'Données manquantes.' }
   }
 
@@ -39,11 +40,10 @@ export async function createAccountPostCheckout(
       }
     }
 
-    // Create user
+    // Create user — prenom/nom directement, plus de split fragile
     const tempPassword = crypto.randomUUID().slice(0, 16) + 'A1!'
-    const nameParts = nom.split(' ')
-    const firstName = nameParts[0] ?? ''
-    const lastName = nameParts.slice(1).join(' ') || ''
+    const firstName = prenom
+    const lastName = nom
 
     const createRes = await fetch(`${DIRECTUS_URL}/users`, {
       method: 'POST',

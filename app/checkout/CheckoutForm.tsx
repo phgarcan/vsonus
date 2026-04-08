@@ -16,14 +16,22 @@ import { equipementHasLivraisonOption } from '@/lib/directus'
 import type { TarifAnnexe, Pack, Equipement } from '@/lib/directus'
 import { getPackPrixEffectif } from '@/lib/directus'
 
+export interface InitialFormData {
+  prenom: string
+  nom: string
+  email: string
+  tel: string
+}
+
 interface CheckoutFormProps {
   tarifsAnnexes: TarifAnnexe[]
+  initialData?: InitialFormData | null
 }
 
 const inputCls = 'w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:outline-none focus:border-vsonus-red transition-colors placeholder-gray-600'
 const labelCls = 'block text-xs font-bold uppercase tracking-widest text-gray-400 mb-1'
 
-export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
+export function CheckoutForm({ tarifsAnnexes, initialData }: CheckoutFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -74,15 +82,19 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
   const [honeypot, setHoneypot] = useState('')
 
   const [form, setForm] = useState({
-    nom: '',
-    email: '',
-    tel: '',
+    prenom: initialData?.prenom ?? '',
+    nom: initialData?.nom ?? '',
+    email: initialData?.email ?? '',
+    tel: initialData?.tel ?? '',
     rue: '',
     npa: '',
     ville: '',
     pays: 'Suisse',
     notes: '',
   })
+
+  // L'utilisateur est connecté si on a reçu initialData (pré-remplissage serveur)
+  const isConnecte = !!initialData
 
   const [billing, setBilling] = useState({
     billing_rue: '',
@@ -128,6 +140,7 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
           params.set('account', '1')
         } else {
           params.set('email', form.email)
+          params.set('prenom', form.prenom)
           params.set('nom', form.nom)
         }
         router.push(`/confirmation?${params.toString()}`)
@@ -173,12 +186,29 @@ export function CheckoutForm({ tarifsAnnexes }: CheckoutFormProps) {
           Vos coordonnées
         </h2>
 
-        <div>
-          <label className={labelCls}>Nom complet <span className="text-vsonus-red">*</span></label>
-          <input
-            type="text" name="nom" value={form.nom} onChange={handleChange}
-            required className={inputCls} autoComplete="name"
-          />
+        {/* Bandeau pré-remplissage si connecté */}
+        {isConnecte && (
+          <div className="bg-vsonus-dark border-l-2 border-vsonus-red px-4 py-3 text-xs text-gray-400">
+            Connecté en tant que <span className="text-white font-bold">{initialData!.email}</span> — vos
+            coordonnées ont été pré-remplies depuis votre profil.
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Prénom <span className="text-vsonus-red">*</span></label>
+            <input
+              type="text" name="prenom" value={form.prenom} onChange={handleChange}
+              required className={inputCls} autoComplete="given-name"
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Nom <span className="text-vsonus-red">*</span></label>
+            <input
+              type="text" name="nom" value={form.nom} onChange={handleChange}
+              required className={inputCls} autoComplete="family-name"
+            />
+          </div>
         </div>
 
         <div>
