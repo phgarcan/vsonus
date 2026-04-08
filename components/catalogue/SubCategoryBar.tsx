@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { SOUS_CAT_LABELS } from '@/lib/directus'
 
 interface SubCategoryBarProps {
@@ -8,6 +11,15 @@ interface SubCategoryBarProps {
 }
 
 export function SubCategoryBar({ categorie, activeSousCategorie, sousCategories }: SubCategoryBarProps) {
+  // Détermine la sous-catégorie active depuis l'URL pour réagir immédiatement à la navigation client
+  const pathname = usePathname()
+  const segments = pathname.split('/')
+  // /catalogue/eclairage → undefined, /catalogue/eclairage/lyres → 'lyres'
+  const urlSousCategorie = segments[1] === 'catalogue' && segments[2] === categorie && segments[3]
+    ? segments[3]
+    : undefined
+  const resolved = activeSousCategorie ?? urlSousCategorie
+
   if (sousCategories.length === 0) return null
 
   return (
@@ -20,7 +32,7 @@ export function SubCategoryBar({ categorie, activeSousCategorie, sousCategories 
         <Link
           href={`/catalogue/${categorie}`}
           className={`flex-shrink-0 px-3 py-1 md:py-1.5 text-xs font-semibold tracking-wide border whitespace-nowrap transition-colors ${
-            !activeSousCategorie
+            !resolved
               ? 'border-vsonus-red text-vsonus-red bg-vsonus-red/10'
               : 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
           }`}
@@ -33,7 +45,7 @@ export function SubCategoryBar({ categorie, activeSousCategorie, sousCategories 
             key={sc}
             href={`/catalogue/${categorie}/${sc}`}
             className={`flex-shrink-0 px-3 py-1 md:py-1.5 text-xs font-semibold tracking-wide border whitespace-nowrap transition-colors ${
-              sc === activeSousCategorie
+              sc === resolved
                 ? 'border-vsonus-red text-vsonus-red bg-vsonus-red/10'
                 : 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
             }`}
