@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { getServerDirectus } from '@/lib/directus'
 import type { TarifAnnexe } from '@/lib/directus'
 import { getSession } from '@/lib/auth'
+import { parseAddress } from '@/lib/address'
 import { CheckoutForm, type InitialFormData } from './CheckoutForm'
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default async function CheckoutPage() {
         nom: session.last_name ?? '',
         email: session.email,
         tel: session.phone ?? '',
+        address: parseAddress(session.location),
       }
     : null
 

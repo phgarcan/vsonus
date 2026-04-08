@@ -15,6 +15,7 @@ export interface SessionUser {
   location: string | null
 }
 
+
 // ---------------------------------------------------------------------------
 // Login
 // ---------------------------------------------------------------------------
@@ -174,7 +175,11 @@ export async function updateProfile(data: { first_name?: string; last_name?: str
     body: JSON.stringify(data),
   })
 
-  if (!res.ok) return { success: false, error: 'Erreur lors de la mise à jour.' }
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '')
+    console.error('[updateProfile] Failed:', res.status, errBody)
+    return { success: false, error: `Erreur Directus (${res.status})` }
+  }
 
   // Notification admin des changements (non-bloquant)
   if (currentData) {

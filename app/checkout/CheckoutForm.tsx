@@ -16,11 +16,14 @@ import { equipementHasLivraisonOption } from '@/lib/directus'
 import type { TarifAnnexe, Pack, Equipement } from '@/lib/directus'
 import { getPackPrixEffectif } from '@/lib/directus'
 
+import type { ParsedAddress } from '@/lib/address'
+
 export interface InitialFormData {
   prenom: string
   nom: string
   email: string
   tel: string
+  address: ParsedAddress
 }
 
 interface CheckoutFormProps {
@@ -86,10 +89,10 @@ export function CheckoutForm({ tarifsAnnexes, initialData }: CheckoutFormProps) 
     nom: initialData?.nom ?? '',
     email: initialData?.email ?? '',
     tel: initialData?.tel ?? '',
-    rue: '',
-    npa: '',
-    ville: '',
-    pays: 'Suisse',
+    rue: initialData?.address?.rue ?? '',
+    npa: initialData?.address?.npa ?? '',
+    ville: initialData?.address?.ville ?? '',
+    pays: initialData?.address?.pays ?? 'Suisse',
     notes: '',
   })
 

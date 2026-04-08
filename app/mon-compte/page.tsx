@@ -1,12 +1,13 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { readItems } from '@directus/sdk'
 import { getSession } from '@/lib/auth'
-import { getServerDirectus } from '@/lib/directus'
 import { formatDateEU } from '@/lib/utils'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { LogoutButton } from '@/components/portal/LogoutButton'
+
+const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? ''
+const SERVER_TOKEN = process.env.DIRECTUS_SERVER_TOKEN ?? ''
 
 export const metadata: Metadata = {
   title: 'Mon compte',
@@ -35,26 +36,29 @@ export default async function MonComptePage() {
   const session = await getSession()
   if (!session) redirect('/mon-compte/connexion')
 
-  // Récupération des réservations via le server token (bypass des permissions
-  // Directus restrictives sur le rôle client). On filtre par OR (user OU email)
-  // pour matcher aussi les anciennes réservations qui n'ont pas le lien user.
+  // Récupération des réservations via REST direct + server token (bypass des
+  // permissions Directus restrictives sur le rôle client). Filtre OR (user OU
+  // email_client) pour matcher aussi les anciennes réservations sans lien user.
   let reservations: Reservation[] = []
   try {
-    const client = getServerDirectus()
-    const result = await client.request(
-      readItems('reservations', {
-        filter: {
-          _or: [
-            { user: { _eq: session.id } },
-            { email_client: { _eq: session.email } },
-          ],
-        } as Record<string, unknown>,
-        fields: ['id', 'statut', 'date_debut', 'date_fin', 'total_ht', 'date_created', 'nom_client'] as never,
-        sort: ['-date_created'] as never,
-        limit: 50,
-      })
-    )
-    reservations = (result as Reservation[]) ?? []
+    const filter = encodeURIComponent(JSON.stringify({
+      _or: [
+        { user: { _eq: session.id } },
+        { email_client: { _eq: session.email } },
+      ],
+    }))
+    const url = `${DIRECTUS_URL}/items/reservations?fields=id,statut,date_debut,date_fin,total_ht,date_created,nom_client&filter=${filter}&sort=-date_created&limit=50`
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${SERVER_TOKEN}` },
+      cache: 'no-store',
+    })
+    if (res.ok) {
+      const json = await res.json()
+      reservations = (json.data as Reservation[]) ?? []
+    } else {
+      const errBody = await res.text().catch(() => '')
+      console.error('[mon-compte] Reservations fetch failed:', res.status, errBody)
+    }
   } catch (err) {
     console.error('[mon-compte] Erreur récupération réservations:', err)
   }

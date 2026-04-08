@@ -1,13 +1,14 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { readItem, readItems } from '@directus/sdk'
 import { getSession } from '@/lib/auth'
-import { getServerDirectus } from '@/lib/directus'
 import { formatDateEU } from '@/lib/utils'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
 import { ClipboardCheck, FileText, CheckCircle2, PartyPopper, CircleDot } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
+
+const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? ''
+const SERVER_TOKEN = process.env.DIRECTUS_SERVER_TOKEN ?? ''
 
 const STEPS = [
   { key: 'en_attente_validation', label: 'Demande reçue', Icon: ClipboardCheck },
@@ -74,35 +75,40 @@ export default async function ReservationDetailPage({
 
   const { id } = await params
 
-  // Fetch via server token (bypass des permissions client) puis vérification
-  // d'ownership côté Next.js : la réservation doit appartenir au user connecté
-  // (par lien direct OU par email — pour les anciennes réservations sans lien).
+  // Fetch via REST direct + server token (bypass des permissions client) puis
+  // vérification d'ownership côté Next.js : la réservation doit appartenir au
+  // user connecté (par lien direct OU par email — pour les anciennes
+  // réservations sans lien user).
   let reservation: Reservation | null = null
   let lignes: Ligne[] = []
 
   try {
-    const client = getServerDirectus()
-    const res = (await client.request(
-      readItem('reservations', id, {
-        fields: [
-          'id', 'statut', 'user', 'nom_client', 'email_client', 'tel_client',
-          'adresse_evenement', 'date_debut', 'date_fin', 'total_ht', 'notes',
-          'date_created', 'est_entreprise', 'nom_entreprise', 'numero_ide',
-        ],
-      })
-    )) as Reservation | null
+    const fields = 'id,statut,user,nom_client,email_client,tel_client,adresse_evenement,date_debut,date_fin,total_ht,notes,date_created,est_entreprise,nom_entreprise,numero_ide'
+    const resReservation = await fetch(
+      `${DIRECTUS_URL}/items/reservations/${id}?fields=${fields}`,
+      { headers: { Authorization: `Bearer ${SERVER_TOKEN}` }, cache: 'no-store' }
+    )
 
-    // Vérification ownership stricte
-    if (res && (res.user === session.id || res.email_client === session.email)) {
-      reservation = res
-      const lignesResult = await client.request(
-        readItems('reservation_lignes', {
-          filter: { reservation_id: { _eq: id } } as Record<string, unknown>,
-          sort: ['id'],
-          limit: 100,
-        })
-      )
-      lignes = (lignesResult as Ligne[]) ?? []
+    if (resReservation.ok) {
+      const json = await resReservation.json()
+      const res = json.data as Reservation | null
+
+      // Vérification ownership stricte
+      if (res && (res.user === session.id || res.email_client === session.email)) {
+        reservation = res
+
+        const lignesRes = await fetch(
+          `${DIRECTUS_URL}/items/reservation_lignes?filter[reservation_id][_eq]=${id}&sort=id&limit=100`,
+          { headers: { Authorization: `Bearer ${SERVER_TOKEN}` }, cache: 'no-store' }
+        )
+        if (lignesRes.ok) {
+          const lignesJson = await lignesRes.json()
+          lignes = (lignesJson.data as Ligne[]) ?? []
+        }
+      }
+    } else {
+      const errBody = await resReservation.text().catch(() => '')
+      console.error('[reservation-detail] Fetch failed:', resReservation.status, errBody)
     }
   } catch (err) {
     console.error('[reservation-detail] Erreur:', err)

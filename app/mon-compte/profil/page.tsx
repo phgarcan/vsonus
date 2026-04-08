@@ -7,7 +7,9 @@ import { Pencil, X, AlertTriangle } from 'lucide-react'
 import { getSession, updateProfile, changePassword, type SessionUser } from '@/lib/auth'
 import { deleteAccount } from '@/app/actions/account'
 import { formatSwissPhone } from '@/lib/utils'
+import { parseAddress, serializeAddress, EMPTY_ADDRESS, type ParsedAddress } from '@/lib/address'
 import { PasswordInput } from '@/components/ui/PasswordInput'
+import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 
 const inputCls = 'w-full bg-vsonus-dark border border-gray-700 text-white px-4 py-3 text-sm focus:border-vsonus-red focus:outline-none transition-colors'
 
@@ -17,7 +19,7 @@ export default function ProfilPage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
-  const [location, setLocation] = useState('')
+  const [address, setAddress] = useState<ParsedAddress>({ ...EMPTY_ADDRESS })
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -53,7 +55,7 @@ export default function ProfilPage() {
       setFirstName(s.first_name ?? '')
       setLastName(s.last_name ?? '')
       setPhone(s.phone ?? '')
-      setLocation(s.location ?? '')
+      setAddress(parseAddress(s.location))
     })
   }, [router])
 
@@ -61,7 +63,12 @@ export default function ProfilPage() {
     e.preventDefault()
     setLoading(true)
     setMsg('')
-    const result = await updateProfile({ first_name: firstName, last_name: lastName, phone, location })
+    const result = await updateProfile({
+      first_name: firstName,
+      last_name: lastName,
+      phone,
+      location: address.rue ? serializeAddress(address) : '',
+    })
     setMsg(result.success ? 'Profil mis à jour.' : (result.error ?? 'Erreur.'))
     setLoading(false)
   }
@@ -208,10 +215,53 @@ export default function ProfilPage() {
             className={inputCls} />
         </div>
 
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Adresse</label>
-          <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Rue, NPA Ville"
-            className={inputCls} />
+        <div className="space-y-4">
+          <label className="block text-xs font-bold uppercase tracking-widest text-gray-400">Adresse</label>
+
+          {/* Rue avec autocomplétion Google Places */}
+          <AddressAutocomplete
+            value={address.rue}
+            onChange={(v) => setAddress((prev) => ({ ...prev, rue: v }))}
+            onPlaceSelect={({ rue, npa, ville, pays }) =>
+              setAddress({ rue, npa, ville, pays })
+            }
+          />
+
+          {/* NPA + Ville sur la même ligne */}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">NPA</label>
+              <input
+                type="text"
+                value={address.npa}
+                onChange={(e) => setAddress((prev) => ({ ...prev, npa: e.target.value }))}
+                placeholder="1800"
+                pattern="[0-9]{4}"
+                title="Code postal suisse (4 chiffres)"
+                className={inputCls}
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Ville</label>
+              <input
+                type="text"
+                value={address.ville}
+                onChange={(e) => setAddress((prev) => ({ ...prev, ville: e.target.value }))}
+                placeholder="Vevey"
+                className={inputCls}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Pays</label>
+            <input
+              type="text"
+              value={address.pays}
+              onChange={(e) => setAddress((prev) => ({ ...prev, pays: e.target.value }))}
+              className={inputCls}
+            />
+          </div>
         </div>
 
         {msg && <p className={`text-sm ${msg.includes('Erreur') ? 'text-red-500' : 'text-green-500'}`}>{msg}</p>}
