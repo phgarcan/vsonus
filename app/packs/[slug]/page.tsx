@@ -139,11 +139,11 @@ export default async function PrestationDetailPage({ params }: Props) {
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-vsonus-red mb-3">
               {sousTitre}
             </p>
-            <div className="flex items-center gap-4 mb-4">
-              <div className={`w-14 h-14 border border-vsonus-red flex items-center justify-center flex-shrink-0 ${animation === 'glow-pulse' ? 'animate-glow-pulse' : ''}`}>
-                <Icon className={`w-7 h-7 text-vsonus-red ${animation === 'spin-slow' ? 'animate-spin-slow' : ''}`} strokeWidth={1.5} />
+            <div className="flex items-center gap-4 mb-4 min-w-0">
+              <div className={`w-12 h-12 md:w-14 md:h-14 border border-vsonus-red flex items-center justify-center flex-shrink-0 ${animation === 'glow-pulse' ? 'animate-glow-pulse' : ''}`}>
+                <Icon className={`w-6 h-6 md:w-7 md:h-7 text-vsonus-red ${animation === 'spin-slow' ? 'animate-spin-slow' : ''}`} strokeWidth={1.5} />
               </div>
-              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-widest text-white leading-tight">
+              <h1 className="text-3xl md:text-6xl font-black uppercase tracking-wider md:tracking-widest text-white leading-tight break-words min-w-0">
                 {titre}
               </h1>
             </div>

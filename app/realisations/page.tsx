@@ -84,7 +84,7 @@ export default async function GaleriePage({
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-vsonus-red mb-4">
               Portfolio
             </p>
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-widest text-white leading-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-black uppercase tracking-wider sm:tracking-widest text-white leading-tight break-words">
               Nos <span className="text-vsonus-red">réalisations</span>
             </h1>
           </AnimateOnScroll>

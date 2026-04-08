@@ -94,7 +94,7 @@ export default async function CategoriePage({
           <span className="text-gray-400">{catLabel}</span>
         </nav>
 
-        <h1 className="text-4xl font-black uppercase tracking-widest text-white mb-2">
+        <h1 className="text-3xl md:text-4xl font-black uppercase tracking-wider md:tracking-widest text-white mb-2 break-words">
           Location {catLabel}
         </h1>
         <p className="text-gray-300 mb-8">

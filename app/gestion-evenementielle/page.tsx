@@ -147,8 +147,8 @@ export default async function GestionEvenementielle() {
       {/* ── 1. HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative flex flex-col justify-end min-h-[65vh] overflow-hidden border-b-2 border-vsonus-red">
         <Image
-          src="/images/instagram/DSC01562.jpg"
-          alt="Gestion événementielle V-Sonus"
+          src="/images/hero-gestion-evenementielle.jpeg"
+          alt="Scène DJ Circus of Sound — gestion événementielle V-Sonus"
           fill
           className="object-cover"
           priority
@@ -161,7 +161,7 @@ export default async function GestionEvenementielle() {
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-vsonus-red mb-4">
               V-Sonus — Votre partenaire technique
             </p>
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-widest text-white leading-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-black uppercase tracking-wider sm:tracking-widest text-white leading-tight break-words">
               Gestion<br />
               <span className="text-vsonus-red">événementielle</span>
             </h1>

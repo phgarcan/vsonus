@@ -99,7 +99,7 @@ export default async function SousCategoriePage({
         <span className="text-gray-400">{sousCatLabel}</span>
       </nav>
 
-      <h1 className="text-4xl font-black uppercase tracking-widest text-white mb-2">
+      <h1 className="text-3xl md:text-4xl font-black uppercase tracking-wider md:tracking-widest text-white mb-2 break-words">
         {sousCatLabel}
       </h1>
       <p className="text-gray-300 mb-8">
