@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
@@ -19,6 +20,12 @@ export function RealisationsFilterBar() {
   const searchParams = useSearchParams()
   const active = searchParams.get('categorie') ?? undefined
 
+  // Auto-scroll vers le filtre actif (visibilité de l'état système — Nielsen)
+  const activeRef = useRef<HTMLAnchorElement | null>(null)
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+  }, [active])
+
   return (
     <div className="flex flex-wrap gap-2 mb-12">
       {CATEGORIES.map((cat) => {
@@ -27,6 +34,7 @@ export function RealisationsFilterBar() {
           <Link
             key={cat.label}
             href={cat.slug ? `/realisations?categorie=${cat.slug}` : '/realisations'}
+            ref={isActive ? activeRef : undefined}
             scroll={false}
             className={[
               'px-4 py-2 text-xs font-bold uppercase tracking-widest border transition-all duration-150',

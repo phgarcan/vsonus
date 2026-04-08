@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -23,6 +24,13 @@ export function CategoryFilterBar({ activeCategory }: { activeCategory?: string 
   // /catalogue → undefined, /catalogue/eclairage → 'eclairage'
   const urlCategory = segments[1] === 'catalogue' && segments[2] ? segments[2] : undefined
   const resolved = activeCategory ?? urlCategory
+
+  // Auto-scroll vers le filtre actif (visibilité de l'état système — Nielsen)
+  const activeRef = useRef<HTMLAnchorElement | null>(null)
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+  }, [resolved])
+
   return (
     <div className="relative mb-6 md:mb-10">
       <div
@@ -36,6 +44,7 @@ export function CategoryFilterBar({ activeCategory }: { activeCategory?: string 
             <Link
               key={tab.href}
               href={tab.href}
+              ref={isActive ? activeRef : undefined}
               className={`flex-shrink-0 px-4 py-2 md:py-2 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
                 isActive
                   ? 'bg-vsonus-red text-white'

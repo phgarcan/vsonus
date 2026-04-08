@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { SOUS_CAT_LABELS } from '@/lib/directus'
@@ -20,6 +21,12 @@ export function SubCategoryBar({ categorie, activeSousCategorie, sousCategories 
     : undefined
   const resolved = activeSousCategorie ?? urlSousCategorie
 
+  // Auto-scroll vers le filtre actif (visibilité de l'état système — Nielsen)
+  const activeRef = useRef<HTMLAnchorElement | null>(null)
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+  }, [resolved])
+
   if (sousCategories.length === 0) return null
 
   return (
@@ -31,6 +38,7 @@ export function SubCategoryBar({ categorie, activeSousCategorie, sousCategories 
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:flex-wrap md:overflow-visible">
         <Link
           href={`/catalogue/${categorie}`}
+          ref={!resolved ? activeRef : undefined}
           className={`flex-shrink-0 px-3 py-1 md:py-1.5 text-xs font-semibold tracking-wide border whitespace-nowrap transition-colors ${
             !resolved
               ? 'border-vsonus-red text-vsonus-red bg-vsonus-red/10'
@@ -44,6 +52,7 @@ export function SubCategoryBar({ categorie, activeSousCategorie, sousCategories 
           <Link
             key={sc}
             href={`/catalogue/${categorie}/${sc}`}
+            ref={sc === resolved ? activeRef : undefined}
             className={`flex-shrink-0 px-3 py-1 md:py-1.5 text-xs font-semibold tracking-wide border whitespace-nowrap transition-colors ${
               sc === resolved
                 ? 'border-vsonus-red text-vsonus-red bg-vsonus-red/10'
