@@ -157,20 +157,31 @@ export async function requestPasswordReset(email: string): Promise<{ success: tr
 // ---------------------------------------------------------------------------
 
 export async function updateProfile(data: { first_name?: string; last_name?: string; phone?: string; location?: string }): Promise<{ success: boolean; error?: string }> {
-  const token = await getAccessToken()
-  if (!token) return { success: false, error: 'Non connecté.' }
+  // Validation de session : on doit être connecté pour modifier son propre profil
+  const session = await getSession()
+  if (!session?.id) return { success: false, error: 'Non connecté.' }
 
-  // Récupérer les données actuelles avant modification
-  const currentRes = await fetch(`${DIRECTUS_URL}/users/me?fields=id,email,first_name,last_name,phone,location`, {
-    headers: { Authorization: `Bearer ${token}` },
+  const serverToken = process.env.DIRECTUS_SERVER_TOKEN
+  if (!serverToken) {
+    console.error('[updateProfile] DIRECTUS_SERVER_TOKEN manquant')
+    return { success: false, error: 'Configuration serveur invalide.' }
+  }
+
+  // Récupérer les données actuelles avant modification (pour la notif admin)
+  const currentRes = await fetch(`${DIRECTUS_URL}/users/${session.id}?fields=id,email,first_name,last_name,phone,location`, {
+    headers: { Authorization: `Bearer ${serverToken}` },
   })
   const currentData = currentRes.ok ? (await currentRes.json()).data : null
 
-  const res = await fetch(`${DIRECTUS_URL}/users/me`, {
+  // Update via le server token (le rôle Client n'a pas la permission UPDATE
+  // sur directus_users — fix sans devoir modifier les permissions Directus).
+  // Sécurité : on cible session.id donc l'utilisateur ne peut modifier que
+  // son propre profil.
+  const res = await fetch(`${DIRECTUS_URL}/users/${session.id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${serverToken}`,
     },
     body: JSON.stringify(data),
   })
@@ -218,14 +229,17 @@ export async function updateProfile(data: { first_name?: string; last_name?: str
 // ---------------------------------------------------------------------------
 
 export async function changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('vsonus_access_token')?.value
-  if (!token) return { success: false, error: 'Non connecté.' }
+  // Validation de session
+  const session = await getSession()
+  if (!session?.email || !session?.id) return { success: false, error: 'Session invalide.' }
+
+  const serverToken = process.env.DIRECTUS_SERVER_TOKEN
+  if (!serverToken) {
+    console.error('[changePassword] DIRECTUS_SERVER_TOKEN manquant')
+    return { success: false, error: 'Configuration serveur invalide.' }
+  }
 
   // Vérifier le mot de passe actuel en tentant un login Directus
-  const session = await getSession()
-  if (!session?.email) return { success: false, error: 'Session invalide.' }
-
   const verifyRes = await fetch(`${DIRECTUS_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -234,16 +248,21 @@ export async function changePassword(currentPassword: string, newPassword: strin
 
   if (!verifyRes.ok) return { success: false, error: 'Mot de passe actuel incorrect.' }
 
-  // Mot de passe vérifié — appliquer le changement
-  const res = await fetch(`${DIRECTUS_URL}/users/me`, {
+  // Mot de passe vérifié — appliquer le changement via le server token
+  // (le rôle Client n'a pas la permission UPDATE sur directus_users).
+  const res = await fetch(`${DIRECTUS_URL}/users/${session.id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${serverToken}`,
     },
     body: JSON.stringify({ password: newPassword }),
   })
 
-  if (!res.ok) return { success: false, error: 'Erreur lors du changement de mot de passe.' }
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '')
+    console.error('[changePassword] Failed:', res.status, errBody)
+    return { success: false, error: `Erreur Directus (${res.status})` }
+  }
   return { success: true }
 }
