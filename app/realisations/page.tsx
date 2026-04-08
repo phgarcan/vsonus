@@ -2,7 +2,7 @@ import { readItems } from '@directus/sdk'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getServerDirectus, getImageUrl } from '@/lib/directus'
+import { getServerDirectus, getImageUrl, parseCategorie } from '@/lib/directus'
 import type { Realisation } from '@/lib/directus'
 import { Music } from 'lucide-react'
 import { AnimateOnScroll } from '@/components/ui/AnimateOnScroll'
@@ -30,13 +30,13 @@ export default async function GaleriePage({
   const { categorie } = await searchParams
   const client = getServerDirectus()
 
-  const realisations: Realisation[] = await client
+  // Fetch toutes les réalisations publiées — le filtrage par catégorie se fait
+  // ensuite avec parseCategorie() car le champ categorie est stocké en JSON
+  // brut par Directus (cf. commit 3633b11)
+  const allRealisations: Realisation[] = await client
     .request(
       readItems('realisations', {
-        filter: {
-          publie: { _eq: true },
-          ...(categorie ? { categorie: { _contains: categorie } } : {}),
-        },
+        filter: { publie: { _eq: true } },
         sort: ['-date_evenement'],
         limit: 50,
         fields: [
@@ -53,6 +53,12 @@ export default async function GaleriePage({
       })
     )
     .catch(() => [] as Realisation[])
+
+  const realisations = categorie
+    ? allRealisations.filter((r) =>
+        parseCategorie(r.categorie).some((c) => c.toLowerCase() === categorie.toLowerCase())
+      )
+    : allRealisations
 
   return (
     <main>
