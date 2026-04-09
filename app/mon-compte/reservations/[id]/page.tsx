@@ -50,7 +50,6 @@ interface Reservation {
   date_fin: string
   total_ht: number
   notes: string | null
-  date_created: string
   est_entreprise: boolean
   nom_entreprise: string | null
   numero_ide: string | null
@@ -83,7 +82,7 @@ export default async function ReservationDetailPage({
   let lignes: Ligne[] = []
 
   try {
-    const fields = 'id,statut,user,nom_client,email_client,tel_client,adresse_evenement,date_debut,date_fin,total_ht,notes,date_created,est_entreprise,nom_entreprise,numero_ide'
+    const fields = 'id,statut,user,nom_client,email_client,tel_client,adresse_evenement,date_debut,date_fin,total_ht,notes,est_entreprise,nom_entreprise,numero_ide'
     const resReservation = await fetch(
       `${DIRECTUS_URL}/items/reservations/${id}?fields=${fields}`,
       { headers: { Authorization: `Bearer ${SERVER_TOKEN}` }, cache: 'no-store' }
@@ -220,9 +219,6 @@ export default async function ReservationDetailPage({
           <div className="bg-vsonus-dark border border-gray-800 p-5">
             <h3 className="text-xs font-black uppercase tracking-widest text-vsonus-red mb-3">Dates de location</h3>
             <p className="text-white font-bold">{formatDateEU(reservation.date_debut)} → {formatDateEU(reservation.date_fin)}</p>
-            <p className="text-gray-500 text-xs mt-1">
-              Demande effectuée le {formatDateEU(reservation.date_created)}
-            </p>
           </div>
           <div className="bg-vsonus-dark border border-gray-800 p-5">
             <h3 className="text-xs font-black uppercase tracking-widest text-vsonus-red mb-3">Informations client</h3>

@@ -28,7 +28,6 @@ interface Reservation {
   date_debut: string
   date_fin: string
   total_ht: number
-  date_created: string
   nom_client: string
 }
 
@@ -42,7 +41,7 @@ export default async function MonComptePage() {
   // qui peuvent varier selon les versions Directus / encodages d'URL.
   let reservations: Reservation[] = []
   let debugError: string | null = null
-  const fields = 'id,statut,date_debut,date_fin,total_ht,date_created,nom_client,user,email_client'
+  const fields = 'id,statut,date_debut,date_fin,total_ht,nom_client,user,email_client'
   const headers = { Authorization: `Bearer ${SERVER_TOKEN}` }
 
   try {
@@ -50,11 +49,11 @@ export default async function MonComptePage() {
       debugError = 'DIRECTUS_SERVER_TOKEN non défini côté serveur'
     } else {
       // Fetch 1 : par user.id (lien direct sur la réservation)
-      const urlByUser = `${DIRECTUS_URL}/items/reservations?fields=${fields}&filter[user][_eq]=${encodeURIComponent(session.id)}&sort=-date_created&limit=50`
+      const urlByUser = `${DIRECTUS_URL}/items/reservations?fields=${fields}&filter[user][_eq]=${encodeURIComponent(session.id)}&sort=-date_debut&limit=50`
       const resByUser = await fetch(urlByUser, { headers, cache: 'no-store' })
 
       // Fetch 2 : par email (fallback pour anciennes réservations sans lien user)
-      const urlByEmail = `${DIRECTUS_URL}/items/reservations?fields=${fields}&filter[email_client][_eq]=${encodeURIComponent(session.email)}&sort=-date_created&limit=50`
+      const urlByEmail = `${DIRECTUS_URL}/items/reservations?fields=${fields}&filter[email_client][_eq]=${encodeURIComponent(session.email)}&sort=-date_debut&limit=50`
       const resByEmail = await fetch(urlByEmail, { headers, cache: 'no-store' })
 
       const errors: string[] = []
@@ -76,9 +75,9 @@ export default async function MonComptePage() {
         errors.push(`fetch by email → ${resByEmail.status} ${body.slice(0, 200)}`)
       }
 
-      // Tri descendant par date_created
+      // Tri descendant par date_debut (réservations à venir en premier)
       reservations = Array.from(merged.values()).sort((a, b) =>
-        (b.date_created ?? '').localeCompare(a.date_created ?? '')
+        (b.date_debut ?? '').localeCompare(a.date_debut ?? '')
       )
 
       if (errors.length > 0 && reservations.length === 0) {
@@ -128,13 +127,6 @@ export default async function MonComptePage() {
         <AnimateOnScroll delay={200}>
           <div className="bg-vsonus-dark border border-gray-800 p-10 text-center">
             <p className="text-gray-400 mb-6">Vous n&apos;avez pas encore de réservation.</p>
-            {debugError && (
-              <div className="bg-red-950/40 border border-red-900 p-4 mb-6 text-left">
-                <p className="text-xs font-bold uppercase tracking-widest text-red-500 mb-2">Erreur (debug)</p>
-                <pre className="text-xs text-red-300 whitespace-pre-wrap break-all">{debugError}</pre>
-                <p className="text-[10px] text-gray-500 mt-2">User ID: {session.id} · Email: {session.email}</p>
-              </div>
-            )}
             <Link
               href="/catalogue"
               className="inline-block bg-vsonus-red text-white font-bold uppercase tracking-widest px-8 py-3 text-sm hover:bg-red-700 transition-colors"
@@ -167,9 +159,6 @@ export default async function MonComptePage() {
                     </div>
                     <div className="text-right">
                       <p className="text-vsonus-red font-black text-lg">{r.total_ht.toFixed(2)} CHF</p>
-                      <p className="text-xs text-gray-600">
-                        Demande du {formatDateEU(r.date_created)}
-                      </p>
                     </div>
                   </div>
                 </Link>
