@@ -132,7 +132,7 @@ export default async function ReservationDetailPage({
           <h1 className="text-2xl md:text-3xl font-black uppercase tracking-widest text-white">
             Réservation
           </h1>
-          <span className="text-xs text-gray-600">#{id.slice(0, 8)}</span>
+          <span className="text-xs text-gray-600">#{String(id).slice(0, 8)}</span>
         </div>
       </AnimateOnScroll>
 

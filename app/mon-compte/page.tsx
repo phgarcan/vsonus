@@ -23,7 +23,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 interface Reservation {
-  id: string
+  id: string | number
   statut: string
   date_debut: string
   date_fin: string
@@ -61,7 +61,7 @@ export default async function MonComptePage() {
 
       if (resByUser.ok) {
         const json = await resByUser.json()
-        for (const r of (json.data ?? []) as Reservation[]) merged.set(r.id, r)
+        for (const r of (json.data ?? []) as Reservation[]) merged.set(String(r.id), r)
       } else {
         const body = await resByUser.text().catch(() => '')
         errors.push(`fetch by user → ${resByUser.status} ${body.slice(0, 200)}`)
@@ -69,7 +69,7 @@ export default async function MonComptePage() {
 
       if (resByEmail.ok) {
         const json = await resByEmail.json()
-        for (const r of (json.data ?? []) as Reservation[]) merged.set(r.id, r)
+        for (const r of (json.data ?? []) as Reservation[]) merged.set(String(r.id), r)
       } else {
         const body = await resByEmail.text().catch(() => '')
         errors.push(`fetch by email → ${resByEmail.status} ${body.slice(0, 200)}`)
@@ -151,7 +151,7 @@ export default async function MonComptePage() {
                         <span className={`${status.color} text-white text-xs font-bold uppercase px-2 py-0.5`}>
                           {status.label}
                         </span>
-                        <span className="text-xs text-gray-600">#{r.id.slice(0, 8)}</span>
+                        <span className="text-xs text-gray-600">#{String(r.id).slice(0, 8)}</span>
                       </div>
                       <p className="text-white font-bold text-sm group-hover:text-vsonus-red transition-colors">
                         {formatDateEU(r.date_debut)} → {formatDateEU(r.date_fin)}

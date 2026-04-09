@@ -117,13 +117,13 @@ export async function getSession(): Promise<SessionUser | null> {
     })
   }
 
-  // Étape 1 : récupérer ce que le user token permet de lire sur /users/me.
-  // C'est aussi notre validation d'auth — si ça fail, l'utilisateur n'est
-  // pas authentifié.
-  const meRes = await fetch(
-    `${DIRECTUS_URL}/users/me?fields=id,first_name,last_name,email,phone,location`,
-    { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }
-  )
+  // Étape 1 : récupérer le profil via le user token. Pas de filtre `fields=`
+  // pour laisser Directus retourner tous les champs accessibles selon le rôle
+  // (évite les 403 sur des champs qui n'existent pas ou sont restreints).
+  const meRes = await fetch(`${DIRECTUS_URL}/users/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  })
   if (!meRes.ok) return null
 
   const meJson = await meRes.json()
@@ -156,10 +156,12 @@ export async function getSession(): Promise<SessionUser | null> {
   if (!serverToken) return baseUser // pas de token serveur → on garde la base
 
   try {
-    const fullRes = await fetch(
-      `${DIRECTUS_URL}/users/${baseUser.id}?fields=id,first_name,last_name,email,phone,location`,
-      { headers: { Authorization: `Bearer ${serverToken}` }, cache: 'no-store' }
-    )
+    // Pas de filtre `fields=` ici non plus — Directus retourne tous les
+    // champs accessibles, on ignore le reste.
+    const fullRes = await fetch(`${DIRECTUS_URL}/users/${baseUser.id}`, {
+      headers: { Authorization: `Bearer ${serverToken}` },
+      cache: 'no-store',
+    })
     if (fullRes.ok) {
       const { data } = await fullRes.json()
       if (data) {
