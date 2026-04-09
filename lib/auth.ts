@@ -117,37 +117,72 @@ export async function getSession(): Promise<SessionUser | null> {
     })
   }
 
-  // Étape 1 : valider l'auth en récupérant l'id du user via son token
-  // (le rôle Client a la permission READ sur /users/me mais limitée à id+email)
-  const meRes = await fetch(`${DIRECTUS_URL}/users/me?fields=id`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!meRes.ok) return null
-  const meJson = await meRes.json()
-  const userId = meJson?.data?.id
-  if (!userId) return null
-
-  // Étape 2 : récupérer le profil complet via le server token (les champs
-  // first_name/last_name/phone/location sont restreints en read pour le rôle
-  // Client, on bypass via le server token comme pour les writes).
-  const serverToken = process.env.DIRECTUS_SERVER_TOKEN
-  if (!serverToken) {
-    console.error('[getSession] DIRECTUS_SERVER_TOKEN manquant')
-    return null
-  }
-
-  const fullRes = await fetch(
-    `${DIRECTUS_URL}/users/${userId}?fields=id,first_name,last_name,email,phone,location`,
-    { headers: { Authorization: `Bearer ${serverToken}` }, cache: 'no-store' }
+  // Étape 1 : récupérer ce que le user token permet de lire sur /users/me.
+  // C'est aussi notre validation d'auth — si ça fail, l'utilisateur n'est
+  // pas authentifié.
+  const meRes = await fetch(
+    `${DIRECTUS_URL}/users/me?fields=id,first_name,last_name,email,phone,location`,
+    { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }
   )
-  if (!fullRes.ok) {
-    const errBody = await fullRes.text().catch(() => '')
-    console.error('[getSession] Failed to fetch full user:', fullRes.status, errBody)
-    return null
+  if (!meRes.ok) return null
+
+  const meJson = await meRes.json()
+  const meData = meJson?.data
+  if (!meData?.id) return null
+
+  // À ce stade on a déjà un user valide. On retourne d'office cette donnée
+  // pour ne JAMAIS casser l'auth — quitte à enrichir ensuite si possible.
+  const baseUser: SessionUser = {
+    id: meData.id,
+    first_name: meData.first_name ?? null,
+    last_name: meData.last_name ?? null,
+    email: meData.email,
+    phone: meData.phone ?? null,
+    location: meData.location ?? null,
   }
 
-  const { data } = await fullRes.json()
-  return data as SessionUser
+  // Étape 2 (best-effort) : enrichir via le server token si certains champs
+  // sont restreints en read pour le rôle Client. On ne fait l'enrichissement
+  // que si au moins un champ profil est manquant — sinon ça ne sert à rien.
+  const needsEnrich =
+    baseUser.first_name === null ||
+    baseUser.last_name === null ||
+    baseUser.phone === null ||
+    baseUser.location === null
+
+  if (!needsEnrich) return baseUser
+
+  const serverToken = process.env.DIRECTUS_SERVER_TOKEN
+  if (!serverToken) return baseUser // pas de token serveur → on garde la base
+
+  try {
+    const fullRes = await fetch(
+      `${DIRECTUS_URL}/users/${baseUser.id}?fields=id,first_name,last_name,email,phone,location`,
+      { headers: { Authorization: `Bearer ${serverToken}` }, cache: 'no-store' }
+    )
+    if (fullRes.ok) {
+      const { data } = await fullRes.json()
+      if (data) {
+        return {
+          id: data.id,
+          first_name: data.first_name ?? baseUser.first_name,
+          last_name: data.last_name ?? baseUser.last_name,
+          email: data.email ?? baseUser.email,
+          phone: data.phone ?? baseUser.phone,
+          location: data.location ?? baseUser.location,
+        }
+      }
+    } else {
+      const errBody = await fullRes.text().catch(() => '')
+      console.error('[getSession] Enrich failed (non-fatal):', fullRes.status, errBody)
+    }
+  } catch (err) {
+    console.error('[getSession] Enrich error (non-fatal):', err)
+  }
+
+  // En cas d'échec de l'enrichissement, on retourne la donnée de base —
+  // l'utilisateur reste connecté.
+  return baseUser
 }
 
 // ---------------------------------------------------------------------------
